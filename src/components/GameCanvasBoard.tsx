@@ -390,6 +390,15 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
               <stop offset="100%" stopColor="#854D0E" />
             </linearGradient>
 
+            {/* Line Glow Filter for Move Paths */}
+            <filter id="lineGlowFilter" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+
             {/* Tile Drop Shadow Filter */}
             <filter id="shadowFilter" x="-20%" y="-20%" width="140%" height="140%">
               <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#000000" floodOpacity="0.6" />
@@ -493,25 +502,64 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
             return lines;
           })()}
 
-          {/* Animated Trajectory Lines for Possible Moves */}
+          {/* Modern Discrete Curved Trajectory Particles for Possible Moves */}
           {gameState.phase === 'moving' && gameState.possibleMoves.map(destId => {
             const originTile = boardConfig.tiles.find(t => t.id === activePlayer?.currentTileId);
             const destTile = boardConfig.tiles.find(t => t.id === destId);
             if (!originTile || !destTile) return null;
+
+            const dx = destTile.x - originTile.x;
+            const dy = destTile.y - originTile.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            // Midpoint between origin and destination
+            const mx = (originTile.x + destTile.x) / 2;
+            const my = (originTile.y + destTile.y) / 2;
+
+            // Push quadratic control point outwards away from central hub (500, 500)
+            const toCenterX = mx - 500;
+            const toCenterY = my - 500;
+            const distCenter = Math.sqrt(toCenterX * toCenterX + toCenterY * toCenterY) || 1;
+
+            // Curved arc offset amount
+            const pushDist = Math.max(30, Math.min(120, dist * 0.25));
+            const cx = mx + (toCenterX / distCenter) * pushDist;
+            const cy = my + (toCenterY / distCenter) * pushDist;
+
+            const pathD = `M ${originTile.x} ${originTile.y} Q ${cx} ${cy} ${destTile.x} ${destTile.y}`;
+            const destCat = destTile.categoryId ? CATEGORIES[destTile.categoryId] : null;
+            const strokeColor = destCat?.color || '#F59E0B';
+
             return (
-              <line
-                key={`move_path_${destId}`}
-                x1={originTile.x}
-                y1={originTile.y}
-                x2={destTile.x}
-                y2={destTile.y}
-                stroke="#F59E0B"
-                strokeWidth="12"
-                strokeDasharray="10 8"
-                strokeLinecap="round"
-                className="animate-pulse"
-                opacity="0.95"
-              />
+              <g key={`move_path_group_${destId}`}>
+                {/* Soft glow background arc */}
+                <path
+                  d={pathD}
+                  fill="none"
+                  stroke={strokeColor}
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                  opacity="0.25"
+                  filter="url(#lineGlowFilter)"
+                />
+                {/* Dynamic animated dotted stream arc */}
+                <path
+                  d={pathD}
+                  fill="none"
+                  stroke="#FDE047"
+                  strokeWidth="3"
+                  strokeDasharray="6 8"
+                  strokeLinecap="round"
+                  opacity="0.9"
+                >
+                  <animate
+                    attributeName="stroke-dashoffset"
+                    values="28;0"
+                    dur="0.8s"
+                    repeatCount="indefinite"
+                  />
+                </path>
+              </g>
             );
           })}
 
