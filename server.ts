@@ -251,7 +251,7 @@ io.on('connection', (socket: Socket) => {
       wedges: [],
       currentTileId: 0,
       isHost: true,
-      isReady: true,
+      isReady: isLocal,
       score: 0,
       correctAnswersCount: 0,
       totalAnswersCount: 0,
@@ -387,7 +387,7 @@ io.on('connection', (socket: Socket) => {
       wedges: [],
       currentTileId: 0,
       isHost: false,
-      isReady: true,
+      isReady: false,
       score: 0,
       correctAnswersCount: 0,
       totalAnswersCount: 0,
@@ -406,7 +406,7 @@ io.on('connection', (socket: Socket) => {
   // Local Pass & Play Add Player
   socket.on('add-local-player', (data: { roomCode: string; player: Partial<Player> }) => {
     const room = rooms.get(data.roomCode);
-    if (!room) return;
+    if (!room || room.hostSocketId !== socket.id || !room.settings.isLocalMode) return;
 
     const newPlayer: Player = {
       id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
@@ -428,6 +428,17 @@ io.on('connection', (socket: Socket) => {
     io.to(data.roomCode).emit('game-state-update', room.gameState);
   });
 
+  socket.on('toggle-ready', (data: { roomCode: string }) => {
+    const room = rooms.get(data.roomCode);
+    if (!room || room.gameState.phase !== 'lobby' || room.settings.isLocalMode) return;
+
+    const player = room.gameState.players.find(p => p.id === socket.id);
+    if (!player) return;
+
+    player.isReady = !player.isReady;
+    io.to(data.roomCode).emit('game-state-update', room.gameState);
+  });
+
   // Update Settings (Host only)
   socket.on('update-settings', (data: { roomCode: string; settings: Partial<GameSettings> }) => {
     const room = rooms.get(data.roomCode);
@@ -444,7 +455,9 @@ io.on('connection', (socket: Socket) => {
     const room = rooms.get(data.roomCode);
     if (!room) return;
 
-    const p = room.gameState.players.find(pl => pl.id === socket.id || pl.id === data.player.id);
+    const requestedPlayer = room.gameState.players.find(pl => pl.id === data.player.id);
+    const canEditRequestedLocalPlayer = room.hostSocketId === socket.id && requestedPlayer?.id.startsWith('local_');
+    const p = room.gameState.players.find(pl => pl.id === socket.id) || (canEditRequestedLocalPlayer ? requestedPlayer : undefined);
     if (p) {
       if (data.player.name !== undefined) p.name = data.player.name;
       if (data.player.avatarId) p.avatarId = data.player.avatarId;
@@ -458,7 +471,7 @@ io.on('connection', (socket: Socket) => {
   // Add Custom AI Theme Pack
   socket.on('add-custom-pack', (data: { roomCode: string; themeName: string; questions: Question[] }) => {
     const room = rooms.get(data.roomCode);
-    if (!room) return;
+    if (!room || room.hostSocketId !== socket.id) return;
 
     if (!room.gameState.customPacks) {
       room.gameState.customPacks = [];
@@ -491,10 +504,17 @@ io.on('connection', (socket: Socket) => {
   // Start Game
   socket.on('start-game', (data: { roomCode: string }) => {
     const room = rooms.get(data.roomCode);
-    if (!room) return;
+    if (!room || room.hostSocketId !== socket.id) return;
 
     if (room.gameState.players.length < 1) {
       return socket.emit('error-msg', 'Il faut au moins 1 joueur pour commencer.');
+    }
+
+    if (!room.settings.isLocalMode) {
+      const connectedPlayers = room.gameState.players.filter(player => player.isConnected);
+      if (connectedPlayers.some(player => !player.isReady)) {
+        return socket.emit('error-msg', 'Tous les joueurs connectés doivent être prêts avant de commencer.');
+      }
     }
 
     // Ensure all players have a non-empty name when game starts
@@ -546,6 +566,15 @@ io.on('connection', (socket: Socket) => {
     }
 
     return false;
+  }
+
+  function isPlayerAllowedToAnswer(room: Room, socketId: string): boolean {
+    if (isPlayerAllowedToAct(room, socketId)) return true;
+    if (!room.settings.isReaderMode) return false;
+
+    const players = room.gameState.players;
+    const readerIndex = (room.gameState.activePlayerIndex + 1) % players.length;
+    return players[readerIndex]?.id === socketId;
   }
 
   // Roll Dice
@@ -628,6 +657,8 @@ io.on('connection', (socket: Socket) => {
   socket.on('submit-answer', (data: { roomCode: string; optionIndex: number }) => {
     const room = rooms.get(data.roomCode);
     if (!room || room.gameState.phase !== 'question' || !room.gameState.currentQuestion) return;
+    if (!isPlayerAllowedToAnswer(room, socket.id)) return;
+    if (!Number.isInteger(data.optionIndex) || data.optionIndex < -1 || data.optionIndex > 3) return;
 
     const activePlayer = room.gameState.players[room.gameState.activePlayerIndex];
     const q = room.gameState.currentQuestion;
@@ -686,6 +717,7 @@ io.on('connection', (socket: Socket) => {
       console.warn(`[NextTurn Rejected] Cannot trigger next-turn from phase "${room.gameState.phase}"`);
       return;
     }
+    if (!isPlayerAllowedToAnswer(room, socket.id)) return;
 
     const lastResult = room.gameState.lastAnswerResult;
     // If answer was correct, player gets to roll again! If wrong, next player's turn.

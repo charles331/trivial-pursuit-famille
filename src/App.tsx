@@ -156,6 +156,12 @@ export default function App() {
     }
   };
 
+  const handleToggleReady = () => {
+    if (socket && gameState) {
+      socket.emit('toggle-ready', { roomCode: gameState.roomCode });
+    }
+  };
+
   const handleUpdateSettings = (newSettings: Partial<GameSettings>) => {
     if (socket && gameState) {
       socket.emit('update-settings', { roomCode: gameState.roomCode, settings: newSettings });
@@ -226,6 +232,7 @@ export default function App() {
           onJoinRoom={handleJoinRoom}
           onAddLocalPlayer={handleAddLocalPlayer}
           onUpdatePlayer={handleUpdatePlayer}
+          onToggleReady={handleToggleReady}
           onUpdateSettings={handleUpdateSettings}
           onStartGame={handleStartGame}
           onAddCustomPack={handleAddCustomPack}
@@ -264,6 +271,7 @@ export default function App() {
           lastAnswerResult={gameState.lastAnswerResult}
           isMyTurn={isMyTurn}
           isReaderMode={gameState.settings.isReaderMode}
+          isLocalMode={gameState.settings.isLocalMode}
           allPlayers={gameState.players}
           currentUserId={currentUserId}
           onSubmitAnswer={handleSubmitAnswer}
@@ -281,6 +289,7 @@ export default function App() {
           lastAnswerResult={gameState.lastAnswerResult}
           isMyTurn={isMyTurn}
           isReaderMode={gameState.settings.isReaderMode}
+          isLocalMode={gameState.settings.isLocalMode}
           allPlayers={gameState.players}
           currentUserId={currentUserId}
           onSubmitAnswer={handleSubmitAnswer}

@@ -23,6 +23,7 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
 }) => {
   const [isRollingLocally, setIsRollingLocally] = useState(false);
   const [showingResultPause, setShowingResultPause] = useState<number | null>(null);
+  const [showTurnIntro, setShowTurnIntro] = useState(true);
 
   const hasRolledRef = React.useRef(false);
   const prevDiceValRef = React.useRef<number | null>(null);
@@ -42,6 +43,7 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
 
   // Reset roll guard state whenever phase returns to rolling or player turn switches
   React.useEffect(() => {
+    setShowTurnIntro(true);
     if (gameState.phase === 'rolling') {
       hasRolledRef.current = false;
       isAutoAdvancingRef.current = false;
@@ -92,6 +94,34 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
 
   return (
     <div className="relative w-full flex flex-col items-center justify-center p-2 sm:p-4 bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 overflow-hidden min-h-[460px] sm:min-h-[580px]">
+      {showTurnIntro && gameState.phase === 'rolling' && isMyTurn && (
+        <div className="absolute inset-0 z-40 bg-slate-950/95 flex items-center justify-center p-5">
+          <div className="text-center space-y-5">
+            <div
+              className="w-24 h-24 mx-auto rounded-full flex items-center justify-center text-5xl border-4 border-white/30 shadow-2xl"
+              style={{ backgroundColor: activePlayer?.color }}
+            >
+              {AVATARS.find(a => a.id === activePlayer?.avatarId)?.emoji || '🦁'}
+            </div>
+            <div>
+              <p className="text-amber-400 font-black uppercase tracking-widest text-sm">Nouveau tour</p>
+              <h2 className="text-3xl sm:text-4xl text-white font-black">Au tour de {activePlayer?.name}</h2>
+              {gameState.settings.isLocalMode && (
+                <p className="text-slate-300 text-sm mt-2">Passez-lui l’appareil avant de continuer.</p>
+              )}
+            </div>
+            <button
+              onClick={() => {
+                soundManager.playClick();
+                setShowTurnIntro(false);
+              }}
+              className="px-8 py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-lg"
+            >
+              J’ai l’appareil, commencer
+            </button>
+          </div>
+        </div>
+      )}
       {/* Background Decorative Grid Accent */}
       <div className="absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:20px_20px] opacity-20 pointer-events-none" />
 
@@ -106,7 +136,7 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
           </div>
           <div>
             <div className="text-xs text-amber-400 font-bold uppercase tracking-wider flex items-center gap-1">
-              <Crown className="w-3.5 h-3.5" /> Turn de : {activePlayer?.name}
+              <Crown className="w-3.5 h-3.5" /> Tour de : {activePlayer?.name}
             </div>
             <div className="text-[11px] text-slate-400 font-medium">
               {gameState.phase === 'rolling' && '👉 Lancez le dé 3D !'}
