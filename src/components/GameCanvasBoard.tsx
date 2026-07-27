@@ -267,7 +267,7 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
     }
   }, [gameState.phase, gameState.activePlayerIndex]);
 
-  // Handle dice roll result arriving from server
+  // Handle dice roll result arriving from server cleanly
   React.useEffect(() => {
     if (
       gameState.diceValue !== null &&
@@ -277,7 +277,7 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
       prevDiceValRef.current = gameState.diceValue;
       const resultVal = gameState.diceValue;
 
-      // Keep 3D tumbling animation active for 0.8s
+      // Allow 3D tumble animation to complete cleanly for 0.85s
       setIsRollingLocally(true);
 
       const tumbleTimer = setTimeout(() => {
@@ -286,10 +286,10 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
 
         const pauseTimer = setTimeout(() => {
           setShowingResultPause(null);
-        }, 1800);
+        }, 1500);
 
         return () => clearTimeout(pauseTimer);
-      }, 800);
+      }, 850);
 
       return () => clearTimeout(tumbleTimer);
     }

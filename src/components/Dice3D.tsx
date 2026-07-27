@@ -46,65 +46,85 @@ export const Dice3D: React.FC<Dice3DProps> = ({
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
   const [swipePower, setSwipePower] = useState(0); // 0 to 100%
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
-  const hasTriggeredRollRef = useRef(false);
+
+  // Track previous rolling state and roll spin animation lock to prevent multiple spin loops
+  const prevIsRollingRef = useRef(false);
+  const currentTurnSpinRef = useRef<{ extraX: number; extraY: number } | null>(null);
 
   const halfSize = size / 2;
 
-  // Reset trigger lock when isRolling becomes false
-  useEffect(() => {
-    if (!isRolling) {
-      hasTriggeredRollRef.current = false;
-    }
-  }, [isRolling]);
-
-  const triggerRollOnce = () => {
-    if (disabled || isRolling || hasTriggeredRollRef.current) return;
-    hasTriggeredRollRef.current = true;
+  const triggerRoll = () => {
+    if (disabled || isRolling) return;
     onRollRequest?.();
   };
 
-  // Whenever isRolling becomes true OR value arrives, compute target 3D orientation
+  // Whenever isRolling transitions from false -> true, initiate ONE single clean roll turn
   useEffect(() => {
-    if (isRolling || (value !== null && value >= 1 && value <= 6)) {
-      if (isRolling) {
-        soundManager.playDiceRoll();
-      }
+    const isNowRolling = isRolling;
+    const wasRolling = prevIsRollingRef.current;
+    prevIsRollingRef.current = isNowRolling;
 
-      const targetFace = value && value >= 1 && value <= 6 ? value : 1;
-      const baseRot = FACE_ROTATIONS[targetFace] || FACE_ROTATIONS[1];
+    const targetFace = value && value >= 1 && value <= 6 ? value : 1;
+    const baseRot = FACE_ROTATIONS[targetFace] || FACE_ROTATIONS[1];
 
-      // Calculate smooth cumulative forward spins (2 to 3 extra turns)
+    if (isNowRolling && !wasRolling) {
+      // Rolling started: play sound and pick fixed extra spin turns for THIS roll sequence
+      soundManager.playDiceRoll();
+
+      const extraX = (Math.floor(Math.random() * 2) + 2) * 360; // 720 or 1080 deg
+      const extraY = (Math.floor(Math.random() * 2) + 2) * 360;
+      currentTurnSpinRef.current = { extraX, extraY };
+
       setRotation((prev) => {
-        const extraTurnsX = isRolling ? (Math.floor(Math.random() * 2) + 2) * 360 : 0;
-        const extraTurnsY = isRolling ? (Math.floor(Math.random() * 2) + 2) * 360 : 0;
-
-        const nextRx = Math.ceil(prev.rx / 360) * 360 + extraTurnsX + baseRot.rx;
-        const nextRy = Math.ceil(prev.ry / 360) * 360 + extraTurnsY + baseRot.ry;
-
+        const nextRx = Math.ceil(prev.rx / 360) * 360 + extraX + baseRot.rx;
+        const nextRy = Math.ceil(prev.ry / 360) * 360 + extraY + baseRot.ry;
+        return { rx: nextRx, ry: nextRy, rz: 0 };
+      });
+    } else if (isNowRolling && wasRolling && value) {
+      // Value arrived while rolling: update target face orientation WITHOUT adding extra turns
+      setRotation((prev) => {
+        const currentTurnsX = Math.floor(prev.rx / 360) * 360;
+        const currentTurnsY = Math.floor(prev.ry / 360) * 360;
         return {
-          rx: nextRx,
-          ry: nextRy,
+          rx: currentTurnsX + baseRot.rx,
+          ry: currentTurnsY + baseRot.ry,
+          rz: 0
+        };
+      });
+    } else if (!isNowRolling && wasRolling) {
+      // Rolling ended: land cleanly on final face and trigger impact shockwave
+      currentTurnSpinRef.current = null;
+      setRotation((prev) => {
+        const currentTurnsX = Math.floor(prev.rx / 360) * 360;
+        const currentTurnsY = Math.floor(prev.ry / 360) * 360;
+        return {
+          rx: currentTurnsX + baseRot.rx,
+          ry: currentTurnsY + baseRot.ry,
           rz: 0
         };
       });
 
-      if (isRolling) {
-        // Trigger landing impact particle shockwave at end of animation
-        const timer = setTimeout(() => {
-          setImpactRipple(true);
-          soundManager.playClick();
-          setTimeout(() => setImpactRipple(false), 500);
-        }, 1100);
-
-        return () => clearTimeout(timer);
-      }
+      setImpactRipple(true);
+      soundManager.playClick();
+      const timer = setTimeout(() => setImpactRipple(false), 500);
+      return () => clearTimeout(timer);
+    } else if (!isNowRolling && value && value >= 1 && value <= 6) {
+      // Idle state update (e.g. initial render or value display)
+      setRotation((prev) => {
+        const currentTurnsX = Math.floor(prev.rx / 360) * 360;
+        const currentTurnsY = Math.floor(prev.ry / 360) * 360;
+        return {
+          rx: currentTurnsX + baseRot.rx,
+          ry: currentTurnsY + baseRot.ry,
+          rz: 0
+        };
+      });
     }
   }, [isRolling, value]);
 
   // Pointer / Finger Drag Handlers for realistic tactile swipe
   const handlePointerDown = (e: React.PointerEvent) => {
     if (disabled || isRolling) return;
-    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
     touchStartRef.current = {
       x: e.clientX,
       y: e.clientY,
@@ -143,10 +163,10 @@ export const Dice3D: React.FC<Dice3DProps> = ({
     touchStartRef.current = null;
     setDragOffset(null);
 
-    // Trigger roll request if swiped (>10px or velocity > 100) OR simple tap
+    // Trigger roll request if swiped (>10px or velocity > 100) OR simple tap/click
     if (!disabled && !isRolling) {
-      if (dist >= 10 || velocity >= 100 || dt < 300) {
-        triggerRollOnce();
+      if (dist >= 8 || velocity >= 80 || dt < 350) {
+        triggerRoll();
       }
     }
   };
@@ -342,8 +362,9 @@ export const Dice3D: React.FC<Dice3DProps> = ({
           </div>
 
           <button
-            onClick={() => {
-              triggerRollOnce();
+            onClick={(e) => {
+              e.stopPropagation();
+              triggerRoll();
             }}
             disabled={disabled || isRolling}
             className={`px-5 py-2.5 rounded-2xl font-black text-xs sm:text-sm flex items-center gap-2 shadow-2xl transition-all transform active:scale-95 ${
