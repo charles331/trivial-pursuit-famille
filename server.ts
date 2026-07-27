@@ -893,9 +893,33 @@ io.on('connection', (socket: Socket) => {
   });
 
   // WebRTC Signaling for Live Camera Spotlight
-  socket.on('webrtc-offer', (data: { roomCode: string; targetPlayerId: string; offer: any }) => {
+  const isActiveBroadcaster = (room: Room, socketId: string) =>
+    room.settings.enableLiveCamera === true
+    && room.gameState.phase === 'question'
+    && room.gameState.players[room.gameState.activePlayerIndex]?.id === socketId;
+
+  socket.on('webrtc-broadcaster-ready', (data: { roomCode: string }) => {
+    const room = getRoom(data.roomCode);
+    if (!room || !isActiveBroadcaster(room, socket.id)) return;
+
+    socket.to(data.roomCode).emit('webrtc-broadcaster-ready', {
+      senderPlayerId: socket.id
+    });
+  });
+
+  socket.on('webrtc-viewer-ready', (data: { roomCode: string; targetPlayerId: string }) => {
     const room = getRoom(data.roomCode);
     if (!room || !room.sockets.has(socket.id)) return;
+    if (!isActiveBroadcaster(room, data.targetPlayerId)) return;
+
+    io.to(data.targetPlayerId).emit('webrtc-viewer-ready', {
+      senderPlayerId: socket.id
+    });
+  });
+
+  socket.on('webrtc-offer', (data: { roomCode: string; targetPlayerId: string; offer: any }) => {
+    const room = getRoom(data.roomCode);
+    if (!room || !isActiveBroadcaster(room, socket.id)) return;
     if (!room.sockets.has(data.targetPlayerId)) return;
 
     io.to(data.targetPlayerId).emit('webrtc-offer', {
@@ -907,7 +931,7 @@ io.on('connection', (socket: Socket) => {
   socket.on('webrtc-answer', (data: { roomCode: string; targetPlayerId: string; answer: any }) => {
     const room = getRoom(data.roomCode);
     if (!room || !room.sockets.has(socket.id)) return;
-    if (!room.sockets.has(data.targetPlayerId)) return;
+    if (!isActiveBroadcaster(room, data.targetPlayerId)) return;
 
     io.to(data.targetPlayerId).emit('webrtc-answer', {
       senderPlayerId: socket.id,
@@ -919,6 +943,8 @@ io.on('connection', (socket: Socket) => {
     const room = getRoom(data.roomCode);
     if (!room || !room.sockets.has(socket.id)) return;
     if (!room.sockets.has(data.targetPlayerId)) return;
+    const activePlayerId = room.gameState.players[room.gameState.activePlayerIndex]?.id;
+    if (socket.id !== activePlayerId && data.targetPlayerId !== activePlayerId) return;
 
     io.to(data.targetPlayerId).emit('webrtc-candidate', {
       senderPlayerId: socket.id,
@@ -928,7 +954,7 @@ io.on('connection', (socket: Socket) => {
 
   socket.on('webrtc-stop', (data: { roomCode: string }) => {
     const room = getRoom(data.roomCode);
-    if (!room || !room.sockets.has(socket.id)) return;
+    if (!room || !isActiveBroadcaster(room, socket.id)) return;
 
     io.to(data.roomCode).emit('webrtc-stopped', {
       senderPlayerId: socket.id

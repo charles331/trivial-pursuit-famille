@@ -9,10 +9,19 @@ interface LiveCameraOverlayProps {
   currentUserId: string;
 }
 
+const optionalTurnServer = import.meta.env.VITE_TURN_URL
+  ? [{
+      urls: import.meta.env.VITE_TURN_URL,
+      username: import.meta.env.VITE_TURN_USERNAME,
+      credential: import.meta.env.VITE_TURN_CREDENTIAL
+    }]
+  : [];
+
 const ICE_SERVERS: RTCConfiguration = {
   iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' }
+    { urls: 'stun:stun1.l.google.com:19302' },
+    ...optionalTurnServer
   ]
 };
 
@@ -32,12 +41,14 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [isRemoteMuted, setIsRemoteMuted] = useState(false);
+  const [isAudioBlocked, setIsAudioBlocked] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isTestMode, setIsTestMode] = useState(false);
 
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
   const peerConnections = useRef<Map<string, RTCPeerConnection>>(new Map());
+  const pendingCandidates = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
   const localStreamRef = useRef<MediaStream | null>(null);
   const isMountedRef = useRef(true);
 
@@ -64,8 +75,10 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
       }
     });
     peerConnections.current.clear();
+    pendingCandidates.current.clear();
 
     setRemoteStream(null);
+    setIsAudioBlocked(false);
     setIsStreaming(false);
     setIsTestMode(false);
   };
@@ -117,6 +130,10 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
         };
 
         await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+        for (const candidate of pendingCandidates.current.get(data.senderPlayerId) ?? []) {
+          await pc.addIceCandidate(new RTCIceCandidate(candidate));
+        }
+        pendingCandidates.current.delete(data.senderPlayerId);
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
 
@@ -134,8 +151,11 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
       const pc = peerConnections.current.get(data.senderPlayerId);
       if (pc) {
         try {
-          await pc.setLocalDescription ? null : null; // check
           await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+          for (const candidate of pendingCandidates.current.get(data.senderPlayerId) ?? []) {
+            await pc.addIceCandidate(new RTCIceCandidate(candidate));
+          }
+          pendingCandidates.current.delete(data.senderPlayerId);
         } catch (err) {
           console.error('Error setting remote answer:', err);
         }
@@ -144,13 +164,61 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
 
     const handleCandidate = async (data: { senderPlayerId: string; candidate: RTCIceCandidateInit }) => {
       const pc = peerConnections.current.get(data.senderPlayerId);
-      if (pc) {
+      if (pc?.remoteDescription) {
         try {
           await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
         } catch (err) {
           console.error('Error adding ICE candidate:', err);
         }
+      } else {
+        const queued = pendingCandidates.current.get(data.senderPlayerId) ?? [];
+        queued.push(data.candidate);
+        pendingCandidates.current.set(data.senderPlayerId, queued);
       }
+    };
+
+    const offerToViewer = async (viewerPlayerId: string) => {
+      const stream = localStreamRef.current;
+      if (!isActivePlayer || !stream || viewerPlayerId === currentUserId) return;
+
+      const previousConnection = peerConnections.current.get(viewerPlayerId);
+      previousConnection?.close();
+
+      const pc = new RTCPeerConnection(ICE_SERVERS);
+      peerConnections.current.set(viewerPlayerId, pc);
+      stream.getTracks().forEach(track => pc.addTrack(track, stream));
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          socket.emit('webrtc-candidate', {
+            roomCode: gameState.roomCode,
+            targetPlayerId: viewerPlayerId,
+            candidate: event.candidate
+          });
+        }
+      };
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      socket.emit('webrtc-offer', {
+        roomCode: gameState.roomCode,
+        targetPlayerId: viewerPlayerId,
+        offer
+      });
+    };
+
+    const handleBroadcasterReady = (data: { senderPlayerId: string }) => {
+      if (!isActivePlayer && data.senderPlayerId === activePlayer?.id) {
+        socket.emit('webrtc-viewer-ready', {
+          roomCode: gameState.roomCode,
+          targetPlayerId: data.senderPlayerId
+        });
+      }
+    };
+
+    const handleViewerReady = (data: { senderPlayerId: string }) => {
+      void offerToViewer(data.senderPlayerId).catch(err => {
+        console.error('Error offering to ready viewer:', err);
+      });
     };
 
     const handleStopped = (data: { senderPlayerId: string }) => {
@@ -166,12 +234,23 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
     socket.on('webrtc-answer', handleAnswer);
     socket.on('webrtc-candidate', handleCandidate);
     socket.on('webrtc-stopped', handleStopped);
+    socket.on('webrtc-broadcaster-ready', handleBroadcasterReady);
+    socket.on('webrtc-viewer-ready', handleViewerReady);
+
+    if (!isActivePlayer && activePlayer?.id) {
+      socket.emit('webrtc-viewer-ready', {
+        roomCode: gameState.roomCode,
+        targetPlayerId: activePlayer.id
+      });
+    }
 
     return () => {
       socket.off('webrtc-offer', handleOffer);
       socket.off('webrtc-answer', handleAnswer);
       socket.off('webrtc-candidate', handleCandidate);
       socket.off('webrtc-stopped', handleStopped);
+      socket.off('webrtc-broadcaster-ready', handleBroadcasterReady);
+      socket.off('webrtc-viewer-ready', handleViewerReady);
     };
   }, [socket, isCameraEnabled, isActivePlayer, gameState.roomCode, activePlayer?.id]);
 
@@ -186,6 +265,15 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
   useEffect(() => {
     if (remoteVideoRef.current && remoteStream) {
       remoteVideoRef.current.srcObject = remoteStream;
+      remoteVideoRef.current.play().then(() => {
+        setIsAudioBlocked(false);
+      }).catch(() => {
+        if (!remoteVideoRef.current) return;
+        remoteVideoRef.current.muted = true;
+        setIsRemoteMuted(true);
+        setIsAudioBlocked(true);
+        void remoteVideoRef.current.play();
+      });
     }
   }, [remoteStream]);
 
@@ -210,37 +298,9 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
 
       // Connect to all other connected players in room
       if (socket && !forTest) {
-        const otherPlayers = gameState.players.filter(p => p.isConnected && p.id !== currentUserId && !p.id.startsWith('local_'));
-        
-        for (const player of otherPlayers) {
-          try {
-            const pc = new RTCPeerConnection(ICE_SERVERS);
-            peerConnections.current.set(player.id, pc);
-
-            stream.getTracks().forEach(track => pc.addTrack(track, stream));
-
-            pc.onicecandidate = (event) => {
-              if (event.candidate) {
-                socket.emit('webrtc-candidate', {
-                  roomCode: gameState.roomCode,
-                  targetPlayerId: player.id,
-                  candidate: event.candidate
-                });
-              }
-            };
-
-            const offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
-
-            socket.emit('webrtc-offer', {
-              roomCode: gameState.roomCode,
-              targetPlayerId: player.id,
-              offer
-            });
-          } catch (e) {
-            console.error('Error offering to player:', player.id, e);
-          }
-        }
+        // Every viewer answers this announcement with `webrtc-viewer-ready`.
+        // This handshake also covers viewers who reconnect after the stream starts.
+        socket.emit('webrtc-broadcaster-ready', { roomCode: gameState.roomCode });
       }
     } catch (err: any) {
       console.error('Media stream error:', err);
@@ -277,6 +337,17 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
         setIsVideoOff(!videoTrack.enabled);
       }
     }
+  };
+
+  const enableRemoteAudio = () => {
+    if (!remoteVideoRef.current) return;
+    remoteVideoRef.current.muted = false;
+    setIsRemoteMuted(false);
+    remoteVideoRef.current.play().then(() => {
+      setIsAudioBlocked(false);
+    }).catch(() => {
+      setIsAudioBlocked(true);
+    });
   };
 
   if (!isCameraEnabled) return null;
@@ -427,6 +498,15 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
                 muted={isRemoteMuted}
                 className="w-full h-full object-cover"
               />
+              {isAudioBlocked && (
+                <button
+                  type="button"
+                  onClick={enableRemoteAudio}
+                  className="absolute inset-x-2 bottom-2 rounded-lg bg-amber-500 px-2 py-1.5 text-xs font-black text-slate-950 shadow-lg"
+                >
+                  🔊 Toucher pour entendre
+                </button>
+              )}
               <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-black/60 text-[10px] font-bold text-amber-300">
                 🎥 Direct
               </div>
