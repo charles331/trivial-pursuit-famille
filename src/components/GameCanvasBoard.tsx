@@ -229,8 +229,8 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
   const [isRollingLocally, setIsRollingLocally] = useState(false);
   const [showingResultPause, setShowingResultPause] = useState<number | null>(null);
   const [showTurnIntro, setShowTurnIntro] = useState(true);
+  const [hasRequestedRoll, setHasRequestedRoll] = useState(false);
 
-  const hasRolledRef = React.useRef(false);
   const prevDiceValRef = React.useRef<number | null>(null);
   const resultPauseTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const rollGuardTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -266,7 +266,10 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
       rollGuardTimerRef.current = null;
     }
     if (gameState.phase === 'rolling') {
-      hasRolledRef.current = false;
+      // This must be React state rather than a ref: a correct answer can return
+      // to "rolling" without changing the active player, and refs do not render
+      // the newly enabled die/button on their own.
+      setHasRequestedRoll(false);
       setIsRollingLocally(false);
       setShowingResultPause(null);
       prevDiceValRef.current = null;
@@ -312,9 +315,9 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
   }, []);
 
   const handleRollClick = () => {
-    if (!isMyTurn || gameState.phase !== 'rolling' || hasRolledRef.current) return;
+    if (!isMyTurn || gameState.phase !== 'rolling' || hasRequestedRoll) return;
 
-    hasRolledRef.current = true;
+    setHasRequestedRoll(true);
     setIsRollingLocally(true);
 
     // Request roll from server
@@ -322,7 +325,8 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
 
     // Auto-release guard safety timeout after 2.5s if server state doesn't update phase
     rollGuardTimerRef.current = setTimeout(() => {
-      hasRolledRef.current = false;
+      setHasRequestedRoll(false);
+      setIsRollingLocally(false);
       rollGuardTimerRef.current = null;
     }, 2500);
   };
@@ -800,7 +804,7 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
                 value={showingResultPause || gameState.diceValue}
                 isRolling={isRollingLocally}
                 onRollRequest={handleRollClick}
-                disabled={!isMyTurn || hasRolledRef.current}
+                disabled={!isMyTurn || hasRequestedRoll}
                 size={88}
               />
             </div>

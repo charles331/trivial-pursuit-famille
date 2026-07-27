@@ -376,7 +376,7 @@ export const Dice3D: React.FC<Dice3DProps> = ({
             }`}
           >
             <Dices className={`w-4 h-4 ${isRolling ? 'animate-spin' : ''}`} />
-            {isRolling ? 'Lancement 3D en cours...' : 'Ou Cliquez Ici Pour Lancer 🎲'}
+            {isRolling ? 'Lancement du dé en cours...' : 'Touchez ici pour lancer 🎲'}
             {!disabled && !isRolling && <Sparkles className="w-3.5 h-3.5 text-slate-950" />}
           </button>
         </div>
