@@ -85,8 +85,8 @@ for (const categoryId of CATEGORIES) {
     `${categoryId.padEnd(15)}${String(counts[0]).padStart(6)}${String(counts[1]).padStart(5)}`
       + `${String(counts[2]).padStart(8)}${String(rows.length).padStart(7)}`,
   );
-  if (counts[2] < 135 || counts[2] > 400) {
-    errors.push(`${categoryId} doit contenir entre 135 et 400 questions adultes uniques`);
+  if (counts[2] !== 400) {
+    errors.push(`${categoryId} doit contenir exactement 400 questions adultes uniques`);
   }
   if (counts[0] !== 135 || counts[1] !== 135) {
     errors.push(`${categoryId} doit contenir 135 questions enfant et 135 questions ado`);

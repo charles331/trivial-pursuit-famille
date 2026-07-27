@@ -8,6 +8,7 @@ import { ART_QUESTIONS } from './questionBank/art';
 import { SPORTS_QUESTIONS } from './questionBank/sports';
 import { POPCULTURE_QUESTIONS } from './questionBank/popculture';
 import { GASTRONOMIE_QUESTIONS } from './questionBank/gastronomie';
+import { ADULT_KNOWLEDGE_SUPPLEMENT } from './questionBank/adultKnowledgeSupplement';
 import {
   completeAdultQuestionBank,
   completeTeenQuestionBank,
@@ -22,7 +23,8 @@ const CURATED_QUESTIONS: Question[] = [
   ...ART_QUESTIONS,
   ...SPORTS_QUESTIONS,
   ...POPCULTURE_QUESTIONS,
-  ...GASTRONOMIE_QUESTIONS
+  ...GASTRONOMIE_QUESTIONS,
+  ...ADULT_KNOWLEDGE_SUPPLEMENT,
 ];
 
 // Safety net: guarantee unique ids even if two bank files ever collide

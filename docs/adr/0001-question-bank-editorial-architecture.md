@@ -6,7 +6,7 @@
 
 ## Contexte
 
-Le jeu vise à terme 400 cartes adultes, et conserve 135 cartes ados et 135 cartes
+Le jeu contient 400 cartes adultes, et conserve 135 cartes ados et 135 cartes
 enfants dans chacune des huit catégories. Une première extension atteignait ce volume au
 moyen de cartes d’association : le joueur devait lire quatre longues paires
 « question — réponse ». Le contenu était factuellement prudent, mais le rythme
@@ -28,16 +28,23 @@ Une carte jouable respecte désormais les règles suivantes :
    compter deux fois le même fait.
 
 Les cartes rédigées manuellement restent la source de vérité. Le complément
-déterministe dans `src/data/adultExpansion.ts` réutilise uniquement leurs faits
-et leurs choix déjà relus. Il équilibre la position de la bonne réponse par
-rotation des choix. Une question source ne peut être promue qu’une seule fois.
-Si le nombre de faits relus est insuffisant pour atteindre 400 cartes adultes,
-la catégorie conserve son volume réel : un quota incomplet est préférable à un
-doublon dissimulé.
+déterministe dans `src/data/adultExpansion.ts` peut en tirer deux cartes
+distinctes : la question principale et, lorsque sa formulation est autonome,
+le fait secondaire présent dans l’explication. Ce second fait devient une
+carte à trou courte dont le sujet est la réponse ; il ne reprend jamais la
+question principale sous un autre préfixe. Une explication ne peut servir
+qu’une fois. La position de la bonne réponse est équilibrée par rotation.
+
+`adultKnowledgeSupplement.ts` contient les faits supplémentaires nécessaires
+pour garantir le quota, notamment les cartes scientifiques sur les éléments
+chimiques. Ces cartes sont explicites, relisibles et ne sont pas fabriquées à
+partir d’une autre question au chargement.
 
 ## Structure
 
 - `src/data/questionBank/*.ts` : cartes rédigées et relues par catégorie ;
+- `src/data/questionBank/adultKnowledgeSupplement.ts` : compléments adultes
+  explicites et structurés ;
 - `src/data/questions.ts` : assemblage de la banque ;
 - `src/data/adultExpansion.ts` : complément déterministe des niveaux ;
 - `scripts/audit-questions.ts` : contrat automatique de volume et de qualité.
@@ -55,8 +62,8 @@ npm run audit:questions
 npm run build
 ```
 
-L’audit doit échouer en cas de volume adulte inférieur à 135 ou supérieur à
-400, identifiant dupliqué, fait adulte répété, préfixe artificiel, choix
+L’audit doit échouer si une catégorie ne contient pas exactement 400 cartes
+adultes, en cas d’identifiant dupliqué, fait adulte répété, préfixe artificiel, choix
 dupliqué, index invalide, carte adulte trop longue ou retour du format
 d’association.
 
@@ -73,13 +80,14 @@ Pour ajouter ou remplacer des cartes :
 7. vérifier tout fait nouveau auprès d’une source fiable avant de l’intégrer ;
 8. ne jamais gonfler le volume avec des cartes vrai/faux ou des associations.
 
-La prochaine amélioration éditoriale recommandée consiste à rédiger et vérifier
-de nouveaux faits uniques, catégorie par catégorie, jusqu’à atteindre la cible
-de 400 sans assouplir le contrôle d’unicité.
+La prochaine amélioration éditoriale recommandée consiste à faire relire les
+cartes à trou par catégorie et à diversifier progressivement le complément de
+sciences, très axé sur la chimie, sans réduire le quota ni réintroduire de faits
+répétés.
 
 ## Conséquences
 
 Le jeu retrouve des cartes nettement plus rapides à lire et l’audit empêche une
 régression vers les longues associations ou les reformulations cosmétiques. Le
-nombre de cartes adultes reflète désormais le nombre réel de faits disponibles :
-la cible de 400 reste un objectif éditorial, pas un compteur artificiel.
+nombre de cartes adultes atteint désormais 400 dans chaque thème tout en
+restant soumis aux contrôles d’unicité et de longueur.
