@@ -2551,7 +2551,7 @@ export const GEOGRAPHIE_QUESTIONS: Question[] = [
   {
     id: "geo_284",
     categoryId: "geographie",
-    question: "Quel pays est le seul au monde à être à la fois enclavé et situé entièrement au-dessus de 1 000 mètres, entouré par l'Afrique du Sud ?",
+    question: "Quel pays enclavé, entièrement situé au-dessus de 1 000 mètres, est entouré par l'Afrique du Sud ?",
     options: ["Le Lesotho", "Le Rwanda", "Le Burundi", "Le Malawi"],
     correctAnswerIndex: 0,
     difficulty: "adulte",
@@ -2704,7 +2704,7 @@ export const GEOGRAPHIE_QUESTIONS: Question[] = [
   {
     id: "geo_301",
     categoryId: "geographie",
-    question: "Quel État insulaire du Pacifique risque de disparaître sous la montée des eaux, avec un point culminant d'environ 4,5 mètres ?",
+    question: "Quel État du Pacifique, culminant à environ 4,5 mètres, est menacé par la montée des eaux ?",
     options: ["Vanuatu", "Tuvalu", "Palau", "Nauru"],
     correctAnswerIndex: 1,
     difficulty: "adulte",
@@ -3109,7 +3109,7 @@ export const GEOGRAPHIE_QUESTIONS: Question[] = [
   {
     id: "geo_346",
     categoryId: "geographie",
-    question: "Quelle ville japonaise, détruite par une bombe atomique en août 1945, est aujourd'hui symbole de paix avec son dôme préservé ?",
+    question: "Quelle ville japonaise bombardée en 1945 abrite le célèbre Dôme de la paix ?",
     options: ["Nagasaki", "Hiroshima", "Kobe", "Sendai"],
     correctAnswerIndex: 1,
     difficulty: "adulte",
@@ -3352,7 +3352,7 @@ export const GEOGRAPHIE_QUESTIONS: Question[] = [
   {
     id: "geo_373",
     categoryId: "geographie",
-    question: "Quel glacier argentin, célèbre pour ses effondrements spectaculaires, est l'un des rares au monde à ne pas reculer nettement ?",
+    question: "Quel glacier argentin est célèbre pour les effondrements spectaculaires de son front ?",
     options: ["Le Perito Moreno", "L'Aletsch", "Le Vatnajökull", "Le glacier Fox"],
     correctAnswerIndex: 0,
     difficulty: "adulte",

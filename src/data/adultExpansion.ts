@@ -7,11 +7,6 @@ function answerOf(question: Question): string {
   return question.options[question.correctAnswerIndex];
 }
 
-function compactPrompt(prompt: string): string {
-  const clean = prompt.replace(/\s+/g, ' ').trim();
-  return clean.length <= 92 ? clean : `${clean.slice(0, 89).trimEnd()}…`;
-}
-
 function classicTeenVersion(question: Question, sequence: number): Question {
   return {
     ...question,
@@ -20,44 +15,58 @@ function classicTeenVersion(question: Question, sequence: number): Question {
   };
 }
 
-function associationQuestion(
+function normalize(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function rotateOptions(
+  options: string[],
+  correctAnswerIndex: number,
+  offset: number,
+): Pick<Question, 'options' | 'correctAnswerIndex'> {
+  const rotation = offset % options.length;
+  return {
+    options: options.map((_, index) => options[(index + rotation) % options.length]),
+    correctAnswerIndex: (correctAnswerIndex - rotation + options.length) % options.length,
+  };
+}
+
+function directAdultQuestion(
   categoryId: CategoryId,
-  sources: Question[],
+  source: Question,
   sequence: number,
+  occurrence: number,
 ): Question {
-  const correctSlot = sequence % 4;
-  const sourceOffset = sequence % sources.length;
-  const sourceStride = 7 + Math.floor(sequence / sources.length) * 4;
-  const selected = Array.from(
-    { length: 4 },
-    (_, index) => sources[(sourceOffset + index * sourceStride) % sources.length],
+  const cleanQuestion = source.question.replace(/\s+/g, ' ').trim();
+  const lowerCaseQuestion = `${cleanQuestion.charAt(0).toLowerCase()}${cleanQuestion.slice(1)}`;
+  const promptVariants = [
+    cleanQuestion,
+    `Question flash : ${lowerCaseQuestion}`,
+    `Défi express : ${lowerCaseQuestion}`,
+    `À vous de jouer : ${lowerCaseQuestion}`,
+  ];
+  const prompt = promptVariants[occurrence];
+  if (!prompt) {
+    throw new Error(`Trop peu de faits uniques pour compléter ${categoryId}.`);
+  }
+  const rotated = rotateOptions(
+    source.options,
+    source.correctAnswerIndex,
+    sequence + occurrence,
   );
 
-  const options = selected.map((question, index) => {
-    const answerQuestion = index === correctSlot
-      ? question
-      : selected[(index + 1) % selected.length];
-    return `${compactPrompt(question.question)} — ${answerOf(answerQuestion)}`;
-  });
-  const prompts = [
-    'Quelle association entre une question et sa réponse est correcte ?',
-    'Parmi ces quatre associations, laquelle est exacte ?',
-    'Quel duo question–réponse ne contient aucune erreur ?',
-    'Quelle proposition associe correctement le fait demandé et sa réponse ?',
-    'Une seule de ces associations est juste. Laquelle ?',
-    'Quelle paire présente une question avec sa véritable réponse ?',
-    'Quel rapprochement entre une question et une réponse est exact ?',
-    'Laquelle de ces associations de culture générale est correcte ?',
-  ];
-
   return {
-    id: `${categoryId}_adulte_association_${sequence + 1}`,
+    id: `${categoryId}_adulte_directe_${sequence + 1}`,
     categoryId,
-    question: prompts[sequence % prompts.length],
-    options,
-    correctAnswerIndex: correctSlot,
+    question: prompt,
+    ...rotated,
     difficulty: 'adulte',
-    explanation: `La bonne association est : ${compactPrompt(selected[correctSlot].question)} — ${answerOf(selected[correctSlot])}.`,
+    explanation: source.explanation,
   };
 }
 
@@ -65,10 +74,12 @@ function associationQuestion(
  * Builds a stable adult pool without introducing unverifiable facts.
  *
  * Every original question remains available to its intended age group. Adult
- * players receive an adult copy of the category's classic questions, followed
- * by harder association cards based exclusively on answers already reviewed in
- * the repository. The result is deterministic and contains exactly 400 adult
- * cards per category.
+ * players receive short, direct cards based exclusively on facts already
+ * reviewed in the repository. Options are rotated to balance the correct-answer
+ * position. When the source pool is smaller than the target, a second concise
+ * "question flash" wording is used instead of the former long association
+ * format. The result is deterministic and contains exactly 400 adult cards per
+ * category.
  */
 export function completeAdultQuestionBank(questions: Question[]): Question[] {
   const categories = [...new Set(questions.map((question) => question.categoryId))];
@@ -84,11 +95,19 @@ export function completeAdultQuestionBank(questions: Question[]): Question[] {
 
     if (existingAdults.length >= ADULT_TARGET_PER_CATEGORY) continue;
 
+    const seenSourceSignatures = new Set<string>();
     const sourceQuestions = categoryQuestions.filter((question) => {
       const correctAnswer = answerOf(question);
-      return question.options.length === 4
+      const signature = `${normalize(question.question)}|${normalize(correctAnswer)}`;
+      const isEligible = question.difficulty !== 'adulte'
+        && question.options.length === 4
         && typeof correctAnswer === 'string'
-        && correctAnswer.trim().length > 0;
+        && correctAnswer.trim().length > 0
+        && question.question.length <= 105
+        && question.options.every((option) => option.length <= 55)
+        && !seenSourceSignatures.has(signature);
+      if (isEligible) seenSourceSignatures.add(signature);
+      return isEligible;
     });
 
     if (sourceQuestions.length < 4) {
@@ -98,10 +117,12 @@ export function completeAdultQuestionBank(questions: Question[]): Question[] {
     const remaining = ADULT_TARGET_PER_CATEGORY - existingAdults.length;
 
     for (let sequence = 0; sequence < remaining; sequence += 1) {
-      additions.push(associationQuestion(
+      const source = sourceQuestions[sequence % sourceQuestions.length];
+      additions.push(directAdultQuestion(
         categoryId,
-        sourceQuestions,
+        source,
         sequence,
+        Math.floor(sequence / sourceQuestions.length),
       ));
     }
   }

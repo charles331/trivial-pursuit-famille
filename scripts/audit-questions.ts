@@ -27,6 +27,7 @@ const ids = new Set<string>();
 const adultTextsByCategory = new Map<CategoryId, Set<string>>();
 let longAdultOptions = 0;
 let associationCards = 0;
+let longAdultQuestions = 0;
 
 for (const question of QUESTIONS_DATABASE) {
   if (ids.has(question.id)) errors.push(`Identifiant dupliqué : ${question.id}`);
@@ -58,6 +59,7 @@ for (const question of QUESTIONS_DATABASE) {
     texts.add(signature);
     adultTextsByCategory.set(question.categoryId, texts);
     if (question.options.some((option) => option.length > 72)) longAdultOptions += 1;
+    if (question.question.length > 125) longAdultQuestions += 1;
     if (question.id.includes('_adulte_association_')) associationCards += 1;
   }
 }
@@ -81,11 +83,21 @@ for (const categoryId of CATEGORIES) {
   }
 }
 
+if (associationCards > 0) {
+  errors.push(`${associationCards} cartes utilisent encore le format d’association`);
+}
+if (longAdultOptions > 0) {
+  errors.push(`${longAdultOptions} cartes adultes contiennent un choix de plus de 72 caractères`);
+}
+if (longAdultQuestions > 0) {
+  errors.push(`${longAdultQuestions} cartes adultes dépassent 125 caractères`);
+}
+
 if (errors.length > 0) {
   console.error(`\nAudit échoué (${errors.length} erreur(s)) :`);
   console.error(errors.slice(0, 50).map((error) => `- ${error}`).join('\n'));
   process.exitCode = 1;
 } else {
   console.log(`\nAudit réussi : ${QUESTIONS_DATABASE.length} questions valides.`);
-  console.log(`Qualité adulte : ${associationCards} cartes d’association restantes, ${longAdultOptions} cartes avec un choix long.`);
+  console.log('Qualité adulte : aucune association longue, question ≤ 125 caractères, choix ≤ 72 caractères.');
 }
