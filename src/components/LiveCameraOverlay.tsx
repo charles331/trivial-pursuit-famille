@@ -44,6 +44,9 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
   const [isAudioBlocked, setIsAudioBlocked] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isTestMode, setIsTestMode] = useState(false);
+  const [showPermissionSetup, setShowPermissionSetup] = useState(false);
+  const [isCheckingPermission, setIsCheckingPermission] = useState(false);
+  const [permissionSetupError, setPermissionSetupError] = useState<string | null>(null);
 
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -51,6 +54,22 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
   const pendingCandidates = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
   const localStreamRef = useRef<MediaStream | null>(null);
   const isMountedRef = useRef(true);
+  const permissionStorageKey = `quiz-av-consent:${gameState.roomCode}:${currentUserId}`;
+
+  // Ask every player to prepare their own camera and microphone once, right when
+  // the game starts. Only the active player can later choose to broadcast.
+  useEffect(() => {
+    if (!isCameraEnabled || gameState.phase === 'lobby' || gameState.phase === 'game_over') {
+      setShowPermissionSetup(false);
+      return;
+    }
+
+    try {
+      setShowPermissionSetup(sessionStorage.getItem(permissionStorageKey) === null);
+    } catch {
+      setShowPermissionSetup(true);
+    }
+  }, [isCameraEnabled, gameState.phase === 'lobby', gameState.phase === 'game_over', permissionStorageKey]);
 
   // Stop all media tracks safely
   const stopAllMediaTracks = () => {
@@ -312,6 +331,39 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
     }
   };
 
+  const rememberPermissionDecision = (decision: 'granted' | 'skipped') => {
+    try {
+      sessionStorage.setItem(permissionStorageKey, decision);
+    } catch {
+      // The setup still works when private browsing blocks sessionStorage.
+    }
+    setShowPermissionSetup(false);
+  };
+
+  const handlePrepareCameraAndMic = async () => {
+    setIsCheckingPermission(true);
+    setPermissionSetupError(null);
+
+    try {
+      // This call must follow the player's click so iOS and other browsers show
+      // their native permission dialog. Tracks stop immediately: nothing is sent.
+      const previewStream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 480 }, height: { ideal: 360 } },
+        audio: true
+      });
+      previewStream.getTracks().forEach(track => track.stop());
+      rememberPermissionDecision('granted');
+    } catch (err: any) {
+      setPermissionSetupError(
+        err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError'
+          ? 'L’autorisation a été refusée. Vous pourrez la modifier dans les réglages du navigateur.'
+          : 'La caméra ou le micro ne sont pas disponibles sur cet appareil.'
+      );
+    } finally {
+      setIsCheckingPermission(false);
+    }
+  };
+
   const handleStopBroadcasting = () => {
     if (socket && gameState.roomCode) {
       socket.emit('webrtc-stop', { roomCode: gameState.roomCode });
@@ -354,6 +406,63 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
 
   return (
     <div className="w-full">
+      {showPermissionSetup && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="av-permission-title"
+            className="w-full max-w-md rounded-3xl border-2 border-amber-400/70 bg-slate-900 p-6 text-white shadow-2xl"
+          >
+            <div className="mb-4 flex items-center gap-3">
+              <div className="rounded-2xl bg-amber-400/15 p-3">
+                <Camera className="h-7 w-7 text-amber-300" />
+              </div>
+              <div>
+                <p className="text-xs font-black uppercase tracking-wider text-amber-300">Avant de jouer</p>
+                <h2 id="av-permission-title" className="text-xl font-black">Préparer caméra et micro</h2>
+              </div>
+            </div>
+
+            <p className="text-sm leading-relaxed text-slate-200">
+              Quand ce sera votre tour, les autres joueurs pourront vous voir et vous entendre.
+              Autorisez maintenant cet appareil pour éviter de bloquer la partie plus tard.
+            </p>
+
+            <div className="my-4 rounded-2xl border border-emerald-500/30 bg-emerald-950/40 p-3 text-xs leading-relaxed text-emerald-100">
+              <ShieldCheck className="mr-1 inline h-4 w-4 text-emerald-400" />
+              Ce test ne diffuse rien. La caméra et le micro sont coupés immédiatement.
+              Vous devrez encore appuyer sur « Démarrer mon direct » pendant votre tour.
+            </div>
+
+            {permissionSetupError && (
+              <div className="mb-4 rounded-xl border border-red-500/40 bg-red-950/70 p-3 text-xs font-bold text-red-200">
+                {permissionSetupError}
+              </div>
+            )}
+
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={handlePrepareCameraAndMic}
+                disabled={isCheckingPermission}
+                className="rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 px-4 py-3 text-sm font-black text-slate-950 shadow-lg disabled:cursor-wait disabled:opacity-60"
+              >
+                {isCheckingPermission ? 'Demande d’autorisation…' : 'Autoriser caméra et micro'}
+              </button>
+              <button
+                type="button"
+                onClick={() => rememberPermissionDecision('skipped')}
+                disabled={isCheckingPermission}
+                className="rounded-xl px-4 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800 hover:text-white"
+              >
+                Continuer sans caméra ni micro
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 1. Active Player View: Prompt or Control Bar */}
       {isActivePlayer && (
         <div className="bg-slate-900/90 border border-amber-500/40 rounded-2xl p-3 text-white flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl mb-3 animate-fadeIn">
@@ -378,7 +487,7 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
                   className="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs rounded-xl flex items-center gap-1.5 shadow-md transition-all"
                 >
                   <Video className="w-3.5 h-3.5" />
-                  Activer ma Caméra & Micro
+                  Démarrer mon direct
                 </button>
                 <button
                   type="button"
