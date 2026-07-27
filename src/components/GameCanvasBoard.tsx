@@ -303,6 +303,11 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
 
     // Request roll from server
     onRollDice();
+
+    // Auto-release guard safety timeout after 2.5s if server state doesn't update phase
+    setTimeout(() => {
+      hasRolledRef.current = false;
+    }, 2500);
   };
 
   return (

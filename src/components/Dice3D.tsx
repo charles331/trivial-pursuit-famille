@@ -125,6 +125,7 @@ export const Dice3D: React.FC<Dice3DProps> = ({
   // Pointer / Finger Drag Handlers for realistic tactile swipe
   const handlePointerDown = (e: React.PointerEvent) => {
     if (disabled || isRolling) return;
+    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
     touchStartRef.current = {
       x: e.clientX,
       y: e.clientY,
@@ -231,13 +232,14 @@ export const Dice3D: React.FC<Dice3DProps> = ({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
-        className={`relative flex items-center justify-center cursor-grab active:cursor-grabbing p-4 rounded-3xl transition-all ${
+        className={`relative flex items-center justify-center cursor-grab active:cursor-grabbing p-4 rounded-3xl transition-all select-none touch-none ${
           !disabled && !isRolling ? 'hover:bg-amber-500/10 active:bg-amber-500/20' : ''
         }`}
         style={{
           width: `${size * 1.9}px`,
           height: `${size * 1.9}px`,
-          perspective: `${size * 9}px`
+          perspective: `${size * 9}px`,
+          touchAction: 'none'
         }}
       >
         {/* Dynamic Shadow on Felt Table Surface */}

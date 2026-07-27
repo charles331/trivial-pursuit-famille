@@ -28,6 +28,37 @@ export const AvatarPicker: React.FC<AvatarPickerProps> = ({
   onUpdate
 }) => {
   const currentAvatar = AVATARS.find(a => a.id === avatarId) || AVATARS[0];
+  const [localName, setLocalName] = React.useState(playerName);
+  const isFocusedRef = React.useRef(false);
+  const debounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // Sync external name prop to local input state only when user is NOT actively typing/focused
+  React.useEffect(() => {
+    if (!isFocusedRef.current) {
+      setLocalName(playerName);
+    }
+  }, [playerName]);
+
+  // Clean up debounce timer on unmount
+  React.useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, []);
+
+  const handleNameInputChange = (val: string) => {
+    setLocalName(val);
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      onUpdate({ name: val });
+    }, 200);
+  };
+
+  const handleNameBlur = () => {
+    isFocusedRef.current = false;
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    onUpdate({ name: localName });
+  };
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-lg border border-slate-200 dark:border-slate-800 space-y-5">
@@ -38,8 +69,10 @@ export const AvatarPicker: React.FC<AvatarPickerProps> = ({
         </label>
         <input
           type="text"
-          value={playerName}
-          onChange={(e) => onUpdate({ name: e.target.value })}
+          value={localName}
+          onFocus={() => { isFocusedRef.current = true; }}
+          onChange={(e) => handleNameInputChange(e.target.value)}
+          onBlur={handleNameBlur}
           placeholder="Ex: Papa, Mamie, Thomas..."
           maxLength={18}
           className="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-amber-500 text-base"
