@@ -3,7 +3,7 @@ import path from 'path';
 import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { createServer as createViteServer } from 'vite';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, Type } from '@google/genai';
 import { QUESTIONS_DATABASE } from './src/data/questions.js';
 import { BOARD_PRESETS } from './src/data/boards.js';
 import { 
@@ -48,6 +48,85 @@ function normalizeCategoryId(rawCat: string): CategoryId {
 }
 
 // --- GEMINI API DYNAMIC PACK GENERATOR ---
+
+function normalizeDifficulty(raw: unknown): DifficultyLevel {
+  const clean = String(raw ?? '').toLowerCase().trim();
+  if (clean.includes('enf') || clean.includes('facile') || clean.includes('easy')) return 'enfant';
+  if (clean.includes('ado') || clean.includes('moyen') || clean.includes('medium')) return 'ado';
+  return 'adulte';
+}
+
+// Normalized question text, used to detect near-duplicates (accents/punctuation ignored)
+function normalizeQuestionText(text: string): string {
+  return String(text)
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+let baseQuestionTexts: Set<string> | null = null;
+function getBaseQuestionTexts(): Set<string> {
+  if (!baseQuestionTexts) {
+    baseQuestionTexts = new Set(QUESTIONS_DATABASE.map(q => normalizeQuestionText(q.question)));
+  }
+  return baseQuestionTexts;
+}
+
+const GENERATED_PACK_SCHEMA = {
+  type: Type.ARRAY,
+  items: {
+    type: Type.OBJECT,
+    properties: {
+      categoryId: {
+        type: Type.STRING,
+        enum: ['histoire', 'geographie', 'cinema', 'sciences', 'art', 'sports', 'popculture', 'gastronomie']
+      },
+      question: { type: Type.STRING },
+      options: { type: Type.ARRAY, items: { type: Type.STRING } },
+      correctAnswerIndex: { type: Type.INTEGER },
+      explanation: { type: Type.STRING },
+      difficulty: { type: Type.STRING, enum: ['enfant', 'ado', 'adulte'] }
+    },
+    required: ['categoryId', 'question', 'options', 'correctAnswerIndex', 'explanation', 'difficulty']
+  }
+};
+
+const GENERATION_BATCH_SIZE = 15;
+const GENERATION_MAX_COUNT = 60;
+
+async function generateQuestionBatch(
+  ai: GoogleGenAI,
+  themeName: string,
+  count: number
+): Promise<any[]> {
+  const perLevel = Math.max(1, Math.floor(count / 3));
+  const prompt = `Génère exactement ${count} questions de quiz captivantes, amusantes et FACTUELLEMENT EXACTES en français sur le thème "${themeName}", pour un jeu familial de type Trivial Pursuit.
+
+Règles impératives :
+- Répartis les questions entre les catégories du jeu (histoire, geographie, cinema, sciences, art, sports, popculture, gastronomie) en choisissant celles qui collent le mieux au thème.
+- Répartis les difficultés : environ ${perLevel} questions "enfant" (6-10 ans, très simples), ${perLevel} "ado" (11-16 ans) et le reste "adulte".
+- Exactement 4 options par question, une seule correcte (correctAnswerIndex entre 0 et 3), distracteurs plausibles.
+- "explanation" : une anecdote courte et intéressante ("Le saviez-vous ?").
+- Contenu adapté à un public familial, aucune question polémique ou choquante.
+- Aucune question en double ni reformulation d'une autre question du lot.`;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: prompt,
+    config: {
+      responseMimeType: 'application/json',
+      responseSchema: GENERATED_PACK_SCHEMA
+    }
+  });
+
+  const parsed = JSON.parse(response.text || '[]');
+  if (!Array.isArray(parsed)) {
+    throw new Error('Réponse JSON invalide de Gemini');
+  }
+  return parsed;
+}
+
 app.post('/api/generate-pack', async (req, res) => {
   try {
     const { themeName, count = 30 } = req.body;
@@ -57,53 +136,76 @@ app.post('/api/generate-pack', async (req, res) => {
       return res.status(400).json({ error: 'GEMINI_API_KEY non configurée.' });
     }
 
-    if (!themeName || typeof themeName !== 'string') {
-      return res.status(400).json({ error: 'Nom de thème requis.' });
+    if (!themeName || typeof themeName !== 'string' || themeName.trim().length < 2 || themeName.length > 100) {
+      return res.status(400).json({ error: 'Nom de thème requis (2 à 100 caractères).' });
     }
+
+    const cleanTheme = themeName.trim();
+    const requestedCount = Math.min(Math.max(Number(count) || 30, 5), GENERATION_MAX_COUNT);
 
     const ai = new GoogleGenAI({ apiKey });
-    const prompt = `Génère ${count} questions de quiz captivantes et amusantes en français sur le thème "${themeName}".
-IMPORTANT : Répartis ces ${count} questions de manière équilibrée entre les différentes catégories du jeu (histoire, geographie, cinema, sciences, art, sports, popculture, gastronomie).
 
-Format JSON strict exigé, sous forme de tableau d'objets JSON avec les propriétés suivantes :
-[
-  {
-    "id": "gen_${Date.now()}_1",
-    "categoryId": "cinema" (choisir impérativement parmi: histoire, geographie, cinema, sciences, art, sports, popculture, gastronomie),
-    "question": "Texte de la question ?",
-    "options": ["Choix 1", "Choix 2", "Choix 3", "Choix 4"],
-    "correctAnswerIndex": 0,
-    "explanation": "Le saviez-vous ? Explication courte et passionnante.",
-    "difficulty": "adulte",
-    "themePack": "${themeName}"
-  }
-]
-Avertissement : Ne mets AUCUN texte d'introduction ni de conclusion, uniquement le tableau JSON.`;
-
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt
-    });
-
-    const text = response.text || '';
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      throw new Error('Réponse JSON invalide de Gemini');
+    // Split the generation into parallel batches: small batches are far more
+    // reliable than a single large one, and one failed batch doesn't sink the pack.
+    const batchSizes: number[] = [];
+    for (let remaining = requestedCount; remaining > 0; remaining -= GENERATION_BATCH_SIZE) {
+      batchSizes.push(Math.min(GENERATION_BATCH_SIZE, remaining));
     }
 
-    const rawQuestions: any[] = JSON.parse(jsonMatch[0]);
-    const generatedQuestions: Question[] = rawQuestions.map((q, idx) => ({
-      id: `gen_${Date.now()}_${idx}`,
-      categoryId: normalizeCategoryId(q.categoryId),
-      question: q.question,
-      options: q.options || ['A', 'B', 'C', 'D'],
-      correctAnswerIndex: typeof q.correctAnswerIndex === 'number' ? q.correctAnswerIndex : 0,
-      explanation: q.explanation || `Question tirée du thème ${themeName}`,
-      difficulty: q.difficulty || 'adulte',
-      themePack: themeName
-    }));
+    const batchResults = await Promise.allSettled(
+      batchSizes.map(async (size) => {
+        try {
+          return await generateQuestionBatch(ai, cleanTheme, size);
+        } catch (err) {
+          console.warn(`[Pack IA] Lot en échec, nouvelle tentative:`, err instanceof Error ? err.message : err);
+          return await generateQuestionBatch(ai, cleanTheme, size);
+        }
+      })
+    );
 
-    return res.json({ success: true, questions: generatedQuestions, themeName });
+    const rawQuestions = batchResults
+      .filter((r): r is PromiseFulfilledResult<any[]> => r.status === 'fulfilled')
+      .flatMap(r => r.value);
+
+    if (rawQuestions.length === 0) {
+      const firstError = batchResults.find(r => r.status === 'rejected') as PromiseRejectedResult | undefined;
+      throw new Error(firstError?.reason instanceof Error ? firstError.reason.message : 'La génération a échoué, réessayez.');
+    }
+
+    // Validate, normalize and deduplicate (within the pack and against the base database)
+    const seenTexts = new Set<string>();
+    const baseTexts = getBaseQuestionTexts();
+    const stamp = Date.now();
+
+    const generatedQuestions: Question[] = rawQuestions
+      .filter((q) => {
+        if (!q || typeof q.question !== 'string' || q.question.trim().length < 10) return false;
+        if (!Array.isArray(q.options) || q.options.length !== 4) return false;
+        if (q.options.some((o: unknown) => typeof o !== 'string' || !String(o).trim())) return false;
+        if (typeof q.correctAnswerIndex !== 'number' || q.correctAnswerIndex < 0 || q.correctAnswerIndex > 3) return false;
+
+        const normalized = normalizeQuestionText(q.question);
+        if (seenTexts.has(normalized) || baseTexts.has(normalized)) return false;
+        seenTexts.add(normalized);
+        return true;
+      })
+      .map((q, idx) => ({
+        id: `gen_${stamp}_${idx}`,
+        categoryId: normalizeCategoryId(q.categoryId),
+        question: q.question.trim(),
+        options: q.options.map((o: string) => String(o).trim()),
+        correctAnswerIndex: q.correctAnswerIndex,
+        explanation: (typeof q.explanation === 'string' && q.explanation.trim()) || `Question tirée du thème ${cleanTheme}`,
+        difficulty: normalizeDifficulty(q.difficulty),
+        themePack: cleanTheme
+      }));
+
+    if (generatedQuestions.length === 0) {
+      throw new Error('Aucune question valide générée, réessayez avec un thème plus précis.');
+    }
+
+    console.log(`[Pack IA] ${generatedQuestions.length}/${rawQuestions.length} questions valides générées pour "${cleanTheme}"`);
+    return res.json({ success: true, questions: generatedQuestions, themeName: cleanTheme });
   } catch (err: unknown) {
     console.error('Erreur génération Gemini:', err);
     const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la génération du thème';
