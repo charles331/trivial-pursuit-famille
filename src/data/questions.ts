@@ -1,5 +1,6 @@
 import { Question } from '../types';
 import { HISTOIRE_QUESTIONS } from './questionBank/histoire';
+import { HISTOIRE_ADULTE_PILOT } from './questionBank/histoireAdultPilot';
 import { GEOGRAPHIE_QUESTIONS } from './questionBank/geographie';
 import { CINEMA_QUESTIONS } from './questionBank/cinema';
 import { SCIENCES_QUESTIONS } from './questionBank/sciences';
@@ -14,6 +15,7 @@ import {
 
 const CURATED_QUESTIONS: Question[] = [
   ...HISTOIRE_QUESTIONS,
+  ...HISTOIRE_ADULTE_PILOT,
   ...GEOGRAPHIE_QUESTIONS,
   ...CINEMA_QUESTIONS,
   ...SCIENCES_QUESTIONS,

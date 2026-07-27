@@ -25,6 +25,8 @@ function normalize(value: string): string {
 const errors: string[] = [];
 const ids = new Set<string>();
 const adultTextsByCategory = new Map<CategoryId, Set<string>>();
+let longAdultOptions = 0;
+let associationCards = 0;
 
 for (const question of QUESTIONS_DATABASE) {
   if (ids.has(question.id)) errors.push(`Identifiant dupliqué : ${question.id}`);
@@ -55,6 +57,8 @@ for (const question of QUESTIONS_DATABASE) {
     if (texts.has(signature)) errors.push(`Question adulte dupliquée : ${question.id}`);
     texts.add(signature);
     adultTextsByCategory.set(question.categoryId, texts);
+    if (question.options.some((option) => option.length > 72)) longAdultOptions += 1;
+    if (question.id.includes('_adulte_association_')) associationCards += 1;
   }
 }
 
@@ -83,4 +87,5 @@ if (errors.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(`\nAudit réussi : ${QUESTIONS_DATABASE.length} questions valides.`);
+  console.log(`Qualité adulte : ${associationCards} cartes d’association restantes, ${longAdultOptions} cartes avec un choix long.`);
 }
