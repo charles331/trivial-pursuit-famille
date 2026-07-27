@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Socket } from 'socket.io-client';
 import { GameState, Player } from '../types';
-import { Camera, CameraOff, Mic, MicOff, Video, VideoOff, Volume2, VolumeX, Eye, ShieldCheck, Sparkles } from 'lucide-react';
+import { Camera, CameraOff, Mic, MicOff, Video, VideoOff, Volume2, VolumeX, ShieldCheck, Sparkles } from 'lucide-react';
 
 interface LiveCameraOverlayProps {
   socket: Socket | null;
@@ -47,17 +47,20 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
   const [showPermissionSetup, setShowPermissionSetup] = useState(false);
   const [isCheckingPermission, setIsCheckingPermission] = useState(false);
   const [permissionSetupError, setPermissionSetupError] = useState<string | null>(null);
+  const [sharingPreference, setSharingPreference] = useState<'pending' | 'enabled' | 'disabled'>('pending');
 
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
   const peerConnections = useRef<Map<string, RTCPeerConnection>>(new Map());
   const pendingCandidates = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
   const localStreamRef = useRef<MediaStream | null>(null);
+  const isStartingStreamRef = useRef(false);
+  const streamAttemptRef = useRef(0);
   const isMountedRef = useRef(true);
   const permissionStorageKey = `quiz-av-consent:${gameState.roomCode}:${currentUserId}`;
 
-  // Ask every player to prepare their own camera and microphone once, right when
-  // the game starts. Only the active player can later choose to broadcast.
+  // Ask once per player and game. The choice is retained for every turn and may
+  // be changed at any time from the persistent control displayed during the game.
   useEffect(() => {
     if (!isCameraEnabled || gameState.phase === 'lobby' || gameState.phase === 'game_over') {
       setShowPermissionSetup(false);
@@ -65,14 +68,27 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
     }
 
     try {
-      setShowPermissionSetup(sessionStorage.getItem(permissionStorageKey) === null);
+      const storedPreference = sessionStorage.getItem(permissionStorageKey);
+      if (storedPreference === 'enabled' || storedPreference === 'granted') {
+        setSharingPreference('enabled');
+        setShowPermissionSetup(false);
+      } else if (storedPreference === 'disabled' || storedPreference === 'skipped') {
+        setSharingPreference('disabled');
+        setShowPermissionSetup(false);
+      } else {
+        setSharingPreference('pending');
+        setShowPermissionSetup(true);
+      }
     } catch {
+      setSharingPreference('pending');
       setShowPermissionSetup(true);
     }
   }, [isCameraEnabled, gameState.phase === 'lobby', gameState.phase === 'game_over', permissionStorageKey]);
 
   // Stop all media tracks safely
   const stopAllMediaTracks = () => {
+    // Invalidate a getUserMedia call that may still be awaiting the browser.
+    streamAttemptRef.current += 1;
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => {
         try {
@@ -100,6 +116,7 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
     setIsAudioBlocked(false);
     setIsStreaming(false);
     setIsTestMode(false);
+    isStartingStreamRef.current = false;
   };
 
   // Cleanup on unmount, phase change away from question, or active player change
@@ -298,6 +315,9 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
 
   // Start Broadcasting Media
   const handleStartBroadcasting = async (forTest = false) => {
+    if (isStartingStreamRef.current || localStreamRef.current) return;
+    isStartingStreamRef.current = true;
+    const streamAttempt = ++streamAttemptRef.current;
     setCameraError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -305,7 +325,7 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
         audio: true
       });
 
-      if (!isMountedRef.current) {
+      if (!isMountedRef.current || streamAttempt !== streamAttemptRef.current) {
         stream.getTracks().forEach(track => track.stop());
         return;
       }
@@ -322,21 +342,35 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
         socket.emit('webrtc-broadcaster-ready', { roomCode: gameState.roomCode });
       }
     } catch (err: any) {
+      if (streamAttempt !== streamAttemptRef.current) return;
       console.error('Media stream error:', err);
       setCameraError(
         err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError'
           ? 'Autorisation caméra/micro refusée par le navigateur.'
           : 'Impossible d’accéder à la caméra ou au micro.'
       );
+      if (!forTest) {
+        setSharingPreference('disabled');
+        try {
+          sessionStorage.setItem(permissionStorageKey, 'disabled');
+        } catch {
+          // The in-memory preference still prevents repeated permission requests.
+        }
+      }
+    } finally {
+      if (streamAttempt === streamAttemptRef.current) {
+        isStartingStreamRef.current = false;
+      }
     }
   };
 
-  const rememberPermissionDecision = (decision: 'granted' | 'skipped') => {
+  const rememberSharingPreference = (preference: 'enabled' | 'disabled') => {
     try {
-      sessionStorage.setItem(permissionStorageKey, decision);
+      sessionStorage.setItem(permissionStorageKey, preference);
     } catch {
       // The setup still works when private browsing blocks sessionStorage.
     }
+    setSharingPreference(preference);
     setShowPermissionSetup(false);
   };
 
@@ -352,7 +386,7 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
         audio: true
       });
       previewStream.getTracks().forEach(track => track.stop());
-      rememberPermissionDecision('granted');
+      rememberSharingPreference('enabled');
     } catch (err: any) {
       setPermissionSetupError(
         err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError'
@@ -370,6 +404,47 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
     }
     stopAllMediaTracks();
   };
+
+  const disableSharing = () => {
+    rememberSharingPreference('disabled');
+    handleStopBroadcasting();
+  };
+
+  const enableSharing = async () => {
+    setPermissionSetupError(null);
+    setCameraError(null);
+
+    try {
+      // Re-check access after a refusal because browsers may have had their
+      // permission changed in site settings since the beginning of the game.
+      const previewStream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 480 }, height: { ideal: 360 } },
+        audio: true
+      });
+      previewStream.getTracks().forEach(track => track.stop());
+      rememberSharingPreference('enabled');
+    } catch (err: any) {
+      setCameraError(
+        err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError'
+          ? 'Caméra/micro bloqués. Autorisez-les dans les réglages du navigateur puis réessayez.'
+          : 'La caméra ou le micro ne sont pas disponibles sur cet appareil.'
+      );
+    }
+  };
+
+  // Once the player agreed for the game, broadcasting starts automatically on
+  // each of their question turns. Leaving the turn always releases the devices.
+  useEffect(() => {
+    if (
+      sharingPreference === 'enabled'
+      && isActivePlayer
+      && gameState.phase === 'question'
+      && !isStreaming
+      && !localStreamRef.current
+    ) {
+      void handleStartBroadcasting(false);
+    }
+  }, [sharingPreference, isActivePlayer, gameState.phase, isStreaming]);
 
   const toggleMic = () => {
     if (localStreamRef.current) {
@@ -431,8 +506,8 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
 
             <div className="my-4 rounded-2xl border border-emerald-500/30 bg-emerald-950/40 p-3 text-xs leading-relaxed text-emerald-100">
               <ShieldCheck className="mr-1 inline h-4 w-4 text-emerald-400" />
-              Ce test ne diffuse rien. La caméra et le micro sont coupés immédiatement.
-              Vous devrez encore appuyer sur « Démarrer mon direct » pendant votre tour.
+              Ce test ne diffuse rien. Après votre accord, le direct démarrera
+              automatiquement uniquement pendant vos tours. Vous pourrez le couper à tout moment.
             </div>
 
             {permissionSetupError && (
@@ -448,23 +523,63 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
                 disabled={isCheckingPermission}
                 className="rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 px-4 py-3 text-sm font-black text-slate-950 shadow-lg disabled:cursor-wait disabled:opacity-60"
               >
-                {isCheckingPermission ? 'Demande d’autorisation…' : 'Autoriser caméra et micro'}
+                {isCheckingPermission ? 'Demande d’autorisation…' : 'J’accepte pour cette partie'}
               </button>
               <button
                 type="button"
-                onClick={() => rememberPermissionDecision('skipped')}
+                onClick={() => rememberSharingPreference('disabled')}
                 disabled={isCheckingPermission}
                 className="rounded-xl px-4 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800 hover:text-white"
               >
-                Continuer sans caméra ni micro
+                Jouer sans caméra ni micro
               </button>
             </div>
           </div>
         </div>
       )}
 
+      {gameState.phase !== 'lobby' && gameState.phase !== 'game_over' && sharingPreference !== 'pending' && (
+        <div className="mb-3 rounded-2xl border border-purple-400/40 bg-slate-900/90 p-3 text-white shadow-lg">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2">
+              {sharingPreference === 'enabled'
+                ? <Camera className="h-4 w-4 shrink-0 text-emerald-400" />
+                : <CameraOff className="h-4 w-4 shrink-0 text-slate-400" />}
+              <p className="text-xs">
+                <span className="font-black">Mon direct pendant mes tours :</span>{' '}
+                <span className={sharingPreference === 'enabled' ? 'text-emerald-300' : 'text-slate-400'}>
+                  {sharingPreference === 'enabled' ? 'activé' : 'désactivé'}
+                </span>
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                if (sharingPreference === 'enabled') {
+                  disableSharing();
+                } else {
+                  void enableSharing();
+                }
+              }}
+              className={`shrink-0 rounded-xl px-3 py-1.5 text-xs font-black transition-colors ${
+                sharingPreference === 'enabled'
+                  ? 'bg-slate-700 text-white hover:bg-slate-600'
+                  : 'bg-purple-600 text-white hover:bg-purple-500'
+              }`}
+            >
+              {sharingPreference === 'enabled' ? 'Désactiver' : 'Réactiver'}
+            </button>
+          </div>
+          {cameraError && (
+            <p className="mt-2 rounded-xl border border-red-500/40 bg-red-950/70 p-2 text-xs font-bold text-red-200">
+              {cameraError}
+            </p>
+          )}
+        </div>
+      )}
+
       {/* 1. Active Player View: Prompt or Control Bar */}
-      {isActivePlayer && (
+      {isActivePlayer && sharingPreference === 'enabled' && (
         <div className="bg-slate-900/90 border border-amber-500/40 rounded-2xl p-3 text-white flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl mb-3 animate-fadeIn">
           <div className="flex items-center gap-2 text-xs">
             <Video className="w-4 h-4 text-amber-400 animate-pulse shrink-0" />
@@ -473,32 +588,16 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
               <span className="text-slate-300 ml-1">
                 {isStreaming
                   ? 'Vous êtes en direct auprès des autres joueurs !'
-                  : 'Partagez votre visage pendant votre tour pour plus de convivialité (avec votre accord).'}
+                  : 'Votre direct démarre automatiquement pour ce tour.'}
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
             {!isStreaming ? (
-              <>
-                <button
-                  type="button"
-                  onClick={() => handleStartBroadcasting(false)}
-                  className="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs rounded-xl flex items-center gap-1.5 shadow-md transition-all"
-                >
-                  <Video className="w-3.5 h-3.5" />
-                  Démarrer mon direct
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleStartBroadcasting(true)}
-                  className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl flex items-center gap-1 transition-colors"
-                  title="Aperçu local de votre vidéo"
-                >
-                  <Eye className="w-3.5 h-3.5 text-purple-400" />
-                  Tester
-                </button>
-              </>
+              <span className="px-3 py-1.5 text-xs font-bold text-amber-300">
+                Connexion du direct…
+              </span>
             ) : (
               <div className="flex items-center gap-2">
                 <button

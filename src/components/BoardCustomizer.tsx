@@ -277,7 +277,7 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
           <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
             {settings.enableLiveCamera ? (
               <span className="text-purple-700 dark:text-purple-300 font-semibold">
-                📹 <strong>Caméra Activée :</strong> Le joueur actif pourra partager son visage et son micro lors de sa question (désactivé par défaut, permission demandée).
+                📹 <strong>Caméra Activée :</strong> Chaque joueur donne son accord une fois pour la partie. Son direct démarre ensuite pendant ses tours, avec désactivation possible à tout moment.
               </span>
             ) : (
               <span className="text-slate-600 dark:text-slate-400">
