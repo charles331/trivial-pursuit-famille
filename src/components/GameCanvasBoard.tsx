@@ -382,11 +382,22 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
           <defs>
             {/* Wooden / Brass Rim Gradient */}
             <radialGradient id="boardRimGrad" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#1E293B" />
-              <stop offset="85%" stopColor="#0F172A" />
-              <stop offset="98%" stopColor="#78350F" />
-              <stop offset="100%" stopColor="#451A03" />
+              <stop offset="0%" stopColor="#FFFEF7" />
+              <stop offset="82%" stopColor="#F7F1DD" />
+              <stop offset="96%" stopColor="#D7C8A5" />
+              <stop offset="100%" stopColor="#8C7954" />
             </radialGradient>
+
+            <radialGradient id="paperGlow" cx="46%" cy="38%" r="65%">
+              <stop offset="0%" stopColor="#FFFFFF" />
+              <stop offset="70%" stopColor="#FAF5E7" />
+              <stop offset="100%" stopColor="#E9DFC5" />
+            </radialGradient>
+
+            <pattern id="paperGrain" width="18" height="18" patternUnits="userSpaceOnUse">
+              <circle cx="3" cy="5" r="0.8" fill="#8C7954" opacity="0.08" />
+              <circle cx="13" cy="12" r="0.65" fill="#FFFFFF" opacity="0.55" />
+            </pattern>
 
             {/* Central Gold Medallion Gradient */}
             <linearGradient id="goldMedallionGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -411,8 +422,36 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
           </defs>
 
           {/* Outer Board Frame Circle */}
-          <circle cx="500" cy="500" r="485" fill="url(#boardRimGrad)" stroke="#B45309" strokeWidth="8" />
-          <circle cx="500" cy="500" r="478" fill="none" stroke="#F59E0B" strokeWidth="2" opacity="0.6" />
+          <circle cx="500" cy="500" r="485" fill="url(#boardRimGrad)" stroke="#6F5B36" strokeWidth="10" />
+          <circle cx="500" cy="500" r="466" fill="url(#paperGlow)" stroke="#FFFFFF" strokeWidth="5" />
+          <circle cx="500" cy="500" r="464" fill="url(#paperGrain)" />
+
+          {/* Broad pastel category rays evoke a classic family quiz wheel while
+              keeping this board's eight-category identity and original artwork. */}
+          {MAIN_CATEGORIES.map((catKey, index) => {
+            const innerR = 118;
+            const outerR = 455;
+            const halfAngle = 7.5;
+            const centerAngle = index * 60 - 90;
+            const start = (centerAngle - halfAngle) * (Math.PI / 180);
+            const end = (centerAngle + halfAngle) * (Math.PI / 180);
+            const pathData = [
+              `M ${500 + innerR * Math.cos(start)} ${500 + innerR * Math.sin(start)}`,
+              `L ${500 + outerR * Math.cos(start)} ${500 + outerR * Math.sin(start)}`,
+              `A ${outerR} ${outerR} 0 0 1 ${500 + outerR * Math.cos(end)} ${500 + outerR * Math.sin(end)}`,
+              `L ${500 + innerR * Math.cos(end)} ${500 + innerR * Math.sin(end)}`,
+              `A ${innerR} ${innerR} 0 0 0 ${500 + innerR * Math.cos(start)} ${500 + innerR * Math.sin(start)}`,
+              'Z',
+            ].join(' ');
+            return (
+              <path
+                key={`category_ray_${catKey}`}
+                d={pathData}
+                fill={CATEGORIES[catKey].color}
+                opacity="0.13"
+              />
+            );
+          })}
 
           {/* Radial Gold Background Lines */}
           {[0, 60, 120, 180, 240, 300].map((angle, i) => {
@@ -426,17 +465,16 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
                 y1="500"
                 x2={x2}
                 y2={y2}
-                stroke="#D97706"
+                stroke={CATEGORIES[MAIN_CATEGORIES[i]].color}
                 strokeWidth="1.5"
-                opacity="0.15"
-                strokeDasharray="4 6"
+                opacity="0.28"
               />
             );
           })}
 
           {/* Concentric Double Golden Outer Track Rails */}
-          <circle cx="500" cy="500" r="410" fill="none" stroke="#D97706" strokeWidth="3" opacity="0.5" />
-          <circle cx="500" cy="500" r="350" fill="none" stroke="#D97706" strokeWidth="3" opacity="0.5" />
+          <circle cx="500" cy="500" r="410" fill="none" stroke="#9A8865" strokeWidth="5" opacity="0.3" />
+          <circle cx="500" cy="500" r="350" fill="none" stroke="#FFFFFF" strokeWidth="3" opacity="0.9" />
 
           {/* Central Multi-Color Pie Hub (6 Category Slices) */}
           <g filter="url(#shadowFilter)">
@@ -496,11 +534,11 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
                     y1={tile.y}
                     x2={targetTile.x}
                     y2={targetTile.y}
-                    stroke="#D97706"
-                    strokeWidth="12"
-                    strokeLinecap="round"
-                    opacity="0.3"
-                  />
+                  stroke="#FFFFFF"
+                  strokeWidth="18"
+                  strokeLinecap="round"
+                  opacity="0.82"
+                />
                 );
               });
             });
@@ -832,4 +870,3 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
     </div>
   );
 };
-

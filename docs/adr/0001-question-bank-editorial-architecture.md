@@ -6,8 +6,8 @@
 
 ## Contexte
 
-Le jeu doit conserver 400 cartes adultes, 135 cartes ados et 135 cartes enfants
-dans chacune des huit catégories. Une première extension atteignait ce volume au
+Le jeu vise à terme 400 cartes adultes, et conserve 135 cartes ados et 135 cartes
+enfants dans chacune des huit catégories. Une première extension atteignait ce volume au
 moyen de cartes d’association : le joueur devait lire quatre longues paires
 « question — réponse ». Le contenu était factuellement prudent, mais le rythme
 de jeu et le confort sur mobile étaient mauvais.
@@ -24,14 +24,16 @@ Une carte jouable respecte désormais les règles suivantes :
 6. une question adulte de 125 caractères maximum ;
 7. chaque choix adulte de 72 caractères maximum ;
 8. aucun format « quelle association question–réponse est correcte ? ».
+9. aucun préfixe décoratif (« Question flash », « Défi express ») ne permet de
+   compter deux fois le même fait.
 
 Les cartes rédigées manuellement restent la source de vérité. Le complément
 déterministe dans `src/data/adultExpansion.ts` réutilise uniquement leurs faits
 et leurs choix déjà relus. Il équilibre la position de la bonne réponse par
-rotation des choix. Si le nombre de faits uniques est insuffisant pour atteindre
-400 cartes adultes, une seconde formulation courte « Question flash » est
-autorisée provisoirement. Elle doit à terme être remplacée par un fait éditorial
-distinct.
+rotation des choix. Une question source ne peut être promue qu’une seule fois.
+Si le nombre de faits relus est insuffisant pour atteindre 400 cartes adultes,
+la catégorie conserve son volume réel : un quota incomplet est préférable à un
+doublon dissimulé.
 
 ## Structure
 
@@ -53,7 +55,8 @@ npm run audit:questions
 npm run build
 ```
 
-L’audit doit échouer en cas de mauvais volume, identifiant dupliqué, choix
+L’audit doit échouer en cas de volume adulte inférieur à 135 ou supérieur à
+400, identifiant dupliqué, fait adulte répété, préfixe artificiel, choix
 dupliqué, index invalide, carte adulte trop longue ou retour du format
 d’association.
 
@@ -70,14 +73,13 @@ Pour ajouter ou remplacer des cartes :
 7. vérifier tout fait nouveau auprès d’une source fiable avant de l’intégrer ;
 8. ne jamais gonfler le volume avec des cartes vrai/faux ou des associations.
 
-La prochaine amélioration éditoriale recommandée consiste à remplacer
-progressivement les variantes « Question flash » par de nouveaux faits uniques,
-catégorie par catégorie, sans modifier les quotas.
+La prochaine amélioration éditoriale recommandée consiste à rédiger et vérifier
+de nouveaux faits uniques, catégorie par catégorie, jusqu’à atteindre la cible
+de 400 sans assouplir le contrôle d’unicité.
 
 ## Conséquences
 
 Le jeu retrouve des cartes nettement plus rapides à lire et l’audit empêche une
-régression vers les longues associations. La banque respecte toujours les
-quotas. En contrepartie, certaines cartes « Question flash » réemploient
-temporairement un fait déjà présent ; ce compromis est visible et documenté,
-plutôt que dissimulé dans un volume artificiel.
+régression vers les longues associations ou les reformulations cosmétiques. Le
+nombre de cartes adultes reflète désormais le nombre réel de faits disponibles :
+la cible de 400 reste un objectif éditorial, pas un compteur artificiel.

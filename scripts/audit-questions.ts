@@ -25,6 +25,7 @@ function normalize(value: string): string {
 const errors: string[] = [];
 const ids = new Set<string>();
 const adultTextsByCategory = new Map<CategoryId, Set<string>>();
+const adultFactsByCategory = new Map<CategoryId, Set<string>>();
 let longAdultOptions = 0;
 let associationCards = 0;
 let longAdultQuestions = 0;
@@ -58,6 +59,15 @@ for (const question of QUESTIONS_DATABASE) {
     if (texts.has(signature)) errors.push(`Question adulte dupliquée : ${question.id}`);
     texts.add(signature);
     adultTextsByCategory.set(question.categoryId, texts);
+    const correctAnswer = question.options[question.correctAnswerIndex] ?? '';
+    const factSignature = `${normalize(question.question.replace(/^(question flash|défi express|à vous de jouer)\s*:\s*/i, ''))}|${normalize(correctAnswer)}`;
+    const facts = adultFactsByCategory.get(question.categoryId) ?? new Set<string>();
+    if (facts.has(factSignature)) errors.push(`Fait adulte répété : ${question.id}`);
+    facts.add(factSignature);
+    adultFactsByCategory.set(question.categoryId, facts);
+    if (/^(question flash|défi express|à vous de jouer)\s*:/i.test(question.question)) {
+      errors.push(`Préfixe artificiel interdit : ${question.id}`);
+    }
     if (question.options.some((option) => option.length > 72)) longAdultOptions += 1;
     if (question.question.length > 125) longAdultQuestions += 1;
     if (question.id.includes('_adulte_association_')) associationCards += 1;
@@ -75,8 +85,8 @@ for (const categoryId of CATEGORIES) {
     `${categoryId.padEnd(15)}${String(counts[0]).padStart(6)}${String(counts[1]).padStart(5)}`
       + `${String(counts[2]).padStart(8)}${String(rows.length).padStart(7)}`,
   );
-  if (counts[2] !== 400) {
-    errors.push(`${categoryId} contient ${counts[2]} questions adultes au lieu de 400`);
+  if (counts[2] < 135 || counts[2] > 400) {
+    errors.push(`${categoryId} doit contenir entre 135 et 400 questions adultes uniques`);
   }
   if (counts[0] !== 135 || counts[1] !== 135) {
     errors.push(`${categoryId} doit contenir 135 questions enfant et 135 questions ado`);
@@ -99,5 +109,5 @@ if (errors.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(`\nAudit réussi : ${QUESTIONS_DATABASE.length} questions valides.`);
-  console.log('Qualité adulte : aucune association longue, question ≤ 125 caractères, choix ≤ 72 caractères.');
+  console.log('Qualité adulte : aucun fait répété ni préfixe artificiel, question ≤ 125 caractères, choix ≤ 72 caractères.');
 }

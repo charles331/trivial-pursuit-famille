@@ -40,30 +40,18 @@ function directAdultQuestion(
   categoryId: CategoryId,
   source: Question,
   sequence: number,
-  occurrence: number,
 ): Question {
   const cleanQuestion = source.question.replace(/\s+/g, ' ').trim();
-  const lowerCaseQuestion = `${cleanQuestion.charAt(0).toLowerCase()}${cleanQuestion.slice(1)}`;
-  const promptVariants = [
-    cleanQuestion,
-    `Question flash : ${lowerCaseQuestion}`,
-    `Défi express : ${lowerCaseQuestion}`,
-    `À vous de jouer : ${lowerCaseQuestion}`,
-  ];
-  const prompt = promptVariants[occurrence];
-  if (!prompt) {
-    throw new Error(`Trop peu de faits uniques pour compléter ${categoryId}.`);
-  }
   const rotated = rotateOptions(
     source.options,
     source.correctAnswerIndex,
-    sequence + occurrence,
+    sequence,
   );
 
   return {
     id: `${categoryId}_adulte_directe_${sequence + 1}`,
     categoryId,
-    question: prompt,
+    question: cleanQuestion,
     ...rotated,
     difficulty: 'adulte',
     explanation: source.explanation,
@@ -75,11 +63,9 @@ function directAdultQuestion(
  *
  * Every original question remains available to its intended age group. Adult
  * players receive short, direct cards based exclusively on facts already
- * reviewed in the repository. Options are rotated to balance the correct-answer
- * position. When the source pool is smaller than the target, a second concise
- * "question flash" wording is used instead of the former long association
- * format. The result is deterministic and contains exactly 400 adult cards per
- * category.
+ * reviewed in the repository. Each source fact is promoted at most once:
+ * reaching a round number must never create a disguised duplicate. Options are
+ * rotated to balance the correct-answer position.
  */
 export function completeAdultQuestionBank(questions: Question[]): Question[] {
   const categories = [...new Set(questions.map((question) => question.categoryId))];
@@ -114,15 +100,17 @@ export function completeAdultQuestionBank(questions: Question[]): Question[] {
       throw new Error(`Pas assez de questions sources pour compléter ${categoryId}.`);
     }
 
-    const remaining = ADULT_TARGET_PER_CATEGORY - existingAdults.length;
+    const remaining = Math.min(
+      ADULT_TARGET_PER_CATEGORY - existingAdults.length,
+      sourceQuestions.length,
+    );
 
     for (let sequence = 0; sequence < remaining; sequence += 1) {
-      const source = sourceQuestions[sequence % sourceQuestions.length];
+      const source = sourceQuestions[sequence];
       additions.push(directAdultQuestion(
         categoryId,
         source,
         sequence,
-        Math.floor(sequence / sourceQuestions.length),
       ));
     }
   }
