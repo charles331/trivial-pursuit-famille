@@ -1,0 +1,6 @@
+{
+  "name": "Trivial Pursuit Famille",
+  "description": "Jeu de quiz familial multijoueur en ligne avec plateaux personnalisables, salons privés, avatars et questions de culture générale.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
