@@ -105,8 +105,8 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
 
   return (
     <div className="relative w-full flex flex-col items-center justify-center p-2 sm:p-4 bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 overflow-hidden min-h-[460px] sm:min-h-[580px]">
-      {showTurnIntro && gameState.phase === 'rolling' && isMyTurn && (
-        <div className="absolute inset-0 z-40 bg-slate-950/95 flex items-center justify-center p-5">
+      {showTurnIntro && gameState.settings.isLocalMode && gameState.phase === 'rolling' && isMyTurn && (
+        <div className="absolute inset-0 z-40 bg-slate-950/95 flex items-center justify-center p-5 animate-fadeIn">
           <div className="text-center space-y-5">
             <div
               className="w-24 h-24 mx-auto rounded-full flex items-center justify-center text-5xl border-4 border-white/30 shadow-2xl"
@@ -115,18 +115,16 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
               {AVATARS.find(a => a.id === activePlayer?.avatarId)?.emoji || '🦁'}
             </div>
             <div>
-              <p className="text-amber-400 font-black uppercase tracking-widest text-sm">Nouveau tour</p>
+              <p className="text-amber-400 font-black uppercase tracking-widest text-sm">Nouveau tour (Mode Local)</p>
               <h2 className="text-3xl sm:text-4xl text-white font-black">Au tour de {activePlayer?.name}</h2>
-              {gameState.settings.isLocalMode && (
-                <p className="text-slate-300 text-sm mt-2">Passez-lui l’appareil avant de continuer.</p>
-              )}
+              <p className="text-slate-300 text-sm mt-2">Passez-lui l’appareil avant de continuer.</p>
             </div>
             <button
               onClick={() => {
                 soundManager.playClick();
                 setShowTurnIntro(false);
               }}
-              className="px-8 py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-lg"
+              className="px-8 py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-lg shadow-xl hover:scale-105 transition-all"
             >
               J’ai l’appareil, commencer
             </button>
