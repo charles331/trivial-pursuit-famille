@@ -39,6 +39,7 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
   const peerConnections = useRef<Map<string, RTCPeerConnection>>(new Map());
   const localStreamRef = useRef<MediaStream | null>(null);
+  const isMountedRef = useRef(true);
 
   // Stop all media tracks safely
   const stopAllMediaTracks = () => {
@@ -77,7 +78,9 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
   }, [gameState.phase, gameState.activePlayerIndex, isCameraEnabled]);
 
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
+      isMountedRef.current = false;
       stopAllMediaTracks();
     };
   }, []);
@@ -91,6 +94,9 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
       if (isActivePlayer) return;
 
       try {
+        const previousConnection = peerConnections.current.get(data.senderPlayerId);
+        previousConnection?.close();
+
         const pc = new RTCPeerConnection(ICE_SERVERS);
         peerConnections.current.set(data.senderPlayerId, pc);
 
@@ -148,6 +154,9 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
     };
 
     const handleStopped = (data: { senderPlayerId: string }) => {
+      const connection = peerConnections.current.get(data.senderPlayerId);
+      connection?.close();
+      peerConnections.current.delete(data.senderPlayerId);
       if (data.senderPlayerId === activePlayer?.id) {
         setRemoteStream(null);
       }
@@ -188,6 +197,11 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
         video: { width: { ideal: 480 }, height: { ideal: 360 }, frameRate: { ideal: 20 } },
         audio: true
       });
+
+      if (!isMountedRef.current) {
+        stream.getTracks().forEach(track => track.stop());
+        return;
+      }
 
       localStreamRef.current = stream;
       setLocalStream(stream);

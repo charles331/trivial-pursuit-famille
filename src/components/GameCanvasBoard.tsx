@@ -232,6 +232,8 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
 
   const hasRolledRef = React.useRef(false);
   const prevDiceValRef = React.useRef<number | null>(null);
+  const resultPauseTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rollGuardTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sync userId from localStorage fallback if missing
   const storedSessionStr = typeof window !== 'undefined' ? localStorage.getItem('tp_fam_session') : null;
@@ -259,6 +261,10 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
   // Reset roll guard state whenever phase returns to rolling or player turn switches
   React.useEffect(() => {
     setShowTurnIntro(true);
+    if (rollGuardTimerRef.current) {
+      clearTimeout(rollGuardTimerRef.current);
+      rollGuardTimerRef.current = null;
+    }
     if (gameState.phase === 'rolling') {
       hasRolledRef.current = false;
       setIsRollingLocally(false);
@@ -284,16 +290,26 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
         setIsRollingLocally(false);
         setShowingResultPause(resultVal);
 
-        const pauseTimer = setTimeout(() => {
+        resultPauseTimerRef.current = setTimeout(() => {
           setShowingResultPause(null);
+          resultPauseTimerRef.current = null;
         }, 1500);
-
-        return () => clearTimeout(pauseTimer);
       }, 850);
 
-      return () => clearTimeout(tumbleTimer);
+      return () => {
+        clearTimeout(tumbleTimer);
+        if (resultPauseTimerRef.current) {
+          clearTimeout(resultPauseTimerRef.current);
+          resultPauseTimerRef.current = null;
+        }
+      };
     }
   }, [gameState.diceValue, gameState.phase]);
+
+  React.useEffect(() => () => {
+    if (resultPauseTimerRef.current) clearTimeout(resultPauseTimerRef.current);
+    if (rollGuardTimerRef.current) clearTimeout(rollGuardTimerRef.current);
+  }, []);
 
   const handleRollClick = () => {
     if (!isMyTurn || gameState.phase !== 'rolling' || hasRolledRef.current) return;
@@ -305,8 +321,9 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
     onRollDice();
 
     // Auto-release guard safety timeout after 2.5s if server state doesn't update phase
-    setTimeout(() => {
+    rollGuardTimerRef.current = setTimeout(() => {
       hasRolledRef.current = false;
+      rollGuardTimerRef.current = null;
     }, 2500);
   };
 

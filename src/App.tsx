@@ -114,6 +114,24 @@ export default function App() {
       setGameState(null);
     });
 
+    newSocket.on('room-closed', (data?: { reason?: string }) => {
+      clearSession();
+      setGameState(null);
+      setCurrentUserId(newSocket.id || '');
+      setShowQuestionModal(false);
+      setEmojiEvent(null);
+      setErrorMessage(data?.reason || 'Le salon a été fermé.');
+    });
+
+    newSocket.on('room-left', () => {
+      clearSession();
+      setGameState(null);
+      setCurrentUserId(newSocket.id || '');
+      setShowQuestionModal(false);
+      setEmojiEvent(null);
+      setErrorMessage(null);
+    });
+
     newSocket.on('emoji-received', (emojiData: EmojiReaction) => {
       setEmojiEvent(emojiData);
     });
@@ -222,9 +240,15 @@ export default function App() {
   };
 
   const handleLeaveGame = () => {
+    if (socket && gameState) {
+      socket.emit('leave-room', { roomCode: gameState.roomCode });
+    }
     clearSession();
     setGameState(null);
+    setCurrentUserId(socket?.id || '');
     setErrorMessage(null);
+    setEmojiEvent(null);
+    setShowQuestionModal(false);
   };
 
   // Render Lobby if not in active game or in lobby phase

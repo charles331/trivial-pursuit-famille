@@ -24,7 +24,7 @@ const io = new Server(httpServer, {
   }
 });
 
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 const PLAYER_COLORS = ['#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#F97316'];
 
 app.use(express.json());
@@ -221,17 +221,102 @@ interface Room {
   settings: GameSettings;
   gameState: GameState;
   sockets: Map<string, Player>; // socketId -> Player
+  createdAt: number;
+  lastActivityAt: number;
+  emptySince: number | null;
+  hostDisconnectedAt: number | null;
 }
 
 const rooms = new Map<string, Room>();
+const positiveDuration = (value: string | undefined, fallback: number): number => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+const MAX_ROOMS = 250;
+const MAX_PLAYERS_PER_ROOM = 12;
+const MAX_CUSTOM_PACKS_PER_ROOM = 3;
+const MAX_CUSTOM_QUESTIONS_PER_ROOM = 180;
+const HOST_RECONNECT_GRACE_MS = positiveDuration(process.env.ROOM_HOST_GRACE_MS, 2 * 60 * 1000);
+const EMPTY_ROOM_GRACE_MS = positiveDuration(process.env.ROOM_EMPTY_GRACE_MS, 2 * 60 * 1000);
+const ROOM_IDLE_TTL_MS = positiveDuration(process.env.ROOM_IDLE_TTL_MS, 4 * 60 * 60 * 1000);
+const ROOM_MAX_AGE_MS = positiveDuration(process.env.ROOM_MAX_AGE_MS, 12 * 60 * 60 * 1000);
+const ROOM_SWEEP_INTERVAL_MS = positiveDuration(process.env.ROOM_SWEEP_INTERVAL_MS, 30 * 1000);
+
+function getRoom(code: string): Room | undefined {
+  const room = rooms.get(code);
+  if (room) room.lastActivityAt = Date.now();
+  return room;
+}
+
+function closeRoom(code: string, reason: string): boolean {
+  const room = rooms.get(code);
+  if (!room) return false;
+
+  io.to(code).emit('room-closed', { reason });
+  io.in(code).socketsLeave(code);
+  room.sockets.clear();
+  room.gameState.players.length = 0;
+  room.gameState.questionsPool.length = 0;
+  room.gameState.usedQuestionIds.length = 0;
+  room.gameState.customPacks = [];
+  rooms.delete(code);
+  console.log(`[Room] Salon supprimé: ${code} (${reason}). Salons actifs: ${rooms.size}`);
+  return true;
+}
+
+function removeSocketFromRoom(room: Room, socketId: string): void {
+  room.sockets.delete(socketId);
+  const playerIndex = room.gameState.players.findIndex(player => player.id === socketId);
+  if (playerIndex >= 0) {
+    room.gameState.players.splice(playerIndex, 1);
+    if (room.gameState.activePlayerIndex >= room.gameState.players.length) {
+      room.gameState.activePlayerIndex = 0;
+    } else if (playerIndex < room.gameState.activePlayerIndex) {
+      room.gameState.activePlayerIndex -= 1;
+    }
+  }
+}
+
+function leaveAllRoomsForSocket(socketId: string, reason: string): void {
+  for (const [code, room] of rooms.entries()) {
+    if (!room.sockets.has(socketId)) continue;
+    if (room.hostSocketId === socketId) {
+      closeRoom(code, reason);
+    } else {
+      removeSocketFromRoom(room, socketId);
+      room.emptySince = room.sockets.size === 0 ? Date.now() : null;
+      io.to(code).emit('game-state-update', room.gameState);
+    }
+  }
+}
+
+const roomSweep = setInterval(() => {
+  const now = Date.now();
+  for (const [code, room] of rooms.entries()) {
+    if (now - room.createdAt >= ROOM_MAX_AGE_MS) {
+      closeRoom(code, 'Durée maximale du salon atteinte.');
+    } else if (now - room.lastActivityAt >= ROOM_IDLE_TTL_MS) {
+      closeRoom(code, 'Le salon a expiré après une longue période d’inactivité.');
+    } else if (room.hostDisconnectedAt && now - room.hostDisconnectedAt >= HOST_RECONNECT_GRACE_MS) {
+      closeRoom(code, 'L’organisateur a quitté le salon.');
+    } else if (room.emptySince && now - room.emptySince >= EMPTY_ROOM_GRACE_MS) {
+      closeRoom(code, 'Le salon est vide.');
+    }
+  }
+}, ROOM_SWEEP_INTERVAL_MS);
+roomSweep.unref();
 
 function generateRoomCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 4; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  for (let attempt = 0; attempt < 20; attempt++) {
+    let code = '';
+    for (let i = 0; i < 4; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    const candidate = `FAM-${code}`;
+    if (!rooms.has(candidate)) return candidate;
   }
-  return `FAM-${code}`;
+  throw new Error('Impossible de générer un code de salon unique.');
 }
 
 // Socket.IO Connection Handler
@@ -240,6 +325,11 @@ io.on('connection', (socket: Socket) => {
 
   // Create Private Room
   socket.on('create-room', (data: { player: Partial<Player>; settings: Partial<GameSettings> }) => {
+    leaveAllRoomsForSocket(socket.id, 'L’organisateur a créé un nouveau salon.');
+    if (rooms.size >= MAX_ROOMS) {
+      return socket.emit('error-msg', 'Trop de salons sont actifs. Réessayez dans quelques minutes.');
+    }
+
     const roomCode = generateRoomCode();
     const isLocal = data.settings?.isLocalMode || false;
 
@@ -287,12 +377,17 @@ io.on('connection', (socket: Socket) => {
       usedQuestionIds: []
     };
 
+    const now = Date.now();
     const room: Room = {
       code: roomCode,
       hostSocketId: socket.id,
       settings: initialSettings,
       gameState: initialGameState,
-      sockets: new Map([[socket.id, hostPlayer]])
+      sockets: new Map([[socket.id, hostPlayer]]),
+      createdAt: now,
+      lastActivityAt: now,
+      emptySince: null,
+      hostDisconnectedAt: null
     };
 
     rooms.set(roomCode, room);
@@ -305,7 +400,7 @@ io.on('connection', (socket: Socket) => {
   // Reconnect Existing Session (on page refresh or disconnect recovery)
   socket.on('reconnect-session', (data: { roomCode: string; playerId: string }) => {
     const code = (data.roomCode || '').toUpperCase().trim();
-    const room = rooms.get(code);
+    const room = getRoom(code);
 
     if (!room) {
       return socket.emit('reconnect-failed', { message: 'Salon expiré ou introuvable.' });
@@ -323,9 +418,11 @@ io.on('connection', (socket: Socket) => {
 
     room.sockets.delete(oldSocketId);
     room.sockets.set(socket.id, player);
+    room.emptySince = null;
 
     if (room.hostSocketId === oldSocketId) {
       room.hostSocketId = socket.id;
+      room.hostDisconnectedAt = null;
       player.isHost = true;
     }
 
@@ -339,7 +436,7 @@ io.on('connection', (socket: Socket) => {
   // Join Room
   socket.on('join-room', (data: { roomCode: string; player: Partial<Player>; playerId?: string }) => {
     const code = (data.roomCode || '').toUpperCase().trim();
-    const room = rooms.get(code);
+    const room = getRoom(code);
 
     if (!room) {
       return socket.emit('error-msg', 'Salon introuvable. Vérifiez le code de la salle privée.');
@@ -366,9 +463,11 @@ io.on('connection', (socket: Socket) => {
 
       room.sockets.delete(oldId);
       room.sockets.set(socket.id, existingPlayer);
+      room.emptySince = null;
 
       if (room.hostSocketId === oldId) {
         room.hostSocketId = socket.id;
+        room.hostDisconnectedAt = null;
         existingPlayer.isHost = true;
       }
 
@@ -377,6 +476,10 @@ io.on('connection', (socket: Socket) => {
       io.to(code).emit('game-state-update', room.gameState);
       console.log(`[Room] ${existingPlayer.name} a réintégré le salon ${code}`);
       return;
+    }
+
+    if (room.gameState.players.length >= MAX_PLAYERS_PER_ROOM) {
+      return socket.emit('error-msg', 'Ce salon a atteint sa limite de joueurs.');
     }
 
     // Create new player in room
@@ -398,6 +501,7 @@ io.on('connection', (socket: Socket) => {
 
     room.sockets.set(socket.id, newPlayer);
     room.gameState.players.push(newPlayer);
+    room.emptySince = null;
     socket.join(code);
 
     socket.emit('room-joined', { roomCode: code, player: newPlayer, gameState: room.gameState });
@@ -407,8 +511,11 @@ io.on('connection', (socket: Socket) => {
 
   // Local Pass & Play Add Player
   socket.on('add-local-player', (data: { roomCode: string; player: Partial<Player> }) => {
-    const room = rooms.get(data.roomCode);
+    const room = getRoom(data.roomCode);
     if (!room || room.hostSocketId !== socket.id || !room.settings.isLocalMode) return;
+    if (room.gameState.players.length >= MAX_PLAYERS_PER_ROOM) {
+      return socket.emit('error-msg', 'Ce salon a atteint sa limite de joueurs.');
+    }
 
     const usedColors = new Set(room.gameState.players.map(player => player.color.toLowerCase()));
     const requestedColor = data.player.color?.toLowerCase();
@@ -435,7 +542,7 @@ io.on('connection', (socket: Socket) => {
   });
 
   socket.on('remove-local-player', (data: { roomCode: string; playerId: string }) => {
-    const room = rooms.get(data.roomCode);
+    const room = getRoom(data.roomCode);
     if (!room || room.hostSocketId !== socket.id || !room.settings.isLocalMode || room.gameState.phase !== 'lobby') return;
     if (!data.playerId?.startsWith('local_')) return;
 
@@ -444,7 +551,7 @@ io.on('connection', (socket: Socket) => {
   });
 
   socket.on('toggle-ready', (data: { roomCode: string }) => {
-    const room = rooms.get(data.roomCode);
+    const room = getRoom(data.roomCode);
     if (!room || room.gameState.phase !== 'lobby' || room.settings.isLocalMode) return;
 
     const player = room.gameState.players.find(p => p.id === socket.id);
@@ -456,7 +563,7 @@ io.on('connection', (socket: Socket) => {
 
   // Update Settings (Host only)
   socket.on('update-settings', (data: { roomCode: string; settings: Partial<GameSettings> }) => {
-    const room = rooms.get(data.roomCode);
+    const room = getRoom(data.roomCode);
     if (!room || room.hostSocketId !== socket.id) return;
 
     room.settings = { ...room.settings, ...data.settings };
@@ -467,7 +574,7 @@ io.on('connection', (socket: Socket) => {
 
   // Update Player Profile (Avatar, Color, Name, Difficulty)
   socket.on('update-player', (data: { roomCode: string; player: Partial<Player> }) => {
-    const room = rooms.get(data.roomCode);
+    const room = getRoom(data.roomCode);
     if (!room) return;
 
     const requestedPlayer = room.gameState.players.find(pl => pl.id === data.player.id);
@@ -485,8 +592,11 @@ io.on('connection', (socket: Socket) => {
 
   // Add Custom AI Theme Pack
   socket.on('add-custom-pack', (data: { roomCode: string; themeName: string; questions: Question[] }) => {
-    const room = rooms.get(data.roomCode);
+    const room = getRoom(data.roomCode);
     if (!room || room.hostSocketId !== socket.id) return;
+    if (!Array.isArray(data.questions) || data.questions.length === 0 || data.questions.length > 60) {
+      return socket.emit('error-msg', 'Un pack doit contenir entre 1 et 60 questions.');
+    }
 
     if (!room.gameState.customPacks) {
       room.gameState.customPacks = [];
@@ -495,6 +605,17 @@ io.on('connection', (socket: Socket) => {
     const existingIndex = room.gameState.customPacks.findIndex(
       p => p.name.toLowerCase().trim() === data.themeName.toLowerCase().trim()
     );
+
+    const currentCustomQuestionCount = room.gameState.customPacks.reduce(
+      (total, pack) => total + pack.questions.length,
+      0
+    );
+    if (currentCustomQuestionCount + data.questions.length > MAX_CUSTOM_QUESTIONS_PER_ROOM) {
+      return socket.emit('error-msg', 'Ce salon a atteint sa limite de questions personnalisées.');
+    }
+    if (existingIndex < 0 && room.gameState.customPacks.length >= MAX_CUSTOM_PACKS_PER_ROOM) {
+      return socket.emit('error-msg', 'Ce salon a atteint sa limite de thèmes personnalisés.');
+    }
 
     if (existingIndex >= 0) {
       room.gameState.customPacks[existingIndex].questions.push(...data.questions);
@@ -518,7 +639,7 @@ io.on('connection', (socket: Socket) => {
 
   // Start Game
   socket.on('start-game', (data: { roomCode: string }) => {
-    const room = rooms.get(data.roomCode);
+    const room = getRoom(data.roomCode);
     if (!room || room.hostSocketId !== socket.id) return;
 
     if (room.gameState.players.length < 1) {
@@ -595,7 +716,7 @@ io.on('connection', (socket: Socket) => {
 
   // Roll Dice
   socket.on('roll-dice', (data: { roomCode: string }) => {
-    const room = rooms.get(data.roomCode);
+    const room = getRoom(data.roomCode);
     if (!room || room.gameState.phase !== 'rolling') return;
 
     if (!isPlayerAllowedToAct(room, socket.id)) {
@@ -623,7 +744,7 @@ io.on('connection', (socket: Socket) => {
 
   // Move Token to Tile
   socket.on('move-player', (data: { roomCode: string; destinationTileId: number }) => {
-    const room = rooms.get(data.roomCode);
+    const room = getRoom(data.roomCode);
     if (!room || room.gameState.phase !== 'moving') return;
 
     if (!isPlayerAllowedToAct(room, socket.id)) {
@@ -673,7 +794,7 @@ io.on('connection', (socket: Socket) => {
 
   // Submit Question Answer
   socket.on('submit-answer', (data: { roomCode: string; optionIndex: number }) => {
-    const room = rooms.get(data.roomCode);
+    const room = getRoom(data.roomCode);
     if (!room || room.gameState.phase !== 'question' || !room.gameState.currentQuestion) return;
     if (!isPlayerAllowedToAnswer(room, socket.id)) return;
     if (!Number.isInteger(data.optionIndex) || data.optionIndex < -1 || data.optionIndex > 3) return;
@@ -727,7 +848,7 @@ io.on('connection', (socket: Socket) => {
 
   // Next Turn or Extra Turn
   socket.on('next-turn', (data: { roomCode: string }) => {
-    const room = rooms.get(data.roomCode);
+    const room = getRoom(data.roomCode);
     if (!room || room.gameState.phase === 'game_over') return;
 
     // Guardrail: next-turn CAN ONLY BE EXECUTED when phase is evaluating or question
@@ -758,7 +879,7 @@ io.on('connection', (socket: Socket) => {
 
   // Send Emoji Reaction
   socket.on('send-emoji', (data: { roomCode: string; emoji: string }) => {
-    const room = rooms.get(data.roomCode);
+    const room = getRoom(data.roomCode);
     if (!room) return;
 
     const player = room.gameState.players.find(p => p.id === socket.id);
@@ -773,7 +894,7 @@ io.on('connection', (socket: Socket) => {
 
   // WebRTC Signaling for Live Camera Spotlight
   socket.on('webrtc-offer', (data: { roomCode: string; targetPlayerId: string; offer: any }) => {
-    const room = rooms.get(data.roomCode);
+    const room = getRoom(data.roomCode);
     if (!room || !room.sockets.has(socket.id)) return;
     if (!room.sockets.has(data.targetPlayerId)) return;
 
@@ -784,7 +905,7 @@ io.on('connection', (socket: Socket) => {
   });
 
   socket.on('webrtc-answer', (data: { roomCode: string; targetPlayerId: string; answer: any }) => {
-    const room = rooms.get(data.roomCode);
+    const room = getRoom(data.roomCode);
     if (!room || !room.sockets.has(socket.id)) return;
     if (!room.sockets.has(data.targetPlayerId)) return;
 
@@ -795,7 +916,7 @@ io.on('connection', (socket: Socket) => {
   });
 
   socket.on('webrtc-candidate', (data: { roomCode: string; targetPlayerId: string; candidate: any }) => {
-    const room = rooms.get(data.roomCode);
+    const room = getRoom(data.roomCode);
     if (!room || !room.sockets.has(socket.id)) return;
     if (!room.sockets.has(data.targetPlayerId)) return;
 
@@ -806,12 +927,29 @@ io.on('connection', (socket: Socket) => {
   });
 
   socket.on('webrtc-stop', (data: { roomCode: string }) => {
-    const room = rooms.get(data.roomCode);
+    const room = getRoom(data.roomCode);
     if (!room || !room.sockets.has(socket.id)) return;
 
     io.to(data.roomCode).emit('webrtc-stopped', {
       senderPlayerId: socket.id
     });
+  });
+
+  socket.on('leave-room', (data: { roomCode: string }) => {
+    const code = (data.roomCode || '').toUpperCase().trim();
+    const room = getRoom(code);
+    if (!room || !room.sockets.has(socket.id)) return;
+
+    if (room.hostSocketId === socket.id) {
+      closeRoom(code, 'L’organisateur a fermé le salon.');
+      return;
+    }
+
+    removeSocketFromRoom(room, socket.id);
+    socket.leave(code);
+    socket.emit('room-left');
+    room.emptySince = room.sockets.size === 0 ? Date.now() : null;
+    io.to(code).emit('game-state-update', room.gameState);
   });
 
   // Disconnect
@@ -825,14 +963,10 @@ io.on('connection', (socket: Socket) => {
           p.isConnected = false;
         }
 
-        // If host disconnected, transfer host
         if (room.hostSocketId === socket.id) {
-          const remainingConnected = room.gameState.players.find(pl => pl.isConnected && !pl.id.startsWith('local_'));
-          if (remainingConnected) {
-            room.hostSocketId = remainingConnected.id;
-            remainingConnected.isHost = true;
-          }
+          room.hostDisconnectedAt = Date.now();
         }
+        room.emptySince = room.sockets.size === 0 ? Date.now() : null;
 
         io.to(code).emit('game-state-update', room.gameState);
       }
