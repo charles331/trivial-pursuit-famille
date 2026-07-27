@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { soundManager } from '../utils/sound';
 import { Dices, Sparkles, Hand, ArrowUp, RefreshCw } from 'lucide-react';
 
@@ -31,6 +31,12 @@ const FACE_ROTATIONS: Record<number, { rx: number; ry: number }> = {
   6: { rx: 0, ry: 180 },
 };
 
+interface RollProfile {
+  travelX: number;
+  lift: number;
+  tilt: number;
+}
+
 export const Dice3D: React.FC<Dice3DProps> = ({
   value,
   isRolling,
@@ -41,6 +47,12 @@ export const Dice3D: React.FC<Dice3DProps> = ({
   // Store cumulative rotation angles so die spins forward smoothly without snapping
   const [rotation, setRotation] = useState({ rx: 15, ry: -25, rz: 0 });
   const [impactRipple, setImpactRipple] = useState(false);
+  const [rollProfile, setRollProfile] = useState<RollProfile>({
+    travelX: 24,
+    lift: 76,
+    tilt: 16
+  });
+  const prefersReducedMotion = useReducedMotion();
   
   // Interactive gesture drag state
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
@@ -53,8 +65,13 @@ export const Dice3D: React.FC<Dice3DProps> = ({
 
   const halfSize = size / 2;
 
-  const triggerRoll = () => {
+  const triggerRoll = (profile?: RollProfile) => {
     if (disabled || isRolling) return;
+    setRollProfile(profile ?? {
+      travelX: (Math.random() > 0.5 ? 1 : -1) * (18 + Math.random() * 18),
+      lift: 66 + Math.random() * 20,
+      tilt: (Math.random() > 0.5 ? 1 : -1) * (12 + Math.random() * 10)
+    });
     onRollRequest?.();
   };
 
@@ -167,7 +184,13 @@ export const Dice3D: React.FC<Dice3DProps> = ({
     // Trigger roll request if swiped (>10px or velocity > 100) OR simple tap/click
     if (!disabled && !isRolling) {
       if (dist >= 8 || velocity >= 80 || dt < 350) {
-        triggerRoll();
+        const direction = dist > 0 ? dx / dist : (Math.random() > 0.5 ? 1 : -1);
+        const effort = Math.min(1, Math.max(dist / 100, velocity / 1200));
+        triggerRoll({
+          travelX: direction * (18 + effort * 34),
+          lift: 62 + effort * 30,
+          tilt: direction * (12 + effort * 14)
+        });
       }
     }
   };
@@ -251,10 +274,18 @@ export const Dice3D: React.FC<Dice3DProps> = ({
             bottom: `${size * 0.12}px`
           }}
           animate={{
-            scale: isRolling ? [1, 0.3, 1.3, 0.8, 1] : dragOffset ? 0.75 : [1, 1.05, 1],
-            opacity: isRolling ? [0.8, 0.2, 0.9, 0.5, 0.8] : 0.65,
+            scale: isRolling && !prefersReducedMotion
+              ? [1, 0.48, 0.72, 0.88, 1.04, 1]
+              : dragOffset ? 0.75 : 1,
+            opacity: isRolling && !prefersReducedMotion
+              ? [0.68, 0.2, 0.34, 0.48, 0.72, 0.65]
+              : 0.65,
           }}
-          transition={{ duration: 1.25, ease: "easeInOut" }}
+          transition={{
+            duration: prefersReducedMotion ? 0.2 : 0.85,
+            times: [0, 0.24, 0.58, 0.76, 0.94, 1],
+            ease: 'easeInOut'
+          }}
         />
 
         {/* Impact Shockwave Ring */}
@@ -286,23 +317,34 @@ export const Dice3D: React.FC<Dice3DProps> = ({
           animate={{
             rotateX: dragOffset ? rotation.rx - dragOffset.y * 0.8 : rotation.rx,
             rotateY: dragOffset ? rotation.ry + dragOffset.x * 0.8 : rotation.ry,
-            rotateZ: rotation.rz,
-            x: dragOffset ? dragOffset.x * 0.5 : 0,
-            y: isRolling
-              ? [-90, -110, -15, -35, 0]
+            rotateZ: isRolling && !prefersReducedMotion
+              ? [0, rollProfile.tilt, rollProfile.tilt * -0.35, rollProfile.tilt * 0.16, 0]
+              : rotation.rz,
+            scale: isRolling && !prefersReducedMotion
+              ? [1, 1.04, 0.98, 1.025, 1]
+              : 1,
+            x: isRolling && !prefersReducedMotion
+              ? [0, rollProfile.travelX * 0.55, rollProfile.travelX, rollProfile.travelX * 0.72, 0]
+              : dragOffset ? dragOffset.x * 0.5 : 0,
+            y: isRolling && !prefersReducedMotion
+              ? [0, -rollProfile.lift, -12, -28, 0]
               : dragOffset
               ? dragOffset.y * 0.5
-              : [0, -5, 0],
+              : 0,
           }}
           transition={{
             y: isRolling
-              ? { duration: 1.25, times: [0, 0.3, 0.7, 0.85, 1], ease: [0.22, 1, 0.36, 1] }
+              ? { duration: prefersReducedMotion ? 0.2 : 0.85, times: [0, 0.34, 0.68, 0.82, 1], ease: 'easeInOut' }
               : dragOffset
               ? { duration: 0 }
-              : { duration: 2.8, repeat: Infinity, ease: "easeInOut" },
-            rotateX: dragOffset ? { duration: 0 } : { duration: 1.25, ease: [0.15, 0.85, 0.35, 1] },
-            rotateY: dragOffset ? { duration: 0 } : { duration: 1.25, ease: [0.15, 0.85, 0.35, 1] },
-            rotateZ: { duration: 1.25, ease: [0.15, 0.85, 0.35, 1] },
+              : { duration: 0.2 },
+            x: isRolling
+              ? { duration: prefersReducedMotion ? 0.2 : 0.85, times: [0, 0.32, 0.66, 0.84, 1], ease: 'easeInOut' }
+              : { duration: dragOffset ? 0 : 0.2 },
+            scale: { duration: prefersReducedMotion ? 0.2 : 0.85, times: [0, 0.34, 0.68, 0.84, 1] },
+            rotateX: dragOffset ? { duration: 0 } : { duration: prefersReducedMotion ? 0.2 : 0.85, ease: [0.2, 0.75, 0.25, 1] },
+            rotateY: dragOffset ? { duration: 0 } : { duration: prefersReducedMotion ? 0.2 : 0.85, ease: [0.2, 0.75, 0.25, 1] },
+            rotateZ: { duration: prefersReducedMotion ? 0.2 : 0.85, times: [0, 0.3, 0.67, 0.84, 1], ease: 'easeInOut' },
           }}
         >
           {/* FACE 1 (Front) */}
