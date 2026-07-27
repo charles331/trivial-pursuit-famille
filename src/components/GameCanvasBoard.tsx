@@ -40,6 +40,17 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
     gameState.settings.isLocalMode || 
     gameState.players.length === 1;
   const boardConfig = BOARD_PRESETS[gameState.settings.boardType] || BOARD_PRESETS.wheel;
+  const possibleDestinationTiles = gameState.possibleMoves
+    .map(tileId => boardConfig.tiles.find(tile => tile.id === tileId))
+    .filter((tile): tile is BoardTile => Boolean(tile));
+
+  const destinationLabel = (tile: BoardTile) => {
+    if (tile.type === 'hub') return 'Centre du plateau';
+    if (tile.type === 'reroll') return 'Relancer le dé';
+    if (tile.type === 'surprise') return 'Case surprise';
+    const category = tile.categoryId ? CATEGORIES[tile.categoryId]?.name : null;
+    return `${category || tile.label}${tile.type === 'camembert' || tile.isCamembert ? ' · Camembert' : ''}`;
+  };
 
   // Reset roll guard state whenever phase returns to rolling or player turn switches
   React.useEffect(() => {
@@ -418,6 +429,33 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
           </div>
         )}
       </div>
+
+      {gameState.phase === 'moving' && isMyTurn && possibleDestinationTiles.length > 0 && (
+        <div className="w-full z-10 mt-2 p-3 rounded-2xl bg-slate-950/80 border border-amber-500/30">
+          <p className="text-xs font-black text-amber-400 uppercase tracking-wide mb-2 text-center">
+            Où voulez-vous aller ?
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {possibleDestinationTiles.map(tile => {
+              const category = tile.categoryId ? CATEGORIES[tile.categoryId] : null;
+              return (
+                <button
+                  key={`destination_${tile.id}`}
+                  type="button"
+                  onClick={() => {
+                    soundManager.playClick();
+                    onSelectTile(tile.id);
+                  }}
+                  className="min-h-12 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border-2 text-left text-sm font-bold text-white transition-all active:scale-[0.98]"
+                  style={{ borderColor: category?.color || '#F59E0B' }}
+                >
+                  {destinationLabel(tile)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Footer Player Wedges Cards Strip */}
       <div className="w-full mt-2 z-10 grid grid-cols-2 sm:grid-cols-4 gap-2">

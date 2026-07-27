@@ -101,9 +101,14 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
 
       if (remaining <= 0) {
         clearInterval(interval);
-        if (isIActivePlayer && selectedIdx === null && !lastAnswerResult) {
-          soundManager.playWrong();
-          onSubmitAnswer(-1);
+        if ((isIActivePlayer || isIReader) && !lastAnswerResult) {
+          const timedAnswer = selectedIdx ?? -1;
+          onSubmitAnswer(timedAnswer);
+          if (timedAnswer === question.correctAnswerIndex) {
+            soundManager.playCorrect();
+          } else {
+            soundManager.playWrong();
+          }
         }
       } else if (remaining <= 6) {
         soundManager.playTick();
@@ -111,16 +116,19 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [question.id, effectiveTimerSeconds, questionStartTime, lastAnswerResult, isReaderMode, isLocalMode, localReaderReady]);
+  }, [question.id, effectiveTimerSeconds, questionStartTime, lastAnswerResult, isReaderMode, isLocalMode, localReaderReady, selectedIdx, isIActivePlayer, isIReader, onSubmitAnswer, timeLeft]);
 
   const handleOptionClick = (idx: number) => {
     if (lastAnswerResult) return;
-    // Allow active player or designated reader to submit answer
     setSelectedIdx(idx);
     soundManager.playClick();
-    onSubmitAnswer(idx);
+  };
 
-    if (idx === question.correctAnswerIndex) {
+  const handleConfirmAnswer = () => {
+    if (selectedIdx === null || lastAnswerResult) return;
+    onSubmitAnswer(selectedIdx);
+
+    if (selectedIdx === question.correctAnswerIndex) {
       soundManager.playCorrect();
     } else {
       soundManager.playWrong();
@@ -267,6 +275,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
               const isAnswered = lastAnswerResult !== null;
               const isCorrect = idx === question.correctAnswerIndex;
               const isChosen = lastAnswerResult?.selectedOption === idx;
+              const isSelected = !isAnswered && selectedIdx === idx;
 
               // Reader Mode highlight for designated reader before answer is submitted
               const isReaderHighlight = isReaderMode && isIReader && !isAnswered && isCorrect;
@@ -283,6 +292,8 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                 }
               } else if (isReaderHighlight) {
                 btnStyle = 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500 text-emerald-900 dark:text-emerald-200 font-bold';
+              } else if (isSelected) {
+                btnStyle = 'bg-amber-100 dark:bg-amber-950/50 border-amber-500 text-amber-950 dark:text-amber-100 font-bold ring-2 ring-amber-500/30';
               }
 
               return (
@@ -315,10 +326,29 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                       Correct
                     </span>
                   )}
+                  {isSelected && !isAnswered && !isReaderHighlight && (
+                    <CheckCircle2 className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                  )}
                 </button>
               );
             })}
           </div>
+
+          {!lastAnswerResult && (isMyTurn || isIReader) && (
+            <div className="space-y-2">
+              <button
+                type="button"
+                disabled={selectedIdx === null}
+                onClick={handleConfirmAnswer}
+                className="w-full py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {selectedIdx === null ? 'Choisissez une réponse' : `Valider la réponse ${['A', 'B', 'C', 'D'][selectedIdx]}`}
+              </button>
+              <p className="text-[11px] text-center text-slate-500 dark:text-slate-400">
+                Vous pouvez changer de choix avant de valider.
+              </p>
+            </div>
+          )}
 
           {/* Explanation & Result Banner */}
           {lastAnswerResult && (

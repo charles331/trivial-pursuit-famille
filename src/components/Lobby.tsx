@@ -4,9 +4,10 @@ import { AvatarPicker } from './AvatarPicker';
 import { BoardCustomizer } from './BoardCustomizer';
 import { soundManager } from '../utils/sound';
 import { AVATARS } from '../data/avatars';
+import { BOARD_PRESETS } from '../data/boards';
 import { 
   Users, Play, Plus, Copy, Check, Sparkles, Smartphone, Globe, Shield, 
-  Crown, Wand2, QrCode, LogOut 
+  Crown, Wand2, QrCode, LogOut, Trash2, SlidersHorizontal, ChevronDown
 } from 'lucide-react';
 
 interface LobbyProps {
@@ -16,6 +17,7 @@ interface LobbyProps {
   onCreateRoom: (playerData: Partial<Player>, isLocal: boolean) => void;
   onJoinRoom: (roomCode: string, playerData: Partial<Player>) => void;
   onAddLocalPlayer: (playerData: Partial<Player>) => void;
+  onRemoveLocalPlayer: (playerId: string) => void;
   onUpdatePlayer: (playerData: Partial<Player>) => void;
   onToggleReady: () => void;
   onUpdateSettings: (settings: Partial<GameSettings>) => void;
@@ -32,6 +34,7 @@ export const Lobby: React.FC<LobbyProps> = ({
   onCreateRoom,
   onJoinRoom,
   onAddLocalPlayer,
+  onRemoveLocalPlayer,
   onUpdatePlayer,
   onToggleReady,
   onUpdateSettings,
@@ -44,6 +47,7 @@ export const Lobby: React.FC<LobbyProps> = ({
   const [joinCodeInput, setJoinCodeInput] = useState(codeFromUrl ? codeFromUrl.toUpperCase() : '');
   const [copiedLink, setCopiedLink] = useState(false);
   const [showLeaveLobbyModal, setShowLeaveLobbyModal] = useState(false);
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
   // Default Player Form State
   const [playerName, setPlayerName] = useState('Joueur 1');
@@ -237,14 +241,27 @@ export const Lobby: React.FC<LobbyProps> = ({
                         </div>
                       </div>
 
-                      <div className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-                        !p.isConnected
-                          ? 'text-slate-500 bg-slate-200 dark:bg-slate-800'
-                          : p.isReady
-                            ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950'
-                            : 'text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950'
-                      }`}>
-                        {!p.isConnected ? 'Déconnecté' : p.isReady ? 'Prêt' : 'En attente'}
+                      <div className="flex items-center gap-2">
+                        <div className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+                          !p.isConnected
+                            ? 'text-slate-500 bg-slate-200 dark:bg-slate-800'
+                            : p.isReady
+                              ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950'
+                              : 'text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950'
+                        }`}>
+                          {!p.isConnected ? 'Déconnecté' : p.isReady ? 'Prêt' : 'En attente'}
+                        </div>
+                        {gameState.settings.isLocalMode && isHost && p.id.startsWith('local_') && (
+                          <button
+                            type="button"
+                            onClick={() => onRemoveLocalPlayer(p.id)}
+                            className="p-2 rounded-xl text-red-500 hover:text-white hover:bg-red-500 transition-colors"
+                            aria-label={`Supprimer ${p.name}`}
+                            title={`Supprimer ${p.name}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
@@ -287,13 +304,36 @@ export const Lobby: React.FC<LobbyProps> = ({
 
           {/* Board Customizer & Launch Button */}
           <div className="space-y-5">
-            <BoardCustomizer
-              settings={gameState.settings}
-              isHost={isHost}
-              onUpdateSettings={onUpdateSettings}
-              onAddCustomPack={onAddCustomPack}
-              customPacks={gameState.customPacks}
-            />
+            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowAdvancedSettings(value => !value)}
+                className="w-full p-4 flex items-center justify-between text-left"
+                aria-expanded={showAdvancedSettings}
+              >
+                <div>
+                  <div className="font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <SlidersHorizontal className="w-5 h-5 text-amber-500" />
+                    Personnaliser la partie
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    {BOARD_PRESETS[gameState.settings.boardType].name} · {gameState.settings.timerSeconds === 0 ? 'sans chrono' : `${gameState.settings.timerSeconds}s`} · {gameState.settings.wedgesToWin} camemberts
+                  </p>
+                </div>
+                <ChevronDown className={`w-5 h-5 text-slate-500 transition-transform ${showAdvancedSettings ? 'rotate-180' : ''}`} />
+              </button>
+              {showAdvancedSettings && (
+                <div className="border-t border-slate-200 dark:border-slate-800">
+                  <BoardCustomizer
+                    settings={gameState.settings}
+                    isHost={isHost}
+                    onUpdateSettings={onUpdateSettings}
+                    onAddCustomPack={onAddCustomPack}
+                    customPacks={gameState.customPacks}
+                  />
+                </div>
+              )}
+            </div>
 
             {/* Big Launch Game Button */}
             {isHost ? (

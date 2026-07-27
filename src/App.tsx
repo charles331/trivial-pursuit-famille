@@ -150,6 +150,12 @@ export default function App() {
     }
   };
 
+  const handleRemoveLocalPlayer = (playerId: string) => {
+    if (socket && gameState) {
+      socket.emit('remove-local-player', { roomCode: gameState.roomCode, playerId });
+    }
+  };
+
   const handleUpdatePlayer = (playerData: Partial<Player>) => {
     if (socket && gameState) {
       socket.emit('update-player', { roomCode: gameState.roomCode, player: playerData });
@@ -231,6 +237,7 @@ export default function App() {
           onCreateRoom={handleCreateRoom}
           onJoinRoom={handleJoinRoom}
           onAddLocalPlayer={handleAddLocalPlayer}
+          onRemoveLocalPlayer={handleRemoveLocalPlayer}
           onUpdatePlayer={handleUpdatePlayer}
           onToggleReady={handleToggleReady}
           onUpdateSettings={handleUpdateSettings}

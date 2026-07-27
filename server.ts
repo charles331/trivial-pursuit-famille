@@ -25,6 +25,7 @@ const io = new Server(httpServer, {
 });
 
 const PORT = 3000;
+const PLAYER_COLORS = ['#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#F97316'];
 
 app.use(express.json());
 
@@ -408,11 +409,15 @@ io.on('connection', (socket: Socket) => {
     const room = rooms.get(data.roomCode);
     if (!room || room.hostSocketId !== socket.id || !room.settings.isLocalMode) return;
 
+    const usedColors = new Set(room.gameState.players.map(player => player.color.toLowerCase()));
+    const requestedColor = data.player.color?.toLowerCase();
+    const availableColor = PLAYER_COLORS.find(color => !usedColors.has(color.toLowerCase())) || data.player.color || '#10B981';
+
     const newPlayer: Player = {
       id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
       name: data.player.name || `Joueur ${room.gameState.players.length + 1}`,
       avatarId: data.player.avatarId || 'robot',
-      color: data.player.color || '#10B981',
+      color: requestedColor && !usedColors.has(requestedColor) ? data.player.color! : availableColor,
       difficulty: data.player.difficulty || 'enfant',
       wedges: [],
       currentTileId: 0,
@@ -425,6 +430,15 @@ io.on('connection', (socket: Socket) => {
     };
 
     room.gameState.players.push(newPlayer);
+    io.to(data.roomCode).emit('game-state-update', room.gameState);
+  });
+
+  socket.on('remove-local-player', (data: { roomCode: string; playerId: string }) => {
+    const room = rooms.get(data.roomCode);
+    if (!room || room.hostSocketId !== socket.id || !room.settings.isLocalMode || room.gameState.phase !== 'lobby') return;
+    if (!data.playerId?.startsWith('local_')) return;
+
+    room.gameState.players = room.gameState.players.filter(player => player.id !== data.playerId);
     io.to(data.roomCode).emit('game-state-update', room.gameState);
   });
 
