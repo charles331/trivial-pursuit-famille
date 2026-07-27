@@ -7,8 +7,12 @@ import { ART_QUESTIONS } from './questionBank/art';
 import { SPORTS_QUESTIONS } from './questionBank/sports';
 import { POPCULTURE_QUESTIONS } from './questionBank/popculture';
 import { GASTRONOMIE_QUESTIONS } from './questionBank/gastronomie';
+import {
+  completeAdultQuestionBank,
+  completeTeenQuestionBank,
+} from './adultExpansion';
 
-const ALL_QUESTIONS: Question[] = [
+const CURATED_QUESTIONS: Question[] = [
   ...HISTOIRE_QUESTIONS,
   ...GEOGRAPHIE_QUESTIONS,
   ...CINEMA_QUESTIONS,
@@ -21,7 +25,11 @@ const ALL_QUESTIONS: Question[] = [
 
 // Safety net: guarantee unique ids even if two bank files ever collide
 const seenIds = new Set<string>();
-export const QUESTIONS_DATABASE: Question[] = ALL_QUESTIONS.filter(q => {
+const COMPLETED_QUESTIONS = completeTeenQuestionBank(
+  completeAdultQuestionBank(CURATED_QUESTIONS),
+);
+
+export const QUESTIONS_DATABASE: Question[] = COMPLETED_QUESTIONS.filter(q => {
   if (seenIds.has(q.id)) return false;
   seenIds.add(q.id);
   return true;

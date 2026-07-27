@@ -2521,5 +2521,4 @@ export const ART_QUESTIONS: Question[] = [
     difficulty: "adulte",
     explanation: "Le saviez-vous ? Un panneau du retable, volé en 1934, n'a jamais été retrouvé : c'est l'un des grands mystères de l'art."
   },
-  {
-    id: "art_281,".replace ? never mind
+];
