@@ -9,6 +9,8 @@ interface Dice3DProps {
   onRollRequest?: () => void;
   disabled?: boolean;
   size?: number; // size in px, e.g. 88
+  /** Drops the verbose helper text so the die fits a mobile action dock. */
+  compact?: boolean;
 }
 
 // Dot positions grid layout for dice faces 1..6
@@ -36,7 +38,8 @@ export const Dice3D: React.FC<Dice3DProps> = ({
   isRolling,
   onRollRequest,
   disabled = false,
-  size = 88
+  size = 88,
+  compact = false
 }) => {
   // Store cumulative rotation angles so die spins forward smoothly without snapping
   const [rotation, setRotation] = useState({ rx: 15, ry: -25, rz: 0 });
@@ -236,8 +239,8 @@ export const Dice3D: React.FC<Dice3DProps> = ({
           !disabled && !isRolling ? 'hover:bg-amber-500/10 active:bg-amber-500/20' : ''
         }`}
         style={{
-          width: `${size * 1.9}px`,
-          height: `${size * 1.9}px`,
+          width: `${size * (compact ? 1.6 : 1.9)}px`,
+          height: `${size * (compact ? 1.6 : 1.9)}px`,
           perspective: `${size * 9}px`,
           touchAction: 'none'
         }}
@@ -358,10 +361,12 @@ export const Dice3D: React.FC<Dice3DProps> = ({
       {/* Tactile Guidance Label & Fallback Trigger Button */}
       {onRollRequest && (
         <div className="flex flex-col items-center gap-2 mt-1">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300 animate-pulse bg-amber-950/70 border border-amber-500/40 px-3.5 py-1 rounded-full shadow-md">
-            <Hand className="w-3.5 h-3.5 text-amber-400 animate-bounce" />
-            <span>Glissez le dé avec votre doigt pour le lancer ! 👆💨</span>
-          </div>
+          {!compact && (
+            <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300 animate-pulse bg-amber-950/70 border border-amber-500/40 px-3.5 py-1 rounded-full shadow-md">
+              <Hand className="w-3.5 h-3.5 text-amber-400 animate-bounce" />
+              <span>Glissez le dé avec votre doigt pour le lancer ! 👆💨</span>
+            </div>
+          )}
 
           <button
             onClick={(e) => {
@@ -376,7 +381,13 @@ export const Dice3D: React.FC<Dice3DProps> = ({
             }`}
           >
             <Dices className={`w-4 h-4 ${isRolling ? 'animate-spin' : ''}`} />
-            {isRolling ? 'Lancement du dé en cours...' : 'Touchez ici pour lancer 🎲'}
+            {isRolling
+              ? compact
+                ? 'Lancement…'
+                : 'Lancement du dé en cours...'
+              : compact
+              ? 'Lancer le dé 🎲'
+              : 'Touchez ici pour lancer 🎲'}
             {!disabled && !isRolling && <Sparkles className="w-3.5 h-3.5 text-slate-950" />}
           </button>
         </div>

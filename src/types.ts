@@ -77,6 +77,8 @@ export interface BoardConfig {
   description: string;
   tiles: BoardTile[];
   suggestedDuration: string;
+  /** How the board is drawn: a radial wheel or a serpentine track. */
+  layout?: 'radial' | 'grid';
 }
 
 export interface GameSettings {

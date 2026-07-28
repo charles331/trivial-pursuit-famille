@@ -17,8 +17,10 @@ import { QuestionModal } from './components/QuestionModal';
 import { LiveChat } from './components/LiveChat';
 import { VictoryModal } from './components/VictoryModal';
 import { LiveCameraOverlay } from './components/LiveCameraOverlay';
+import { questionRevealDelayMs, usePrefersReducedMotion } from './utils/motion';
 
 export default function App() {
+  const reducedMotion = usePrefersReducedMotion();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string>('');
@@ -26,17 +28,19 @@ export default function App() {
   const [emojiEvent, setEmojiEvent] = useState<EmojiReaction | null>(null);
   const [showQuestionModal, setShowQuestionModal] = useState<boolean>(false);
 
-  // Smoothly delay question modal by 650ms so players can watch their pawn glide onto the destination tile
+  // Hold the question card back until the 3D pawn has actually hopped onto the
+  // destination tile. The delay tracks the dice value, since a 6 takes longer
+  // to walk than a 1 (see questionRevealDelayMs).
   useEffect(() => {
     if (gameState?.phase === 'question' && gameState?.currentQuestion) {
       const timer = setTimeout(() => {
         setShowQuestionModal(true);
-      }, 650);
+      }, questionRevealDelayMs(gameState?.diceValue ?? null, reducedMotion));
       return () => clearTimeout(timer);
     } else {
       setShowQuestionModal(false);
     }
-  }, [gameState?.phase, gameState?.currentQuestion?.id]);
+  }, [gameState?.phase, gameState?.currentQuestion?.id, gameState?.diceValue, reducedMotion]);
 
   // Extract URL parameter for join link
   const urlParams = new URLSearchParams(window.location.search);
@@ -284,7 +288,8 @@ export default function App() {
       <InGameHeader gameState={gameState} onLeaveGame={handleLeaveGame} />
 
       {/* Main Game Stage */}
-      <main className="flex-1 w-full max-w-5xl mx-auto p-2 sm:p-4 flex flex-col justify-center">
+      {/* Bottom padding keeps the floating emoji bar from covering the board legend */}
+      <main className="flex-1 w-full max-w-5xl mx-auto p-2 sm:p-4 pb-20 sm:pb-24 flex flex-col justify-center">
         <GameCanvasBoard
           gameState={gameState}
           currentUserId={currentUserId}

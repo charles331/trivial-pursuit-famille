@@ -188,8 +188,10 @@ function generateSnakeBoard(): BoardTile[] {
     const isEven = (r % 2 === 0);
     for (let c = 0; c < cols; c++) {
       const colIndex = isEven ? c : (cols - 1 - c);
+      // Vertically centred inside the 1000×1000 board box, with enough head
+      // room above the first row for the 3D pawns standing on their tile.
       const x = Math.round(150 + colIndex * 140);
-      const y = Math.round(150 + r * 160);
+      const y = Math.round(215 + r * 145);
       const catId = CATEGORIES_LIST[(id) % CATEGORIES_LIST.length];
       const isCamembert = (id > 0 && id % 5 === 0);
       const isHub = (id === rows * cols - 1);
@@ -229,6 +231,7 @@ export const BOARD_PRESETS: Record<BoardType, BoardConfig> = {
     name: 'Roue Classique 6 Branches',
     description: 'Le plateau de jeu emblématique avec hub central, 6 spokes et 6 cases camemberts.',
     suggestedDuration: '45-60 min',
+    layout: 'radial',
     tiles: generateWheelBoard()
   },
   snake: {
@@ -236,6 +239,7 @@ export const BOARD_PRESETS: Record<BoardType, BoardConfig> = {
     name: 'Circuit Familial Express',
     description: 'Un serpentin dynamique idéal pour les parties rapides sur tablette ou mobile.',
     suggestedDuration: '25-35 min',
+    layout: 'grid',
     tiles: generateSnakeBoard()
   },
   star: {
@@ -243,6 +247,99 @@ export const BOARD_PRESETS: Record<BoardType, BoardConfig> = {
     name: 'Étoile des Champions',
     description: 'Un plateau à 4 branches courtes concentré sur la rapidité et la stratégie.',
     suggestedDuration: '20-30 min',
+    layout: 'radial',
     tiles: generateWheelBoard() // reuse wheel logic with stylized star view
   }
 };
+
+/**
+ * Reconstructs the tiles a pawn walks through to go from `fromId` to `toId`.
+ *
+ * The server only broadcasts the destination, but the board animation needs the
+ * intermediate tiles to hop across. When the dice value is known we enumerate
+ * the exact same no-backtracking walks the server used to compute
+ * `possibleMoves` (see `calculateMoves` in server.ts) and keep the walk that
+ * ends on the chosen tile. Otherwise (re-roll tiles, reconnections, teleports)
+ * we fall back to the shortest path in the tile graph.
+ *
+ * Returns the full path including both endpoints, e.g. `[from, …, to]`.
+ */
+export function findTilePath(
+  tiles: BoardTile[],
+  fromId: number,
+  toId: number,
+  steps?: number | null
+): number[] {
+  if (fromId === toId) return [fromId];
+
+  const byId = new Map<number, BoardTile>();
+  tiles.forEach(tile => byId.set(tile.id, tile));
+  if (!byId.has(fromId) || !byId.has(toId)) return [toId];
+
+  // 1. Exact walk of `steps` tiles, mirroring the server's move calculation.
+  if (steps && steps > 0 && steps <= 8) {
+    let walks: number[][] = [[fromId]];
+
+    for (let step = 0; step < steps; step++) {
+      const next: number[][] = [];
+      for (const walk of walks) {
+        const current = byId.get(walk[walk.length - 1]);
+        if (!current) continue;
+        for (const nextId of current.nextTileIds) {
+          // Never immediately reverse direction, exactly like the server does.
+          if (walk.length > 1 && nextId === walk[walk.length - 2]) continue;
+          next.push([...walk, nextId]);
+        }
+      }
+      walks = next;
+      if (walks.length === 0 || walks.length > 5000) break;
+    }
+
+    const exact = walks.find(walk => walk[walk.length - 1] === toId);
+    if (exact) return exact;
+  }
+
+  // 2. Fallback: breadth-first shortest path through the tile graph.
+  const cameFrom = new Map<number, number>();
+  const queue: number[] = [fromId];
+  const visited = new Set<number>([fromId]);
+
+  while (queue.length > 0) {
+    const currentId = queue.shift() as number;
+    if (currentId === toId) break;
+    const current = byId.get(currentId);
+    if (!current) continue;
+
+    for (const nextId of current.nextTileIds) {
+      if (visited.has(nextId)) continue;
+      visited.add(nextId);
+      cameFrom.set(nextId, currentId);
+      queue.push(nextId);
+    }
+  }
+
+  if (!cameFrom.has(toId)) return [fromId, toId];
+
+  const path: number[] = [toId];
+  let cursor = toId;
+  while (cursor !== fromId) {
+    const parent = cameFrom.get(cursor);
+    if (parent === undefined) break;
+    path.unshift(parent);
+    cursor = parent;
+  }
+
+  return path;
+}
+
+/** Same as `findTilePath` but resolved to tile objects, ready to animate. */
+export function resolveTilePath(
+  tiles: BoardTile[],
+  fromId: number,
+  toId: number,
+  steps?: number | null
+): BoardTile[] {
+  return findTilePath(tiles, fromId, toId, steps)
+    .map(id => tiles.find(tile => tile.id === id))
+    .filter((tile): tile is BoardTile => Boolean(tile));
+}
