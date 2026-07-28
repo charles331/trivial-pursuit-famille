@@ -324,7 +324,8 @@ for (const categoryId of CATEGORIES) {
 // ---------------------------------------------------------------------------
 section('8. Ancrage francophone et belge');
 console.log('La culture francophone reste la plus parlante pour un foyer belge.');
-console.log(`Cible adulte : ≥ ${Math.round(100 * TARGETS.francophoneRate)}% de cartes francophones.`);
+console.log(`Cible adulte : ≥ ${Math.round(100 * TARGETS.francophoneRate)}% de cartes francophones,`);
+console.log('sauf en sciences : une loi physique n\'a pas de nationalité.');
 
 const BELGIAN = [
   'belg', 'bruxelles', 'wallon', 'flandre', 'flamand', 'liege', 'gand', 'anvers',
@@ -335,11 +336,43 @@ const BELGIAN = [
 ];
 const FRANCOPHONE = [
   ...BELGIAN,
-  'france', 'francais', 'paris', 'lyon', 'marseille', 'normandie', 'bretagne',
-  'provence', 'loire', 'alsace', 'molier', 'hugo', 'zola', 'baudelair', 'proust',
-  'camus', 'gaulle', 'napoleon', 'versailles', 'louvre', 'impressionn', 'quebec',
-  'suisse', 'romand', 'luxembourg', 'senegal', 'maroc', 'tunisi', 'algeri',
-  'ivoir', 'haiti', 'congo',
+  // Pays, régions et villes
+  'france', 'francais', 'francaise', 'paris', 'lyon', 'lyonnais', 'marseille',
+  'marseillais', 'bordeaux', 'bordelais', 'toulouse', 'nantes', 'nice', 'nicois',
+  'strasbourg', 'lille', 'rennes', 'dijon', 'reims', 'avignon', 'normandie',
+  'normand', 'bretagne', 'breton', 'provence', 'provencal', 'loire', 'alsace',
+  'alsacien', 'bourgogne', 'bourguignon', 'savoie', 'savoyard', 'auvergne',
+  'auvergnat', 'perigord', 'gascogne', 'landes', 'roussillon', 'languedoc',
+  'basque', 'corse', 'jura', 'vendee', 'picard', 'lorraine', 'champagne',
+  'ardeche', 'camargue', 'cevennes', 'pyrenees', 'sarrasin', 'castelnaudary',
+  'espelette', 'sauternes', 'chablis', 'banyuls', 'cantal', 'bresse',
+  // Culture et histoire
+  'molier', 'hugo', 'zola', 'baudelair', 'proust', 'camus', 'rimbaud',
+  'verlaine', 'flaubert', 'balzac', 'voltaire', 'rousseau', 'sartre',
+  'gaulle', 'napoleon', 'versailles', 'louvre', 'orsay', 'impressionn',
+  'nouvelle vague', 'academie francaise', 'francophon',
+  // Table
+  'bouillabaisse', 'ratatouille', 'cassoulet', 'aligot', 'brandade',
+  'pissaladiere', 'socca', 'far breton', 'kouign', 'canele', 'calisson',
+  'roquefort', 'camembert', 'comte', 'reblochon', 'munster', 'chevre',
+  'baguette', 'croissant', 'creperie', 'galette', 'crepe', 'pot-au-feu',
+  'bearnaise', 'hollandaise', 'bechamel', 'gribiche', 'chiffonnade',
+  'beurre blanc', 'terroir', 'appellation', 'aop', 'chicoree', 'praline',
+  'cidre', 'calvados', 'pastis', 'genievre', 'chartreuse',
+  // Cinéma, scène et lettres francophones
+  'truffaut', 'godard', 'melville', 'carne', 'renoir', 'clouzot', 'tati',
+  'varda', 'besson', 'kassovitz', 'jeunet', 'sciamma', 'audiard', 'ozon',
+  'haneke', 'dardenne', 'akerman', 'van dormael', 'dolan', 'villeneuve',
+  'arcand', 'de funes', 'bourvil', 'gabin', 'delon', 'belmondo', 'deneuve',
+  'huppert', 'binoche', 'depardieu', 'jean reno', 'poelvoorde',
+  'magritte du cinema', 'nouvelle vague',
+  'chanson francaise', 'brel', 'brassens', 'gainsbourg', 'piaf', 'aznavour',
+  'goldman', 'celine dion', 'indochine', 'telephone', 'orelsan', 'angele',
+  'stromae', 'aya nakamura', 'bigflo', 'damso',
+  // Autres aires francophones
+  'quebec', 'quebecois', 'montreal', 'suisse', 'romand', 'geneve', 'lausanne',
+  'luxembourg', 'senegal', 'maroc', 'marocain', 'tunisi', 'algeri', 'algerien',
+  'ivoir', 'haiti', 'congo', 'cameroun', 'mali', 'burkina', 'benin', 'togo',
 ];
 
 console.log('\ncatégorie      enfant  ado  adulte   (dont belge, adulte)');
@@ -359,10 +392,11 @@ for (const categoryId of CATEGORIES) {
   const adultHits = adults.filter(
     (question) => FRANCOPHONE.some((key) => fullText(question).includes(key)),
   ).length;
+  const francophoneTarget = categoryId === 'sciences' ? 0 : TARGETS.francophoneRate;
   console.log(
     `${categoryId.padEnd(15)}${shares[0]}${shares[1]}${shares[2]}`
       + `${pct(belgian, adultRows)}`
-      + flag(adultRows - adultHits, adultRows, 1 - TARGETS.francophoneRate),
+      + flag(adultRows - adultHits, adultRows, 1 - francophoneTarget),
   );
 }
 
