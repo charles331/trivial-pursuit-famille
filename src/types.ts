@@ -124,6 +124,10 @@ export interface GameState {
   usedQuestionIds: string[];
   customPacks?: { name: string; questions: Question[] }[];
   lastTurnEventMessage?: string | null;
+  /** Partie mise en pause par l'organisateur : le salon est gardé plus longtemps. */
+  isPaused?: boolean;
+  /** Instant de la mise en pause, qui sert à décaler le minuteur à la reprise. */
+  pausedAt?: number | null;
 }
 
 export interface EmojiReaction {
