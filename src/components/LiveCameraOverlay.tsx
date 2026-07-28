@@ -1,7 +1,16 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Socket } from 'socket.io-client';
-import { GameState, Player } from '../types';
-import { Camera, CameraOff, Mic, MicOff, Video, VideoOff, Volume2, VolumeX, ShieldCheck, Sparkles } from 'lucide-react';
+import { GameState } from '../types';
+import { Camera, CameraOff, Mic, MicOff, Video, VideoOff, Volume2, VolumeX, ShieldCheck, AlertTriangle } from 'lucide-react';
+import {
+  BROADCAST_CONSTRAINTS,
+  PERMISSION_PROBE_CONSTRAINTS,
+  describeMediaError,
+  detectMediaAvailability,
+  getStableClientId,
+  limitOutgoingVideo,
+  releaseVideoElement
+} from '../utils/media';
 
 interface LiveCameraOverlayProps {
   socket: Socket | null;
@@ -42,22 +51,37 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [isRemoteMuted, setIsRemoteMuted] = useState(false);
   const [isAudioBlocked, setIsAudioBlocked] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isLocalMinimized, setIsLocalMinimized] = useState(false);
+  const [isRemoteMinimized, setIsRemoteMinimized] = useState(false);
   const [isTestMode, setIsTestMode] = useState(false);
   const [showPermissionSetup, setShowPermissionSetup] = useState(false);
   const [isCheckingPermission, setIsCheckingPermission] = useState(false);
   const [permissionSetupError, setPermissionSetupError] = useState<string | null>(null);
   const [sharingPreference, setSharingPreference] = useState<'pending' | 'enabled' | 'disabled'>('pending');
+  // Set when an automatic start failed: the player then needs to tap, because
+  // mobile Safari is far more permissive inside a real user gesture.
+  const [needsManualStart, setNeedsManualStart] = useState(false);
+  const [connectionWarning, setConnectionWarning] = useState<string | null>(null);
 
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
   const peerConnections = useRef<Map<string, RTCPeerConnection>>(new Map());
   const pendingCandidates = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
   const localStreamRef = useRef<MediaStream | null>(null);
+  const remoteStreamRef = useRef<MediaStream | null>(null);
   const isStartingStreamRef = useRef(false);
   const streamAttemptRef = useRef(0);
   const isMountedRef = useRef(true);
-  const permissionStorageKey = `quiz-av-consent:${gameState.roomCode}:${currentUserId}`;
+  const isBroadcastingRef = useRef(false);
+  const isVideoOffRef = useRef(false);
+  const socketRef = useRef<Socket | null>(socket);
+  socketRef.current = socket;
+
+  const media = useMemo(() => detectMediaAvailability(), []);
+  const clientId = useMemo(() => getStableClientId(), []);
+  // Keyed on a stable browser id, never on the socket id: the server rotates
+  // player ids on reconnection and iOS reconnects on every backgrounding.
+  const permissionStorageKey = `tp_fam_av_consent:${gameState.roomCode}:${clientId}`;
 
   // Ask once per player and game. The choice is retained for every turn and may
   // be changed at any time from the persistent control displayed during the game.
@@ -67,8 +91,16 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
       return;
     }
 
+    if (!media.isAvailable) {
+      // Nothing can be captured on this page: never block the game with a
+      // dialog the player cannot satisfy.
+      setSharingPreference('disabled');
+      setShowPermissionSetup(false);
+      return;
+    }
+
     try {
-      const storedPreference = sessionStorage.getItem(permissionStorageKey);
+      const storedPreference = localStorage.getItem(permissionStorageKey);
       if (storedPreference === 'enabled' || storedPreference === 'granted') {
         setSharingPreference('enabled');
         setShowPermissionSetup(false);
@@ -83,12 +115,20 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
       setSharingPreference('pending');
       setShowPermissionSetup(true);
     }
-  }, [isCameraEnabled, gameState.phase === 'lobby', gameState.phase === 'game_over', permissionStorageKey]);
+  }, [isCameraEnabled, gameState.phase === 'lobby', gameState.phase === 'game_over', permissionStorageKey, media.isAvailable]);
 
   // Stop all media tracks safely
-  const stopAllMediaTracks = () => {
+  const stopAllMediaTracks = (options: { notifyPeers?: boolean } = {}) => {
     // Invalidate a getUserMedia call that may still be awaiting the browser.
     streamAttemptRef.current += 1;
+
+    // Tell the viewers before dropping everything, otherwise they keep a dead
+    // peer connection alive until ICE eventually times out.
+    if (options.notifyPeers && isBroadcastingRef.current && socketRef.current && gameState.roomCode) {
+      socketRef.current.emit('webrtc-stop', { roomCode: gameState.roomCode });
+    }
+    isBroadcastingRef.current = false;
+
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => {
         try {
@@ -99,11 +139,22 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
       });
       localStreamRef.current = null;
     }
+
+    // WebKit keeps the capture pipeline (and the orange recording indicator)
+    // alive while a <video> still references the stream, even once every track
+    // is stopped. Detaching the elements is what actually powers the camera down.
+    releaseVideoElement(localVideoRef.current);
+    releaseVideoElement(remoteVideoRef.current);
+    remoteStreamRef.current = null;
     setLocalStream(null);
 
     // Close all WebRTC peer connections
     peerConnections.current.forEach(pc => {
       try {
+        pc.onicecandidate = null;
+        pc.ontrack = null;
+        pc.onconnectionstatechange = null;
+        pc.oniceconnectionstatechange = null;
         pc.close();
       } catch (e) {
         console.error('Error closing peer connection:', e);
@@ -116,13 +167,15 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
     setIsAudioBlocked(false);
     setIsStreaming(false);
     setIsTestMode(false);
+    setConnectionWarning(null);
     isStartingStreamRef.current = false;
   };
 
   // Cleanup on unmount, phase change away from question, or active player change
   useEffect(() => {
     if (gameState.phase !== 'question' || !isCameraEnabled) {
-      stopAllMediaTracks();
+      stopAllMediaTracks({ notifyPeers: true });
+      setNeedsManualStart(false);
     }
   }, [gameState.phase, gameState.activePlayerIndex, isCameraEnabled]);
 
@@ -138,6 +191,40 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
   useEffect(() => {
     if (!socket || !isCameraEnabled) return;
 
+    // Closes dead peer connections instead of letting them idle with ICE
+    // keep-alives, and surfaces the failure so the room is not silently broken.
+    const watchConnectionHealth = (pc: RTCPeerConnection, peerId: string, isViewer: boolean) => {
+      const handleState = () => {
+        const state = pc.connectionState || pc.iceConnectionState;
+        if (state === 'connected' || state === 'completed') {
+          setConnectionWarning(null);
+          return;
+        }
+        if (state !== 'failed' && state !== 'closed') return;
+
+        try {
+          pc.close();
+        } catch {
+          // Already closed.
+        }
+        if (peerConnections.current.get(peerId) === pc) {
+          peerConnections.current.delete(peerId);
+        }
+        pendingCandidates.current.delete(peerId);
+
+        if (isViewer) {
+          remoteStreamRef.current = null;
+          setRemoteStream(null);
+        }
+        setConnectionWarning(
+          'Le direct n’a pas pu s’établir entre ces appareils (réseaux différents). La partie continue normalement.'
+        );
+      };
+
+      pc.onconnectionstatechange = handleState;
+      pc.oniceconnectionstatechange = handleState;
+    };
+
     const handleOffer = async (data: { senderPlayerId: string; offer: RTCSessionDescriptionInit }) => {
       // If we are a spectator receiving an offer from active player
       if (isActivePlayer) return;
@@ -151,9 +238,16 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
 
         pc.ontrack = (event) => {
           if (event.streams && event.streams[0]) {
+            remoteStreamRef.current = event.streams[0];
             setRemoteStream(event.streams[0]);
+            setConnectionWarning(null);
           }
         };
+
+        // Without this, a connection that never succeeds (no TURN server and a
+        // player on mobile data) keeps sending STUN keep-alives forever and the
+        // viewer just stares at a black frame.
+        watchConnectionHealth(pc, data.senderPlayerId, true);
 
         pc.onicecandidate = (event) => {
           if (event.candidate) {
@@ -223,6 +317,7 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
       const pc = new RTCPeerConnection(ICE_SERVERS);
       peerConnections.current.set(viewerPlayerId, pc);
       stream.getTracks().forEach(track => pc.addTrack(track, stream));
+      watchConnectionHealth(pc, viewerPlayerId, false);
       pc.onicecandidate = (event) => {
         if (event.candidate) {
           socket.emit('webrtc-candidate', {
@@ -235,6 +330,9 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
 
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
+      // One encoder runs per viewer in this mesh, so capping the sender is what
+      // keeps a phone from encoding the same thumbnail at several Mbps, N times.
+      await limitOutgoingVideo(pc);
       socket.emit('webrtc-offer', {
         roomCode: gameState.roomCode,
         targetPlayerId: viewerPlayerId,
@@ -290,40 +388,84 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
     };
   }, [socket, isCameraEnabled, isActivePlayer, gameState.roomCode, activePlayer?.id]);
 
-  // Attach local stream to local video element
+  // Callback refs rather than effects keyed on the stream: the <video> elements
+  // are remounted when a spotlight is collapsed and expanded again, and an
+  // effect that only watches the stream would never re-attach it (the panel
+  // stayed black for the rest of the game).
+  const attachLocalVideo = (element: HTMLVideoElement | null) => {
+    localVideoRef.current = element;
+    if (element && localStreamRef.current && element.srcObject !== localStreamRef.current) {
+      element.srcObject = localStreamRef.current;
+    }
+  };
+
+  const playRemote = (element: HTMLVideoElement) => {
+    element
+      .play()
+      .then(() => setIsAudioBlocked(false))
+      .catch(() => {
+        // iOS refuses to autoplay audible media: fall back to muted playback and
+        // offer an explicit "tap to hear" control.
+        element.muted = true;
+        setIsRemoteMuted(true);
+        setIsAudioBlocked(true);
+        void element.play().catch(() => undefined);
+      });
+  };
+
+  const attachRemoteVideo = (element: HTMLVideoElement | null) => {
+    remoteVideoRef.current = element;
+    if (!element) return;
+    const stream = remoteStreamRef.current;
+    if (stream && element.srcObject !== stream) {
+      element.srcObject = stream;
+      playRemote(element);
+    }
+  };
+
   useEffect(() => {
-    if (localVideoRef.current && localStream) {
+    if (localVideoRef.current && localStream && localVideoRef.current.srcObject !== localStream) {
       localVideoRef.current.srcObject = localStream;
     }
   }, [localStream]);
 
-  // Attach remote stream to remote video element
   useEffect(() => {
-    if (remoteVideoRef.current && remoteStream) {
-      remoteVideoRef.current.srcObject = remoteStream;
-      remoteVideoRef.current.play().then(() => {
-        setIsAudioBlocked(false);
-      }).catch(() => {
-        if (!remoteVideoRef.current) return;
-        remoteVideoRef.current.muted = true;
-        setIsRemoteMuted(true);
-        setIsAudioBlocked(true);
-        void remoteVideoRef.current.play();
-      });
+    const element = remoteVideoRef.current;
+    if (element && remoteStream && element.srcObject !== remoteStream) {
+      element.srcObject = remoteStream;
+      playRemote(element);
     }
   }, [remoteStream]);
+
+  // Stop encoding while the game is in the background. iOS already throttles
+  // hidden tabs, but an explicitly disabled track shuts the encoder down and is
+  // the single cheapest battery win for a player who switches apps mid-turn.
+  useEffect(() => {
+    const handleVisibility = () => {
+      const stream = localStreamRef.current;
+      if (!stream || isVideoOffRef.current) return;
+      const isHidden = document.visibilityState === 'hidden';
+      stream.getVideoTracks().forEach(track => {
+        track.enabled = !isHidden;
+      });
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
 
   // Start Broadcasting Media
   const handleStartBroadcasting = async (forTest = false) => {
     if (isStartingStreamRef.current || localStreamRef.current) return;
+    if (!media.isAvailable) {
+      setCameraError(media.message);
+      return;
+    }
     isStartingStreamRef.current = true;
     const streamAttempt = ++streamAttemptRef.current;
     setCameraError(null);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 480 }, height: { ideal: 360 }, frameRate: { ideal: 20 } },
-        audio: true
-      });
+      const stream = await navigator.mediaDevices.getUserMedia(BROADCAST_CONSTRAINTS);
 
       if (!isMountedRef.current || streamAttempt !== streamAttemptRef.current) {
         stream.getTracks().forEach(track => track.stop());
@@ -334,9 +476,14 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
       setLocalStream(stream);
       setIsStreaming(true);
       setIsTestMode(forTest);
+      setNeedsManualStart(false);
+      setIsMuted(false);
+      setIsVideoOff(false);
+      isVideoOffRef.current = false;
 
       // Connect to all other connected players in room
       if (socket && !forTest) {
+        isBroadcastingRef.current = true;
         // Every viewer answers this announcement with `webrtc-viewer-ready`.
         // This handshake also covers viewers who reconnect after the stream starts.
         socket.emit('webrtc-broadcaster-ready', { roomCode: gameState.roomCode });
@@ -344,18 +491,14 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
     } catch (err: any) {
       if (streamAttempt !== streamAttemptRef.current) return;
       console.error('Media stream error:', err);
-      setCameraError(
-        err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError'
-          ? 'Autorisation caméra/micro refusée par le navigateur.'
-          : 'Impossible d’accéder à la caméra ou au micro.'
-      );
+      setCameraError(describeMediaError(err, media.isEmbedded));
+
+      // A failed attempt must never opt the player out for the rest of the game.
+      // Automatic starts happen outside a user gesture, which mobile Safari
+      // often refuses even though the very same call succeeds from a tap — so
+      // keep the preference and offer a manual retry instead.
       if (!forTest) {
-        setSharingPreference('disabled');
-        try {
-          sessionStorage.setItem(permissionStorageKey, 'disabled');
-        } catch {
-          // The in-memory preference still prevents repeated permission requests.
-        }
+        setNeedsManualStart(true);
       }
     } finally {
       if (streamAttempt === streamAttemptRef.current) {
@@ -366,9 +509,11 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
 
   const rememberSharingPreference = (preference: 'enabled' | 'disabled') => {
     try {
-      sessionStorage.setItem(permissionStorageKey, preference);
+      // localStorage, not sessionStorage: iOS discards session storage when it
+      // reclaims a background tab, which used to reopen this dialog mid-game.
+      localStorage.setItem(permissionStorageKey, preference);
     } catch {
-      // The setup still works when private browsing blocks sessionStorage.
+      // The setup still works when private browsing blocks storage.
     }
     setSharingPreference(preference);
     setShowPermissionSetup(false);
@@ -378,31 +523,28 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
     setIsCheckingPermission(true);
     setPermissionSetupError(null);
 
+    if (!media.isAvailable) {
+      setPermissionSetupError(media.message);
+      setIsCheckingPermission(false);
+      return;
+    }
+
     try {
       // This call must follow the player's click so iOS and other browsers show
       // their native permission dialog. Tracks stop immediately: nothing is sent.
-      const previewStream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 480 }, height: { ideal: 360 } },
-        audio: true
-      });
+      const previewStream = await navigator.mediaDevices.getUserMedia(PERMISSION_PROBE_CONSTRAINTS);
       previewStream.getTracks().forEach(track => track.stop());
       rememberSharingPreference('enabled');
     } catch (err: any) {
-      setPermissionSetupError(
-        err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError'
-          ? 'L’autorisation a été refusée. Vous pourrez la modifier dans les réglages du navigateur.'
-          : 'La caméra ou le micro ne sont pas disponibles sur cet appareil.'
-      );
+      setPermissionSetupError(describeMediaError(err, media.isEmbedded));
     } finally {
       setIsCheckingPermission(false);
     }
   };
 
   const handleStopBroadcasting = () => {
-    if (socket && gameState.roomCode) {
-      socket.emit('webrtc-stop', { roomCode: gameState.roomCode });
-    }
-    stopAllMediaTracks();
+    stopAllMediaTracks({ notifyPeers: true });
+    setNeedsManualStart(false);
   };
 
   const disableSharing = () => {
@@ -414,22 +556,27 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
     setPermissionSetupError(null);
     setCameraError(null);
 
+    if (!media.isAvailable) {
+      setCameraError(media.message);
+      return;
+    }
+
     try {
       // Re-check access after a refusal because browsers may have had their
       // permission changed in site settings since the beginning of the game.
-      const previewStream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 480 }, height: { ideal: 360 } },
-        audio: true
-      });
+      const previewStream = await navigator.mediaDevices.getUserMedia(PERMISSION_PROBE_CONSTRAINTS);
       previewStream.getTracks().forEach(track => track.stop());
       rememberSharingPreference('enabled');
+      setNeedsManualStart(false);
     } catch (err: any) {
-      setCameraError(
-        err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError'
-          ? 'Caméra/micro bloqués. Autorisez-les dans les réglages du navigateur puis réessayez.'
-          : 'La caméra ou le micro ne sont pas disponibles sur cet appareil.'
-      );
+      setCameraError(describeMediaError(err, media.isEmbedded));
     }
+  };
+
+  /** Retry from a real tap after an automatic start was refused by the browser. */
+  const handleManualStart = () => {
+    setNeedsManualStart(false);
+    void handleStartBroadcasting(false);
   };
 
   // Once the player agreed for the game, broadcasting starts automatically on
@@ -440,11 +587,13 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
       && isActivePlayer
       && gameState.phase === 'question'
       && !isStreaming
+      && !needsManualStart
+      && media.isAvailable
       && !localStreamRef.current
     ) {
       void handleStartBroadcasting(false);
     }
-  }, [sharingPreference, isActivePlayer, gameState.phase, isStreaming]);
+  }, [sharingPreference, isActivePlayer, gameState.phase, isStreaming, needsManualStart, media.isAvailable]);
 
   const toggleMic = () => {
     if (localStreamRef.current) {
@@ -462,6 +611,9 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
       if (videoTrack) {
         videoTrack.enabled = !videoTrack.enabled;
         setIsVideoOff(!videoTrack.enabled);
+        // Mirrored in a ref so the visibility handler does not re-enable a track
+        // the player deliberately turned off.
+        isVideoOffRef.current = !videoTrack.enabled;
       }
     }
   };
@@ -516,6 +668,14 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
               </div>
             )}
 
+            {media.isEmbedded && (
+              <div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-950/60 p-3 text-xs font-bold text-amber-200">
+                <AlertTriangle className="mr-1 inline h-4 w-4" />
+                Le jeu est affiché dans une page intégrée. Sur iPhone, ouvrez-le dans un onglet Safari
+                à part si la caméra reste bloquée.
+              </div>
+            )}
+
             <div className="flex flex-col gap-2">
               <button
                 type="button"
@@ -552,27 +712,44 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
                 </span>
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                if (sharingPreference === 'enabled') {
-                  disableSharing();
-                } else {
-                  void enableSharing();
-                }
-              }}
-              className={`shrink-0 rounded-xl px-3 py-1.5 text-xs font-black transition-colors ${
-                sharingPreference === 'enabled'
-                  ? 'bg-slate-700 text-white hover:bg-slate-600'
-                  : 'bg-purple-600 text-white hover:bg-purple-500'
-              }`}
-            >
-              {sharingPreference === 'enabled' ? 'Désactiver' : 'Réactiver'}
-            </button>
+            {media.isAvailable && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (sharingPreference === 'enabled') {
+                    disableSharing();
+                  } else {
+                    void enableSharing();
+                  }
+                }}
+                className={`tap-target shrink-0 rounded-xl px-3 py-1.5 text-xs font-black transition-colors ${
+                  sharingPreference === 'enabled'
+                    ? 'bg-slate-700 text-white hover:bg-slate-600'
+                    : 'bg-purple-600 text-white hover:bg-purple-500'
+                }`}
+              >
+                {sharingPreference === 'enabled' ? 'Désactiver' : 'Réactiver'}
+              </button>
+            )}
           </div>
+
+          {/* Why capture is impossible on this page, instead of a dead retry button */}
+          {!media.isAvailable && media.message && (
+            <p className="mt-2 rounded-xl border border-amber-500/40 bg-amber-950/60 p-2 text-xs font-bold text-amber-200">
+              <AlertTriangle className="mr-1 inline h-3.5 w-3.5" />
+              {media.message}
+            </p>
+          )}
+
           {cameraError && (
             <p className="mt-2 rounded-xl border border-red-500/40 bg-red-950/70 p-2 text-xs font-bold text-red-200">
               {cameraError}
+            </p>
+          )}
+
+          {connectionWarning && (
+            <p className="mt-2 rounded-xl border border-slate-600 bg-slate-800/80 p-2 text-xs font-bold text-slate-300">
+              {connectionWarning}
             </p>
           )}
         </div>
@@ -582,12 +759,14 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
       {isActivePlayer && sharingPreference === 'enabled' && (
         <div className="bg-slate-900/90 border border-amber-500/40 rounded-2xl p-3 text-white flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl mb-3 animate-fadeIn">
           <div className="flex items-center gap-2 text-xs">
-            <Video className="w-4 h-4 text-amber-400 animate-pulse shrink-0" />
+            <Video className="w-4 h-4 text-amber-400 shrink-0" />
             <div>
               <span className="font-bold text-amber-300">Option Caméra & Micro en Direct :</span>
               <span className="text-slate-300 ml-1">
                 {isStreaming
                   ? 'Vous êtes en direct auprès des autres joueurs !'
+                  : needsManualStart
+                  ? 'Touchez le bouton pour autoriser la caméra sur cet appareil.'
                   : 'Votre direct démarre automatiquement pour ce tour.'}
               </span>
             </div>
@@ -595,9 +774,19 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
 
           <div className="flex items-center gap-2 shrink-0">
             {!isStreaming ? (
-              <span className="px-3 py-1.5 text-xs font-bold text-amber-300">
-                Connexion du direct…
-              </span>
+              needsManualStart ? (
+                <button
+                  type="button"
+                  onClick={handleManualStart}
+                  className="tap-target rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 px-4 py-2 text-xs font-black text-slate-950 shadow-lg"
+                >
+                  📷 Activer ma caméra
+                </button>
+              ) : (
+                <span className="px-3 py-1.5 text-xs font-bold text-amber-300">
+                  Connexion du direct…
+                </span>
+              )
             ) : (
               <div className="flex items-center gap-2">
                 <button
@@ -639,41 +828,49 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
         </div>
       )}
 
-      {/* Local Video Preview for Active Player if streaming or testing */}
+      {/* Local Video Preview for Active Player if streaming or testing.
+          No backdrop blur and no infinite animation here: compositing a blurred
+          backdrop and a pinging dot on top of a playing <video> keeps the GPU
+          busy every frame, which is one of the heaviest battery drains on iOS. */}
       {isActivePlayer && isStreaming && localStream && (
-        <div className="fixed bottom-4 left-4 z-40 bg-slate-900/90 border border-amber-500/50 rounded-2xl p-2 shadow-2xl backdrop-blur-md animate-fadeIn">
+        <div className="fixed bottom-4 left-4 z-40 bg-slate-900 border border-amber-500/50 rounded-2xl p-2 shadow-2xl">
           <div className="flex items-center justify-between text-[11px] text-slate-300 font-bold mb-1 px-1">
-            <span className="flex items-center gap-1 text-emerald-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-              {isTestMode ? '🧪 Mode Test Caméra' : '🔴 Mon Flux Direct'}
+            <span className="flex items-center gap-1.5 text-emerald-400">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              {isTestMode ? '🧪 Mode Test Caméra' : 'Mon flux direct'}
             </span>
             <button
-              onClick={() => setIsMinimized(!isMinimized)}
+              onClick={() => setIsLocalMinimized(!isLocalMinimized)}
               className="text-slate-400 hover:text-white px-1"
+              aria-label={isLocalMinimized ? 'Afficher mon aperçu' : 'Masquer mon aperçu'}
             >
-              {isMinimized ? '＋' : 'ー'}
+              {isLocalMinimized ? '＋' : 'ー'}
             </button>
           </div>
-          {!isMinimized && (
-            <div className="relative w-36 h-28 bg-black rounded-xl overflow-hidden border border-slate-800">
-              <video
-                ref={localVideoRef}
-                autoPlay
-                playsInline
-                muted
-                className="w-full h-full object-cover transform -scale-x-100"
-              />
-            </div>
-          )}
+          {/* Kept mounted and merely hidden, so collapsing never detaches the stream */}
+          <div className={`relative w-36 h-28 bg-black rounded-xl overflow-hidden border border-slate-800 ${isLocalMinimized ? 'hidden' : ''}`}>
+            <video
+              ref={attachLocalVideo}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover transform -scale-x-100"
+            />
+            {isVideoOff && (
+              <div className="absolute inset-0 flex items-center justify-center bg-slate-950/85 text-[11px] font-bold text-slate-300">
+                Vidéo coupée
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {/* 2. Spectator PIP Overlay (When Active Player is Broadcasting) */}
       {!isActivePlayer && (remoteStream || isTestMode) && (
-        <div className="fixed top-20 right-4 z-40 bg-slate-900/95 border-2 border-amber-500/60 rounded-2xl p-2.5 shadow-2xl backdrop-blur-md w-48 sm:w-56 animate-fadeIn">
+        <div className="fixed top-20 right-4 z-40 bg-slate-900 border-2 border-amber-500/60 rounded-2xl p-2.5 shadow-2xl w-48 sm:w-56">
           <div className="flex items-center justify-between gap-1 mb-1.5">
             <div className="flex items-center gap-1.5 overflow-hidden">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping shrink-0" />
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0" />
               <span className="font-extrabold text-xs text-white truncate">
                 {activePlayer?.name || 'Joueur Actif'}
               </span>
@@ -689,37 +886,36 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => setIsMinimized(!isMinimized)}
+                onClick={() => setIsRemoteMinimized(!isRemoteMinimized)}
                 className="p-1 text-slate-300 hover:text-white font-bold text-xs"
+                aria-label={isRemoteMinimized ? 'Afficher le direct' : 'Masquer le direct'}
               >
-                {isMinimized ? '＋' : 'ー'}
+                {isRemoteMinimized ? '＋' : 'ー'}
               </button>
             </div>
           </div>
 
-          {!isMinimized && (
-            <div className="relative w-full h-36 bg-black rounded-xl overflow-hidden border border-slate-800 shadow-inner">
-              <video
-                ref={remoteVideoRef}
-                autoPlay
-                playsInline
-                muted={isRemoteMuted}
-                className="w-full h-full object-cover"
-              />
-              {isAudioBlocked && (
-                <button
-                  type="button"
-                  onClick={enableRemoteAudio}
-                  className="absolute inset-x-2 bottom-2 rounded-lg bg-amber-500 px-2 py-1.5 text-xs font-black text-slate-950 shadow-lg"
-                >
-                  🔊 Toucher pour entendre
-                </button>
-              )}
-              <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-black/60 text-[10px] font-bold text-amber-300">
-                🎥 Direct
-              </div>
+          <div className={`relative w-full h-36 bg-black rounded-xl overflow-hidden border border-slate-800 shadow-inner ${isRemoteMinimized ? 'hidden' : ''}`}>
+            <video
+              ref={attachRemoteVideo}
+              autoPlay
+              playsInline
+              muted={isRemoteMuted}
+              className="w-full h-full object-cover"
+            />
+            {isAudioBlocked && (
+              <button
+                type="button"
+                onClick={enableRemoteAudio}
+                className="absolute inset-x-2 bottom-2 rounded-lg bg-amber-500 px-2 py-1.5 text-xs font-black text-slate-950 shadow-lg"
+              >
+                🔊 Toucher pour entendre
+              </button>
+            )}
+            <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-black/60 text-[10px] font-bold text-amber-300">
+              🎥 Direct
             </div>
-          )}
+          </div>
         </div>
       )}
     </div>
