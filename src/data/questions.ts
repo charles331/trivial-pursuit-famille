@@ -81,6 +81,7 @@ import { GASTRONOMIE_FRANCOPHONE_ADULTE } from './questionBank/gastronomieFranco
 import { SPORTS_FRANCOPHONE_ADULTE } from './questionBank/sportsFrancophoneAdultEditorial';
 import { SERIES_TV_ADULTE } from './questionBank/seriesTvAdultEditorial';
 import { ART_BD_LITTERATURE_ADULTE } from './questionBank/artBdLitteratureAdultEditorial';
+import { ART_GRAND_PUBLIC_ADULTE } from './questionBank/artGrandPublicAdultEditorial';
 import { SCIENCES_ADO_EDITORIAL } from './questionBank/sciencesAdoEditorial';
 import {
   POPCULTURE_ADO_EDITORIAL,
@@ -121,6 +122,7 @@ const CURATED_QUESTIONS: Question[] = [
   ...SCIENCES_ADULTE_EDITORIAL_FINAL,
   ...ART_QUESTIONS,
   ...ART_BD_LITTERATURE_ADULTE,
+  ...ART_GRAND_PUBLIC_ADULTE,
   ...ART_ADULTE_EDITORIAL,
   ...ART_ADULTE_EDITORIAL_02,
   ...ART_ADULTE_EDITORIAL_03,
