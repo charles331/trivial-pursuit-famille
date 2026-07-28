@@ -61,7 +61,7 @@ function stem(word: string): string {
 function contentWords(value: string): string[] {
   const tokens: string[] = deaccent(value).match(/[a-z0-9]+/g) ?? [];
   return tokens
-    .filter((word) => word.length > 3 && !STOP_WORDS.has(word))
+    .filter((word) => word.length > 2 && !STOP_WORDS.has(word))
     .map(stem);
 }
 

@@ -88,6 +88,58 @@ function merelyRestatesQuestion(question: Question, correctAnswer: string): bool
   return [...explanationWords].every((word) => knownWords.has(word));
 }
 
+
+/**
+ * Squelette d'un énoncé : noms propres et titres cités remplacés par un blanc.
+ * « Quel fleuve traverse Budapest ? » et « Quel fleuve traverse Belgrade ? »
+ * partagent alors la même clé. Un découpage sur les premiers mots les voyait
+ * comme deux moules distincts, et laissait passer les séries de dix-huit cartes.
+ */
+function questionSkeleton(question: string): string {
+  return question
+    .replace(/[«"][^»"]*[»"]/g, '_')
+    .split(/\s+/)
+    .map((word, index) => (index > 0 && /^[A-ZÀ-Ý]/.test(word) ? '_' : normalize(word)))
+    .join(' ')
+    .replace(/(?:_[\s,]*)+/g, '_ ')
+    .trim();
+}
+
+/** Mots pleins d'un énoncé, pour rapprocher deux reformulations du même fait. */
+function comparableWords(value: string): Set<string> {
+  return new Set(
+    normalize(value)
+      .split(' ')
+      .filter((word) => word.length > 2 && !CONTENT_STOP_WORDS.has(word))
+      .map((word) => {
+        const trimmed = word.replace(/(aux|es|s|e)$/, '');
+        return trimmed.length > 7 ? trimmed.slice(0, 6) : trimmed;
+      }),
+  );
+}
+
+/**
+ * Noms propres et titres cités d'un énoncé.
+ *
+ * Deux cartes peuvent partager la même réponse sans poser le même fait : « La
+ * Nuit étoilée » et « Le Café de nuit » sont deux van Gogh, XIII et Thorgal
+ * deux séries de Van Hamme. Quand chaque énoncé nomme une œuvre ou une entité
+ * que l'autre ignore, il ne s'agit pas d'une reformulation.
+ */
+function distinctiveNames(question: string): Set<string> {
+  const quoted = [...question.matchAll(/[«"]([^»"]*)[»"]/g)].map((match) => match[1]);
+  const capitalised = question
+    .split(/\s+/)
+    .slice(1)
+    .filter((word) => /^[A-ZÀ-Ý]/.test(word));
+  return new Set([...quoted, ...capitalised].map(normalize).filter(Boolean));
+}
+
+/** Réponse comparable : « Le Danube » et « Danube » désignent le même fait. */
+function comparableAnswer(answer: string): string {
+  return normalize(answer).replace(/^(le|la|les|l|un|une|des|du|de)\s+/, '');
+}
+
 const errors: string[] = [];
 const editorialIssueCounts = new Map<string, number>();
 function editorialError(issue: string, id: string): void {
@@ -101,6 +153,10 @@ const adultFactsByCategory = new Map<CategoryId, Set<string>>();
 let longAdultOptions = 0;
 let associationCards = 0;
 let longAdultQuestions = 0;
+
+function answerOfQuestion(question: Question): string {
+  return question.options[question.correctAnswerIndex] ?? '';
+}
 
 function sourceFactSignature(question: Question): string {
   const answer = question.options[question.correctAnswerIndex] ?? '';
@@ -193,6 +249,80 @@ for (const question of QUESTIONS_DATABASE) {
   }
 }
 
+// --- Reformulations d'un même fait -----------------------------------------
+// L'audit ne comparait que des textes identiques : deux cartes « Quelle mer
+// sépare l'Australie de la Nouvelle-Zélande ? » et « Quelle mer se trouve
+// entre l'Australie et la Nouvelle-Zélande ? » passaient toutes deux.
+const PARAPHRASE_OVERLAP = 0.34;
+const adultByAnswer = new Map<string, Question[]>();
+for (const question of QUESTIONS_DATABASE) {
+  if (question.difficulty !== 'adulte') continue;
+  const key = `${question.categoryId}|${comparableAnswer(answerOfQuestion(question))}`;
+  adultByAnswer.set(key, [...(adultByAnswer.get(key) ?? []), question]);
+}
+for (const group of adultByAnswer.values()) {
+  for (let left = 0; left < group.length; left += 1) {
+    for (let right = left + 1; right < group.length; right += 1) {
+      const a = comparableWords(group[left].question);
+      const b = comparableWords(group[right].question);
+      if (a.size === 0 || b.size === 0) continue;
+      const namesLeft = distinctiveNames(group[left].question);
+      const namesRight = distinctiveNames(group[right].question);
+      const eachNamesSomethingOwn = [...namesLeft].some((name) => !namesRight.has(name))
+        && [...namesRight].some((name) => !namesLeft.has(name));
+      if (eachNamesSomethingOwn) continue;
+      const shared = [...a].filter((word) => b.has(word)).length;
+      const union = new Set([...a, ...b]).size;
+      if (shared / union >= PARAPHRASE_OVERLAP) {
+        editorialError(
+          `Fait adulte reformulé (déjà posé par ${group[left].id})`,
+          group[right].id,
+        );
+      }
+    }
+  }
+}
+
+// --- Moules d'énoncé sur-utilisés -------------------------------------------
+const MAX_SKELETON_REUSE = 8;
+for (const categoryId of CATEGORIES) {
+  const rows = QUESTIONS_DATABASE.filter(
+    (question) => question.categoryId === categoryId && question.difficulty === 'adulte',
+  );
+  const skeletons = new Map<string, number>();
+  for (const question of rows) {
+    const key = questionSkeleton(question.question);
+    skeletons.set(key, (skeletons.get(key) ?? 0) + 1);
+  }
+  for (const [skeleton, count] of skeletons) {
+    if (count > MAX_SKELETON_REUSE) {
+      errors.push(
+        `${categoryId} réutilise ${count} fois le moule « ${skeleton} »`
+          + ` (maximum ${MAX_SKELETON_REUSE})`,
+      );
+    }
+  }
+}
+
+// --- Cartes jouées au hasard entre quatre nombres nus ------------------------
+const MAX_BARE_NUMBER_RATIO = 0.05;
+for (const categoryId of CATEGORIES) {
+  const rows = QUESTIONS_DATABASE.filter(
+    (question) => question.categoryId === categoryId && question.difficulty === 'adulte',
+  );
+  const bare = rows.filter(
+    (question) => question.options.every(
+      (option) => /^[^\d]{0,6}\d{1,4}[^\d]{0,12}$/.test(option.trim()),
+    ),
+  ).length;
+  if (bare > rows.length * MAX_BARE_NUMBER_RATIO) {
+    errors.push(
+      `${categoryId} compte ${bare} cartes adultes dont les quatre options sont`
+        + ` des nombres nus (maximum ${Math.floor(rows.length * MAX_BARE_NUMBER_RATIO)})`,
+    );
+  }
+}
+
 console.log('Catégorie       Enfant  Ado  Adulte  Total');
 console.log('--------------------------------------------');
 for (const categoryId of CATEGORIES) {
@@ -251,6 +381,9 @@ if (errors.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(`\nAudit réussi : ${QUESTIONS_DATABASE.length} questions valides.`);
-  console.log('Qualité adulte : aucun fait répété ni préfixe artificiel, question ≤ 125 caractères, choix ≤ 72 caractères.');
+  console.log('Qualité adulte : aucun fait répété ni reformulé, aucun préfixe artificiel,');
+  console.log('question ≤ 125 caractères, choix ≤ 72 caractères.');
+  console.log(`Moules : aucun énoncé adulte réutilisé plus de ${MAX_SKELETON_REUSE} fois par catégorie.`);
+  console.log('Niveaux : aucune carte enfant recopiée au niveau ado ou adulte.');
   console.log(`Volume adulte : exactement ${ADULT_EDITORIAL_TARGET_PER_CATEGORY} cartes relues par catégorie.`);
 }

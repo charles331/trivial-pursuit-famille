@@ -125,11 +125,11 @@ export const HISTOIRE_ADULTE_PILOT: Question[] = [
   {
     id: 'his_adulte_pilot_014',
     categoryId: 'histoire',
-    question: 'Dans quelle ville les papes s’installèrent-ils au XIVe siècle ?',
-    options: ['Arles', 'Avignon', 'Lyon', 'Toulouse'],
+    question: 'Combien de papes ont régné depuis Avignon au XIVe siècle ?',
+    options: ['Trois', 'Sept', 'Douze', 'Deux'],
     correctAnswerIndex: 1,
     difficulty: 'adulte',
-    explanation: 'Sept papes résidèrent à Avignon entre 1309 et 1377.',
+    explanation: 'Ils y résidèrent de 1309 à 1377 ; le palais des Papes reste le plus vaste palais gothique d’Europe.',
   },
   {
     id: 'his_adulte_pilot_015',
