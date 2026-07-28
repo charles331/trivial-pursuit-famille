@@ -458,3 +458,107 @@ Volumes inchangés : 135 enfant, 135 ado et 400 adulte par catégorie,
 - **Répétition de la formule « Le saviez-vous ? »** en tête d'un grand nombre
   d'explications des niveaux enfant et ado. Sans effet sur la difficulté, mais
   lassant à la lecture à voix haute.
+
+
+---
+
+## 8. Analyse ciblée : « Art & Littérature » et « Cinéma & Séries »
+
+Demandée après une première session de test : ces deux catégories sont ressenties
+comme trop complexes. Le diagnostic isole trois causes distinctes.
+
+### 8.1 Le problème est au niveau adulte seulement
+
+Les niveaux enfant et ado de ces deux catégories sont bien calibrés et n'ont pas
+besoin d'être touchés. Art ado tourne autour de Hamlet, Harpagon, le Boléro, Le
+Cri, Dickens, Jean Valjean, Rodin, le surréalisme, Homère. Cinéma ado tourne
+autour de Harry Potter, Kaamelott, Dany Boon, Peter Jackson, Star Wars, La Casa
+de Papel, Totoro. C'est exactement le bon registre.
+
+### 8.2 Les étiquettes et le contenu sont croisés
+
+| Catégorie | Ce que le nom promet | Ce qu'elle contient (niveau adulte) |
+|---|---|---|
+| Cinéma & Séries | des séries | **3 cartes de séries sur 400** |
+| Art & Littérature | art et littérature | **42 cartes de musique classique et d'opéra** |
+| Pop Culture & Musique | de la musique | **108 cartes de séries**, 11 de classique |
+
+Un joueur qui connaît bien les séries n'en tire aucun bénéfice sur la case
+« Cinéma & Séries », et tombe sur un opéra en case « Art & Littérature ». Cette
+attente déçue compte autant que la difficulté brute.
+
+### 8.3 Les familles qui portent la difficulté
+
+Part des cartes adultes dont la bonne réponse n'apparaît nulle part aux niveaux
+enfant ou ado : **art 38 %, cinéma 42 %**, contre 15 % en sports.
+
+**Art (181 cartes sur 400, soit 45 %, dans des familles hors sujet)**
+
+| Famille | Cartes | Exemples |
+|---|---:|---|
+| mode, design, typographie, joaillerie | 66 | Rei Kawakubo, Eileen Gray, le caractère Bodoni, la granulation |
+| arts non occidentaux et archéologie | 45 | Tā moko, tissage navajo, Prambanan, zellige, kare-sansui |
+| musique classique, opéra, lied | 42 | livret de Don Giovanni, Má vlast, Wozzeck |
+| vocabulaire d'atelier | 19 | grisaille, encaustique, aquatinte, empâtement |
+| danse et chorégraphie | 18 | Alvin Ailey, Michel Fokine, Sidi Larbi Cherkaoui |
+| art conceptuel et performance | 12 | Sol LeWitt, Arte Povera, Le Vide d'Yves Klein |
+
+Ce que le nom promet ne pèse que 35 % : 81 cartes de peinture et sculpture,
+58 de littérature. Et la bande dessinée franco-belge, dans un jeu destiné à un
+foyer belge, ne compte que **2 cartes sur 400** au niveau adulte — contre 8 au
+niveau enfant et 8 au niveau ado.
+
+**Cinéma (230 cartes sur 400, soit 58 %)**
+
+| Famille | Cartes | Exemples |
+|---|---:|---|
+| cinéma muet et classique d'avant 1960 | 88 | Dziga Vertov, De Sica, procédés Vitaphone |
+| cinéma d'auteur international à festivals | 69 | Amir Naderi, Elia Suleiman, Johnnie To, Cristian Mungiu |
+| technique et histoire des procédés | 48 | CinemaScope anamorphique, LUT, rolling shutter |
+| métiers de l'ombre | 35 | Thelma Schoonmaker (monteuse), Eiko Ishioka (costumière) |
+| documentaire | 13 | Shoah, The Thin Blue Line |
+
+Les cartes de métiers de l'ombre sont les plus dures de tout le corpus : même un
+cinéphile ne cite pas la monteuse de Scorsese.
+
+### 8.4 Un défaut à corriger dans tous les cas
+
+« Qui a réalisé La Cité de Dieu ? » existe deux fois avec deux bonnes réponses
+différentes : `cin_adulte_editorial_03_006` attend « Fernando Meirelles »,
+`cin_adulte_editorial_04_022` attend « Fernando Meirelles et Kátia Lund » sans
+proposer Meirelles seul. Un joueur qui a appris la première se trompe sur la
+seconde. Deux autres cartes présentent le même défaut sous une forme bénigne
+(détroit de Messine, monter une sauce au beurre). Le contrôle d'audit compare
+les réponses caractère par caractère et ne voit donc pas ces cas.
+
+### 8.5 Propositions
+
+**A. Remettre chaque thème dans sa catégorie — une rotation à trois.**
+
+1. Art cède ses 42 cartes de musique classique à « Pop Culture & Musique ».
+2. Pop Culture cède 42 cartes de séries à « Cinéma & Séries ».
+3. Cinéma écarte 42 de ses cartes les plus spécialisées.
+4. Art reçoit 42 cartes neuves de peinture, littérature et BD franco-belge.
+
+Les trois catégories restent à 400. Une seule série de 42 cartes est à écrire, et
+les trois étiquettes redeviennent honnêtes.
+
+**B. Ramener les familles hors sujet à une part raisonnable.**
+
+| Famille | Aujourd'hui | Cible | Ce qu'on garde |
+|---|---:|---:|---|
+| art — mode et design | 66 | ~15 | Chanel, Dior, Saint Laurent, Bauhaus, Art nouveau |
+| art — arts non occidentaux | 45 | ~12 | Angkor, Borobudur, Hokusai, masques africains |
+| art — danse | 18 | ~6 | Casse-Noisette, Le Lac des cygnes, Noureev, Béjart |
+| art — vocabulaire d'atelier | 19 | ~8 | fresque, aquarelle, huile, perspective |
+| cinéma — muet et avant 1960 | 88 | ~25 | Chaplin, Hitchcock, Gabin, Casablanca, Autant-Lara |
+| cinéma — auteur international | 69 | ~25 | ceux qui ont franchi le grand public |
+| cinéma — technique | 48 | ~15 | les plus parlantes, qui apprennent quelque chose |
+| cinéma — métiers de l'ombre | 35 | ~10 | compositeurs identifiables : Morricone, Legrand, Williams |
+
+Les cartes libérées vont vers ce que le foyer connaît : comédies françaises et
+belges, sagas et blockbusters, acteurs familiers, séries, romans lus à l'école,
+peinture grand public, BD franco-belge.
+
+**C. Ajouter un contrôle d'audit** « même énoncé, réponses libellées
+différemment », qui aurait attrapé La Cité de Dieu.
