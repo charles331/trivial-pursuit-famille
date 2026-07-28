@@ -18,6 +18,7 @@ interface QuestionModalProps {
   } | null;
   isMyTurn: boolean;
   isReaderMode?: boolean;
+  isLocalMode?: boolean;
   allPlayers?: Player[];
   currentUserId?: string;
   onSubmitAnswer: (optionIndex: number) => void;
@@ -32,17 +33,19 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   lastAnswerResult,
   isMyTurn,
   isReaderMode = false,
+  isLocalMode = false,
   allPlayers = [],
   currentUserId,
   onSubmitAnswer,
   onNextTurn
 }) => {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const [localReaderReady, setLocalReaderReady] = useState(false);
 
   const category = CATEGORIES[question.categoryId] || CATEGORIES.histoire;
 
   // Determine if current client is the active player
-  const isIActivePlayer = isMyTurn || (currentUserId ? activePlayer.id === currentUserId : false) || activePlayer.id.startsWith('local_');
+  const isIActivePlayer = !localReaderReady && (isMyTurn || (currentUserId ? activePlayer.id === currentUserId : false) || activePlayer.id.startsWith('local_'));
 
   // Find designated Reader (next player in turn order)
   const activeIndex = allPlayers.findIndex(p => p.id === activePlayer.id);
@@ -52,11 +55,16 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
 
   // Determine if current client is the designated Reader (MUST be a non-active player when Reader Mode is ENABLED)
   const isIReader = Boolean(
-    isReaderMode && 
-    !isIActivePlayer && 
-    (currentUserId 
-      ? (readerPlayer?.id === currentUserId || (readerPlayer?.id?.startsWith('local_') && activePlayer.id !== readerPlayer?.id))
-      : true)
+    isReaderMode &&
+    (
+      (isLocalMode && localReaderReady) ||
+      (
+        !isIActivePlayer &&
+        (currentUserId
+          ? (readerPlayer?.id === currentUserId || (readerPlayer?.id?.startsWith('local_') && activePlayer.id !== readerPlayer?.id))
+          : true)
+      )
+    )
   );
 
   // Enforce card masking: active player's question is ALWAYS hidden in Reader Mode until answered (NO reveal button)
@@ -69,7 +77,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
 
   const [timeLeft, setTimeLeft] = useState<number>(() => {
     if (effectiveTimerSeconds <= 0) return 999;
-    if (questionStartTime) {
+    if (questionStartTime && !(isReaderMode && isLocalMode)) {
       const elapsed = Math.floor((Date.now() - questionStartTime) / 1000);
       return Math.max(0, effectiveTimerSeconds - elapsed);
     }
@@ -78,11 +86,11 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
 
   // Countdown timer effect
   useEffect(() => {
-    if (effectiveTimerSeconds <= 0 || lastAnswerResult) return;
+    if (effectiveTimerSeconds <= 0 || lastAnswerResult || (isReaderMode && isLocalMode && !localReaderReady)) return;
 
     const interval = setInterval(() => {
       let remaining = effectiveTimerSeconds;
-      if (questionStartTime) {
+      if (questionStartTime && !(isReaderMode && isLocalMode)) {
         const elapsed = Math.floor((Date.now() - questionStartTime) / 1000);
         remaining = Math.max(0, effectiveTimerSeconds - elapsed);
       } else {
@@ -93,9 +101,14 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
 
       if (remaining <= 0) {
         clearInterval(interval);
-        if (isIActivePlayer && selectedIdx === null && !lastAnswerResult) {
-          soundManager.playWrong();
-          onSubmitAnswer(-1);
+        if ((isIActivePlayer || isIReader) && !lastAnswerResult) {
+          const timedAnswer = selectedIdx ?? -1;
+          onSubmitAnswer(timedAnswer);
+          if (timedAnswer === question.correctAnswerIndex) {
+            soundManager.playCorrect();
+          } else {
+            soundManager.playWrong();
+          }
         }
       } else if (remaining <= 6) {
         soundManager.playTick();
@@ -103,26 +116,56 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [question.id, effectiveTimerSeconds, questionStartTime, lastAnswerResult]);
+  }, [question.id, effectiveTimerSeconds, questionStartTime, lastAnswerResult, isReaderMode, isLocalMode, localReaderReady, selectedIdx, isIActivePlayer, isIReader, onSubmitAnswer, timeLeft]);
 
   const handleOptionClick = (idx: number) => {
     if (lastAnswerResult) return;
-    // Allow active player or designated reader to submit answer
     setSelectedIdx(idx);
     soundManager.playClick();
-    onSubmitAnswer(idx);
+  };
 
-    if (idx === question.correctAnswerIndex) {
+  const handleConfirmAnswer = () => {
+    if (selectedIdx === null || lastAnswerResult) return;
+    onSubmitAnswer(selectedIdx);
+
+    if (selectedIdx === question.correctAnswerIndex) {
       soundManager.playCorrect();
     } else {
       soundManager.playWrong();
     }
   };
 
+  useEffect(() => {
+    setLocalReaderReady(false);
+    setSelectedIdx(null);
+  }, [question.id]);
+
   const timerPercent = effectiveTimerSeconds > 0 ? (timeLeft / effectiveTimerSeconds) * 100 : 100;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
+      {isReaderMode && isLocalMode && !localReaderReady && !lastAnswerResult && (
+        <div className="absolute inset-0 z-20 bg-slate-950/95 flex items-center justify-center p-5">
+          <div className="w-full max-w-md text-center space-y-5 bg-slate-900 border-2 border-amber-500/50 rounded-3xl p-7 shadow-2xl">
+            <div className="text-5xl">📱</div>
+            <div>
+              <h2 className="text-2xl font-black text-white">Passez l’appareil à {readerPlayer?.name}</h2>
+              <p className="mt-2 text-sm text-slate-300">
+                {readerPlayer?.name} va lire la carte à voix haute pour {activePlayer.name}. Ne montrez pas l’écran au joueur interrogé.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                soundManager.playClick();
+                setLocalReaderReady(true);
+              }}
+              className="w-full py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black"
+            >
+              Je suis {readerPlayer?.name}, afficher la carte
+            </button>
+          </div>
+        </div>
+      )}
       <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border-4 border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
         
         {/* Category Header */}
@@ -232,6 +275,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
               const isAnswered = lastAnswerResult !== null;
               const isCorrect = idx === question.correctAnswerIndex;
               const isChosen = lastAnswerResult?.selectedOption === idx;
+              const isSelected = !isAnswered && selectedIdx === idx;
 
               // Reader Mode highlight for designated reader before answer is submitted
               const isReaderHighlight = isReaderMode && isIReader && !isAnswered && isCorrect;
@@ -248,6 +292,8 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                 }
               } else if (isReaderHighlight) {
                 btnStyle = 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500 text-emerald-900 dark:text-emerald-200 font-bold';
+              } else if (isSelected) {
+                btnStyle = 'bg-amber-100 dark:bg-amber-950/50 border-amber-500 text-amber-950 dark:text-amber-100 font-bold ring-2 ring-amber-500/30';
               }
 
               return (
@@ -280,10 +326,29 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                       Correct
                     </span>
                   )}
+                  {isSelected && !isAnswered && !isReaderHighlight && (
+                    <CheckCircle2 className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                  )}
                 </button>
               );
             })}
           </div>
+
+          {!lastAnswerResult && (isMyTurn || isIReader) && (
+            <div className="space-y-2">
+              <button
+                type="button"
+                disabled={selectedIdx === null}
+                onClick={handleConfirmAnswer}
+                className="w-full py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {selectedIdx === null ? 'Choisissez une réponse' : `Valider la réponse ${['A', 'B', 'C', 'D'][selectedIdx]}`}
+              </button>
+              <p className="text-[11px] text-center text-slate-500 dark:text-slate-400">
+                Vous pouvez changer de choix avant de valider.
+              </p>
+            </div>
+          )}
 
           {/* Explanation & Result Banner */}
           {lastAnswerResult && (

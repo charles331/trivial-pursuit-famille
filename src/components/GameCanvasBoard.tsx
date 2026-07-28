@@ -23,6 +23,7 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
 }) => {
   const [isRollingLocally, setIsRollingLocally] = useState(false);
   const [showingResultPause, setShowingResultPause] = useState<number | null>(null);
+  const [showTurnIntro, setShowTurnIntro] = useState(true);
 
   const hasRolledRef = React.useRef(false);
   const prevDiceValRef = React.useRef<number | null>(null);
@@ -39,9 +40,21 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
     gameState.settings.isLocalMode || 
     gameState.players.length === 1;
   const boardConfig = BOARD_PRESETS[gameState.settings.boardType] || BOARD_PRESETS.wheel;
+  const possibleDestinationTiles = gameState.possibleMoves
+    .map(tileId => boardConfig.tiles.find(tile => tile.id === tileId))
+    .filter((tile): tile is BoardTile => Boolean(tile));
+
+  const destinationLabel = (tile: BoardTile) => {
+    if (tile.type === 'hub') return 'Centre du plateau';
+    if (tile.type === 'reroll') return 'Relancer le dé';
+    if (tile.type === 'surprise') return 'Case surprise';
+    const category = tile.categoryId ? CATEGORIES[tile.categoryId]?.name : null;
+    return `${category || tile.label}${tile.type === 'camembert' || tile.isCamembert ? ' · Camembert' : ''}`;
+  };
 
   // Reset roll guard state whenever phase returns to rolling or player turn switches
   React.useEffect(() => {
+    setShowTurnIntro(true);
     if (gameState.phase === 'rolling') {
       hasRolledRef.current = false;
       isAutoAdvancingRef.current = false;
@@ -92,6 +105,34 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
 
   return (
     <div className="relative w-full flex flex-col items-center justify-center p-2 sm:p-4 bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 overflow-hidden min-h-[460px] sm:min-h-[580px]">
+      {showTurnIntro && gameState.phase === 'rolling' && isMyTurn && (
+        <div className="absolute inset-0 z-40 bg-slate-950/95 flex items-center justify-center p-5">
+          <div className="text-center space-y-5">
+            <div
+              className="w-24 h-24 mx-auto rounded-full flex items-center justify-center text-5xl border-4 border-white/30 shadow-2xl"
+              style={{ backgroundColor: activePlayer?.color }}
+            >
+              {AVATARS.find(a => a.id === activePlayer?.avatarId)?.emoji || '🦁'}
+            </div>
+            <div>
+              <p className="text-amber-400 font-black uppercase tracking-widest text-sm">Nouveau tour</p>
+              <h2 className="text-3xl sm:text-4xl text-white font-black">Au tour de {activePlayer?.name}</h2>
+              {gameState.settings.isLocalMode && (
+                <p className="text-slate-300 text-sm mt-2">Passez-lui l’appareil avant de continuer.</p>
+              )}
+            </div>
+            <button
+              onClick={() => {
+                soundManager.playClick();
+                setShowTurnIntro(false);
+              }}
+              className="px-8 py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-lg"
+            >
+              J’ai l’appareil, commencer
+            </button>
+          </div>
+        </div>
+      )}
       {/* Background Decorative Grid Accent */}
       <div className="absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:20px_20px] opacity-20 pointer-events-none" />
 
@@ -106,7 +147,7 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
           </div>
           <div>
             <div className="text-xs text-amber-400 font-bold uppercase tracking-wider flex items-center gap-1">
-              <Crown className="w-3.5 h-3.5" /> Turn de : {activePlayer?.name}
+              <Crown className="w-3.5 h-3.5" /> Tour de : {activePlayer?.name}
             </div>
             <div className="text-[11px] text-slate-400 font-medium">
               {gameState.phase === 'rolling' && '👉 Lancez le dé 3D !'}
@@ -388,6 +429,33 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
           </div>
         )}
       </div>
+
+      {gameState.phase === 'moving' && isMyTurn && possibleDestinationTiles.length > 0 && (
+        <div className="w-full z-10 mt-2 p-3 rounded-2xl bg-slate-950/80 border border-amber-500/30">
+          <p className="text-xs font-black text-amber-400 uppercase tracking-wide mb-2 text-center">
+            Où voulez-vous aller ?
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {possibleDestinationTiles.map(tile => {
+              const category = tile.categoryId ? CATEGORIES[tile.categoryId] : null;
+              return (
+                <button
+                  key={`destination_${tile.id}`}
+                  type="button"
+                  onClick={() => {
+                    soundManager.playClick();
+                    onSelectTile(tile.id);
+                  }}
+                  className="min-h-12 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border-2 text-left text-sm font-bold text-white transition-all active:scale-[0.98]"
+                  style={{ borderColor: category?.color || '#F59E0B' }}
+                >
+                  {destinationLabel(tile)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Footer Player Wedges Cards Strip */}
       <div className="w-full mt-2 z-10 grid grid-cols-2 sm:grid-cols-4 gap-2">

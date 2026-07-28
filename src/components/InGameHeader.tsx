@@ -89,10 +89,10 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({ gameState, onLeaveGa
           <button
             onClick={() => setShowLeaveConfirm(true)}
             className="px-2.5 py-1.5 rounded-xl bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-200 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
-            title="Stopper la partie"
+            title="Quitter la partie"
           >
             <LogOut className="w-4 h-4 text-red-400" />
-            <span className="hidden sm:inline">Stopper</span>
+            <span className="hidden sm:inline">Quitter</span>
           </button>
         </div>
       </header>
@@ -106,13 +106,13 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({ gameState, onLeaveGa
                 <LogOut className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-white">Stopper la partie ?</h3>
+                <h3 className="text-lg font-black text-white">Quitter la partie ?</h3>
                 <p className="text-xs text-slate-400">Confirmation de sortie</p>
               </div>
             </div>
 
             <p className="text-sm text-slate-300 leading-relaxed">
-              Êtes-vous sûr de vouloir arrêter et quitter la partie en cours ? Toute la progression actuelle sera réinitialisée.
+              Voulez-vous quitter cette partie sur cet appareil ? La partie restera disponible pour les autres joueurs connectés.
             </p>
 
             <div className="flex items-center justify-end gap-3 pt-2">
@@ -130,7 +130,7 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({ gameState, onLeaveGa
                 className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-xs shadow-lg transition-colors flex items-center gap-1.5"
               >
                 <LogOut className="w-4 h-4" />
-                Oui, stopper la partie
+                Oui, quitter la partie
               </button>
             </div>
           </div>
@@ -176,7 +176,7 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({ gameState, onLeaveGa
                         <div>
                           <div className="font-bold text-xs">{p.name} {p.isHost && '👑'}</div>
                           <div className="text-[10px] text-slate-400">
-                            Difficulté : {p.difficulty} | Wedges: {p.wedges.length}/6
+                            Difficulté : {p.difficulty} | Camemberts : {p.wedges.length}/{gameState.settings.wedgesToWin}
                           </div>
                         </div>
                       </div>
@@ -205,11 +205,11 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({ gameState, onLeaveGa
             </h3>
 
             <div className="space-y-2 text-xs text-slate-300 leading-relaxed">
-              <p>1. 🎲 **Lancez le dé** à votre tour pour avancer sur le plateau.</p>
-              <p>2. ❓ **Répondez à la question** de la case où vous atterrissez. Chaque joueur a une difficulté adaptée à son âge (Enfant, Ado, Adulte) !</p>
-              <p>3. 🍰 **Gagnez des Camemberts** : En répondant correctement sur une case Camembert, vous récoltez un morceau dans cette catégorie.</p>
-              <p>4. 🔄 **Rejouez** si vous répondez correctement !</p>
-              <p>5. 🏆 **Victoire** : Rassemblez les 6 camemberts et rejoignez le centre du plateau pour la question finale de la victoire !</p>
+              <p>1. 🎲 <strong>Lancez le dé</strong> à votre tour pour avancer sur le plateau.</p>
+              <p>2. ❓ <strong>Répondez à la question</strong> de la case où vous atterrissez. Chaque joueur a une difficulté adaptée à son âge.</p>
+              <p>3. 🍰 <strong>Gagnez des camemberts</strong> en répondant correctement sur une case Camembert.</p>
+              <p>4. 🔄 <strong>Rejouez</strong> si vous répondez correctement.</p>
+              <p>5. 🏆 <strong>Victoire</strong> : rassemblez les camemberts requis et rejoignez le centre pour la question finale.</p>
             </div>
 
             <button

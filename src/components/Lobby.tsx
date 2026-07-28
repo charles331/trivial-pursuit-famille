@@ -4,9 +4,10 @@ import { AvatarPicker } from './AvatarPicker';
 import { BoardCustomizer } from './BoardCustomizer';
 import { soundManager } from '../utils/sound';
 import { AVATARS } from '../data/avatars';
+import { BOARD_PRESETS } from '../data/boards';
 import { 
   Users, Play, Plus, Copy, Check, Sparkles, Smartphone, Globe, Shield, 
-  Crown, Wand2, QrCode, LogOut 
+  Crown, Wand2, QrCode, LogOut, Trash2, SlidersHorizontal, ChevronDown
 } from 'lucide-react';
 
 interface LobbyProps {
@@ -16,7 +17,9 @@ interface LobbyProps {
   onCreateRoom: (playerData: Partial<Player>, isLocal: boolean) => void;
   onJoinRoom: (roomCode: string, playerData: Partial<Player>) => void;
   onAddLocalPlayer: (playerData: Partial<Player>) => void;
+  onRemoveLocalPlayer: (playerId: string) => void;
   onUpdatePlayer: (playerData: Partial<Player>) => void;
+  onToggleReady: () => void;
   onUpdateSettings: (settings: Partial<GameSettings>) => void;
   onStartGame: () => void;
   onAddCustomPack?: (themeName: string, questions: any[]) => void;
@@ -31,7 +34,9 @@ export const Lobby: React.FC<LobbyProps> = ({
   onCreateRoom,
   onJoinRoom,
   onAddLocalPlayer,
+  onRemoveLocalPlayer,
   onUpdatePlayer,
+  onToggleReady,
   onUpdateSettings,
   onStartGame,
   onAddCustomPack,
@@ -42,6 +47,7 @@ export const Lobby: React.FC<LobbyProps> = ({
   const [joinCodeInput, setJoinCodeInput] = useState(codeFromUrl ? codeFromUrl.toUpperCase() : '');
   const [copiedLink, setCopiedLink] = useState(false);
   const [showLeaveLobbyModal, setShowLeaveLobbyModal] = useState(false);
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
   // Default Player Form State
   const [playerName, setPlayerName] = useState('Joueur 1');
@@ -58,6 +64,9 @@ export const Lobby: React.FC<LobbyProps> = ({
 
   const me = gameState?.players.find(p => p.id === currentUserId) || gameState?.players[0];
   const isHost = me?.isHost || false;
+  const connectedPlayers = gameState?.players.filter(p => p.isConnected) || [];
+  const readyCount = connectedPlayers.filter(p => p.isReady).length;
+  const everyoneReady = connectedPlayers.length > 0 && readyCount === connectedPlayers.length;
 
   const handleCreateOnline = (isLocal = false) => {
     soundManager.playClick();
@@ -108,7 +117,7 @@ export const Lobby: React.FC<LobbyProps> = ({
               Code de la Salle : <span className="text-amber-400 font-mono tracking-wider">{gameState.roomCode}</span>
             </h2>
             <p className="text-xs text-slate-300">
-              {gameState.settings.isLocalMode ? '🎮 Mode Local (Passe-Partout sur 1 seul appareil)' : '🌐 Mode En Ligne Multi-Appareils'}
+              {gameState.settings.isLocalMode ? '🎮 Mode local — passez l’appareil à chaque tour' : '🌐 Mode en ligne — un appareil par joueur'}
             </p>
           </div>
 
@@ -232,8 +241,27 @@ export const Lobby: React.FC<LobbyProps> = ({
                         </div>
                       </div>
 
-                      <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-2.5 py-1 rounded-full">
-                        Prêt
+                      <div className="flex items-center gap-2">
+                        <div className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+                          !p.isConnected
+                            ? 'text-slate-500 bg-slate-200 dark:bg-slate-800'
+                            : p.isReady
+                              ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950'
+                              : 'text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950'
+                        }`}>
+                          {!p.isConnected ? 'Déconnecté' : p.isReady ? 'Prêt' : 'En attente'}
+                        </div>
+                        {gameState.settings.isLocalMode && isHost && p.id.startsWith('local_') && (
+                          <button
+                            type="button"
+                            onClick={() => onRemoveLocalPlayer(p.id)}
+                            className="p-2 rounded-xl text-red-500 hover:text-white hover:bg-red-500 transition-colors"
+                            aria-label={`Supprimer ${p.name}`}
+                            title={`Supprimer ${p.name}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
@@ -256,30 +284,77 @@ export const Lobby: React.FC<LobbyProps> = ({
                 onUpdatePlayer(updated);
               }}
             />
+
+            {!gameState.settings.isLocalMode && (
+              <button
+                onClick={() => {
+                  soundManager.playClick();
+                  onToggleReady();
+                }}
+                className={`w-full py-3 rounded-2xl font-black text-sm transition-all ${
+                  me?.isReady
+                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                    : 'bg-amber-500 hover:bg-amber-400 text-slate-950'
+                }`}
+              >
+                {me?.isReady ? '✓ Je suis prêt — modifier' : 'Je suis prêt'}
+              </button>
+            )}
           </div>
 
           {/* Board Customizer & Launch Button */}
           <div className="space-y-5">
-            <BoardCustomizer
-              settings={gameState.settings}
-              isHost={isHost}
-              onUpdateSettings={onUpdateSettings}
-              onAddCustomPack={onAddCustomPack}
-              customPacks={gameState.customPacks}
-            />
+            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowAdvancedSettings(value => !value)}
+                className="w-full p-4 flex items-center justify-between text-left"
+                aria-expanded={showAdvancedSettings}
+              >
+                <div>
+                  <div className="font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <SlidersHorizontal className="w-5 h-5 text-amber-500" />
+                    Personnaliser la partie
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    {BOARD_PRESETS[gameState.settings.boardType].name} · {gameState.settings.timerSeconds === 0 ? 'sans chrono' : `${gameState.settings.timerSeconds}s`} · {gameState.settings.wedgesToWin} camemberts
+                  </p>
+                </div>
+                <ChevronDown className={`w-5 h-5 text-slate-500 transition-transform ${showAdvancedSettings ? 'rotate-180' : ''}`} />
+              </button>
+              {showAdvancedSettings && (
+                <div className="border-t border-slate-200 dark:border-slate-800">
+                  <BoardCustomizer
+                    settings={gameState.settings}
+                    isHost={isHost}
+                    onUpdateSettings={onUpdateSettings}
+                    onAddCustomPack={onAddCustomPack}
+                    customPacks={gameState.customPacks}
+                  />
+                </div>
+              )}
+            </div>
 
             {/* Big Launch Game Button */}
             {isHost ? (
-              <button
-                onClick={() => {
-                  soundManager.playClick();
-                  onStartGame();
-                }}
-                className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-lg rounded-3xl flex items-center justify-center gap-3 shadow-2xl scale-105 active:scale-100 transition-all"
-              >
-                <Play className="w-6 h-6 fill-slate-950 stroke-none" />
-                DÉMARRER LA PARTIE FAMILIALE
-              </button>
+              <div className="space-y-2">
+                <div className="text-center text-xs font-bold text-slate-500 dark:text-slate-400">
+                  {gameState.settings.isLocalMode
+                    ? `${gameState.players.length} joueur${gameState.players.length > 1 ? 's' : ''} local${gameState.players.length > 1 ? 'aux' : ''}`
+                    : `${readyCount}/${connectedPlayers.length} joueurs prêts`}
+                </div>
+                <button
+                  disabled={!gameState.settings.isLocalMode && !everyoneReady}
+                  onClick={() => {
+                    soundManager.playClick();
+                    onStartGame();
+                  }}
+                  className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-lg rounded-3xl flex items-center justify-center gap-3 shadow-2xl scale-105 active:scale-100 transition-all disabled:opacity-40 disabled:grayscale disabled:cursor-not-allowed"
+                >
+                  <Play className="w-6 h-6 fill-slate-950 stroke-none" />
+                  {!gameState.settings.isLocalMode && !everyoneReady ? 'EN ATTENTE DES JOUEURS' : 'DÉMARRER LA PARTIE'}
+                </button>
+              </div>
             ) : (
               <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl text-center text-slate-600 dark:text-slate-300 font-semibold text-sm">
                 ⏳ En attente que l&apos;hôte lance la partie...
@@ -414,7 +489,7 @@ export const Lobby: React.FC<LobbyProps> = ({
               className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold text-xs rounded-2xl flex items-center justify-center gap-2 border border-slate-700 transition-all disabled:opacity-50"
             >
               <Smartphone className="w-4 h-4 text-amber-400" />
-              Mode Local / Passe-Partout (1 seule Tablette/Téléphone)
+              Mode local — 1 seul téléphone ou tablette
             </button>
           </div>
         )}
