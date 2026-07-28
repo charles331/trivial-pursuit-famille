@@ -5,74 +5,74 @@ type Fact = [string, string, string, string, string, string];
 const G = (raw: string): Fact[] => raw.trim().split('\n').map(line => line.split('|') as Fact);
 
 const GEOGRAPHY = G(`
-Dans quel pays se trouve la Transylvanie ?|La Roumanie|La Bulgarie|La Hongrie|La Serbie|Cette région historique occupe le centre de la Roumanie, à l’intérieur de l’arc des Carpates.
-Dans quel pays se trouve le site néolithique de Çatal Höyük ?|La Turquie|La Géorgie|L’Arménie|La Grèce|Çatal Höyük se situe en Anatolie centrale et conserve les vestiges d’une vaste agglomération préhistorique.
-Dans quel pays se trouve la vallée de la Bekaa ?|Le Liban|La Jordanie|La Syrie|Israël|La Bekaa s’étend entre les chaînes du Mont-Liban et de l’Anti-Liban.
-Dans quel pays se trouve le delta de l’Okavango ?|Le Botswana|La Namibie|La Zambie|Le Zimbabwe|L’Okavango se disperse dans les sables du Kalahari sans atteindre la mer.
-Dans quel pays se trouve le salar d’Uyuni ?|La Bolivie|Le Chili|Le Pérou|L’Argentine|Ce désert de sel occupe l’Altiplano bolivien à plus de 3 600 mètres d’altitude.
-Dans quel pays se trouve la région du Pantanal ?|Le Brésil|La Colombie|Le Venezuela|L’Équateur|La majeure partie de cette vaste zone humide se situe au Brésil, avec des extensions en Bolivie et au Paraguay.
-Dans quel pays se trouve la vallée de Kathmandu ?|Le Népal|Le Bhoutan|L’Inde|Le Pakistan|La vallée, entourée par les contreforts himalayens, abrite la capitale népalaise.
-Dans quel pays se trouve le plateau du Deccan ?|L’Inde|Le Pakistan|Le Bangladesh|Le Népal|Le Deccan occupe une grande partie de la péninsule indienne au sud du fleuve Narmada.
-Dans quel pays se trouve la région du Ladakh ?|L’Inde|Le Népal|Le Bhoutan|L’Afghanistan|Le Ladakh est un territoire de haute altitude situé entre le Karakoram et l’Himalaya.
-Dans quel pays se trouve le désert du Taklamakan ?|La Chine|La Mongolie|Le Kazakhstan|L’Ouzbékistan|Le Taklamakan occupe le bassin du Tarim, dans la région chinoise du Xinjiang.
-Dans quel pays se trouve la baie d’Ha Long ?|Le Viêt Nam|La Thaïlande|Le Cambodge|La Malaisie|Ses pitons calcaires émergent du golfe du Tonkin, dans le nord du Viêt Nam.
-Dans quel pays se trouve le lac Toba ?|L’Indonésie|La Malaisie|Les Philippines|Le Timor oriental|Ce lac de caldeira se trouve sur l’île indonésienne de Sumatra.
-Dans quel pays se trouve la plaine de Nullarbor ?|L’Australie|La Nouvelle-Zélande|L’Afrique du Sud|La Namibie|Cette vaste plaine calcaire aride borde la Grande Baie australienne.
-Dans quel pays se trouve le fjord de Milford Sound ?|La Nouvelle-Zélande|La Norvège|Le Canada|Le Chili|Milford Sound, appelé Piopiotahi en maori, entaille le sud-ouest de l’île du Sud.
-Dans quel pays se trouve la vallée de la Mort ?|Les États-Unis|Le Mexique|Le Chili|L’Australie|Cette dépression désertique appartient principalement au parc national californien du même nom.
-Dans quel pays se trouve la péninsule du Yucatán ?|Le Mexique|Le Guatemala|Le Honduras|Le Costa Rica|Le Mexique occupe la majeure partie du Yucatán, partagé au sud avec le Belize et le Guatemala.
-Dans quel pays se trouve la baie de Fundy ?|Le Canada|Les États-Unis|L’Islande|Le Groenland|Cette baie entre le Nouveau-Brunswick et la Nouvelle-Écosse connaît des marées parmi les plus fortes du monde.
-Dans quel pays se trouve le parc national de Banff ?|Le Canada|Les États-Unis|La Suisse|La Norvège|Banff protège une partie des Rocheuses dans la province canadienne de l’Alberta.
-Dans quel pays se trouve l’archipel des Galápagos ?|L’Équateur|Le Pérou|La Colombie|Le Costa Rica|Les Galápagos forment une province équatorienne située dans le Pacifique oriental.
-Dans quel pays se trouve le cap Horn ?|Le Chili|L’Argentine|L’Uruguay|Le Pérou|Le cap Horn appartient à l’archipel chilien de la Terre de Feu.
-Quel fleuve traverse Budapest ?|Le Danube|La Vistule|L’Elbe|Le Dniepr|Le Danube sépare historiquement Buda, sur la rive droite, de Pest, sur la rive gauche.
-Quel fleuve traverse Bratislava ?|Le Danube|Le Rhin|La Save|La Drave|Bratislava se trouve près du point de rencontre des frontières slovaque, autrichienne et hongroise.
-Quel fleuve traverse Belgrade ?|Le Danube|La Tisza|La Morava|Le Prout|Belgrade s’élève au confluent du Danube et de la Save.
-Quel fleuve traverse Le Caire ?|Le Nil|Le Niger|Le Sénégal|Le Congo|Le Caire s’étend de part et d’autre du Nil, au sud de son delta.
+Quelle région historique occupe le centre de la Roumanie, à l’intérieur de l’arc des Carpates ?|La Transylvanie|La Valachie|La Moldavie|La Dobroudja|Longtemps hongroise puis autrichienne, elle est rattachée à la Roumanie après 1918.
+Dans quel pays fouille-t-on le site néolithique de Çatal Höyük ?|La Turquie|La Géorgie|L’Arménie|La Grèce|Ses habitants circulaient sur les toits : les maisons, mitoyennes, n’avaient pas de rue entre elles.
+Quelle plaine agricole s’étend entre le Mont-Liban et l’Anti-Liban ?|La Bekaa|La Bekaa du Nord seule|La plaine de Homs|La plaine d’Akkar|Elle fournit l’essentiel de la production viticole libanaise, une tradition vieille de plusieurs millénaires.
+Quelle particularité rend le delta de l’Okavango unique au monde ?|Il se perd dans les sables sans atteindre la mer|Il compte sept bras navigables|Il gèle chaque hiver|Il se jette dans deux océans|Ses eaux venues d’Angola s’évaporent et s’infiltrent dans le Kalahari botswanais.
+Sur quel haut plateau le salar d’Uyuni s’étend-il ?|L’Altiplano bolivien|Le plateau du Deccan|La puna argentine|L’Altiplano péruvien|À plus de 3 600 mètres, ce désert de sel sert aussi de miroir géant pour calibrer les satellites.
+Quel pays abrite la majeure partie de la zone humide du Pantanal ?|Le Brésil|La Colombie|Le Venezuela|L’Équateur|Le Pantanal s’étend aussi sur la Bolivie et le Paraguay ; il inonde chaque saison des pluies.
+Quel sommet marque la frontière entre le Népal et la Chine ?|L’Everest|L’Annapurna|Le Dhaulagiri|Le Manaslu|Les Népalais l’appellent Sagarmatha et les Tibétains Chomolungma ; la frontière passe par son sommet.
+Quel vaste plateau occupe la péninsule indienne au sud du fleuve Narmada ?|Le Deccan|Le Ladakh|Le Terai|Le Chota Nagpur|Ses coulées de basalte, les trapps du Deccan, comptent parmi les plus vastes épanchements volcaniques du globe.
+À quel pays appartient le territoire de haute altitude du Ladakh ?|L’Inde|Le Népal|Le Bhoutan|L’Afghanistan|Coincé entre Karakoram et Himalaya, il est surnommé le petit Tibet.
+Dans quel bassin chinois s’étend le désert du Taklamakan ?|Le bassin du Tarim|Le bassin du Sichuan|Le bassin de Tsaïdam|Le bassin de Dzoungarie|Les routes de la soie le contournaient par le nord et par le sud, jamais en son centre.
+Dans quel golfe émergent les pitons calcaires de la baie d’Ha Long ?|Le golfe du Tonkin|Le golfe de Thaïlande|Le golfe du Bengale|Le golfe de Martaban|Près de deux mille îlots karstiques y ont été sculptés par la mer.
+Sur quelle île indonésienne se trouve le lac de caldeira Toba ?|Sumatra|Java|Bornéo|Célèbes|L’éruption qui l’a formé, il y a environ 74 000 ans, est l’une des plus violentes connues.
+Quelle immense plaine calcaire aride borde la Grande Baie australienne ?|Le Nullarbor|Le Gibson|Le Simpson|Le Tanami|Son nom vient du latin nulla arbor, sans arbre ; la voie ferrée y file droit sur 478 kilomètres.
+Dans quel pays entaille le fjord de Milford Sound ?|La Nouvelle-Zélande|La Norvège|Le Canada|Le Chili|Appelé Piopiotahi en maori, il reçoit plus de six mètres de pluie par an.
+Dans quel État américain se trouve la vallée de la Mort ?|La Californie|L’Arizona|Le Nevada|L’Utah|On y a relevé 56,7 °C en 1913, l’une des températures les plus élevées jamais mesurées sur Terre.
+Quel pays occupe la majeure partie de la péninsule du Yucatán ?|Le Mexique|Le Guatemala|Le Honduras|Le Costa Rica|Elle est partagée au sud avec le Belize et le Guatemala, et n’a presque aucune rivière de surface.
+Pour quoi la baie de Fundy, au Canada, est-elle célèbre ?|Ses marées parmi les plus fortes du monde|Ses icebergs permanents|Son eau douce en surface|Son absence totale de marée|L’amplitude y dépasse seize mètres entre le Nouveau-Brunswick et la Nouvelle-Écosse.
+Dans quelle province canadienne le parc national de Banff protège-t-il les Rocheuses ?|L’Alberta|La Colombie-Britannique|Le Manitoba|Le Saskatchewan|Créé en 1885, c’est le premier parc national du Canada.
+À quel pays l’archipel des Galápagos appartient-il ?|L’Équateur|Le Pérou|La Colombie|Le Costa Rica|Ses pinsons, aux becs adaptés à chaque île, ont nourri la réflexion de Darwin.
+À quel archipel le cap Horn appartient-il ?|La Terre de Feu chilienne|Les Malouines|L’archipel des Chonos|La Géorgie du Sud|Doubler le Horn, réputé pour ses tempêtes, était le rite de passage des marins avant le canal de Panama.
+Quel fleuve sépare historiquement Buda de Pest ?|Le Danube|La Vistule|L’Elbe|Le Dniepr|Les deux villes, sur chaque rive, n’ont été réunies administrativement qu’en 1873.
+Quelle capitale européenne est la seule à border trois pays ?|Bratislava|Vienne|Luxembourg|Ljubljana|Elle touche presque l’Autriche et la Hongrie : son aéroport est à quelques kilomètres de deux frontières.
+Au confluent de quels cours d’eau Belgrade est-elle bâtie ?|Le Danube et la Save|Le Danube et la Tisza|La Save et la Drave|La Morava et le Danube|La forteresse de Kalemegdan surveille ce confluent stratégique depuis l’Antiquité.
+Quelle ville s’étend de part et d’autre du Nil, juste au sud de son delta ?|Le Caire|Louxor|Assouan|Alexandrie|C’est la plus grande agglomération du monde arabe et d’Afrique.
 Sur quel fleuve irakien la ville de Samarra est-elle établie ?|Le Tigre|L’Euphrate|Le Jourdain|L’Oronte|Samarra fut une capitale du califat abbasside au IXe siècle.
-Quel fleuve traverse Hanoï ?|Le fleuve Rouge|Le Mékong|Le Salouen|L’Irrawaddy|Le fleuve Rouge apporte des alluvions à son vaste delta du nord du Viêt Nam.
-Quel fleuve traverse Phnom Penh ?|Le Mékong|Le Chao Phraya|Le fleuve Rouge|Le Yangtsé|À Phnom Penh, le Mékong rencontre le Tonlé Sap et se divise vers son delta.
-Quel fleuve traverse Khartoum ?|Le Nil|Le Congo|Le Zambèze|Le Limpopo|Le Nil Blanc et le Nil Bleu se rejoignent à Khartoum.
-Quel fleuve traverse Niamey ?|Le Niger|Le Sénégal|La Volta|Le Chari|Le Niger décrit une large boucle avant de traverser la capitale du Niger.
-Quel fleuve traverse Kinshasa ?|Le Congo|Le Niger|L’Ogooué|Le Zambèze|Kinshasa fait face à Brazzaville sur la rive opposée du fleuve Congo.
-Quel fleuve traverse Cordoue avant de rejoindre l’Atlantique près de Sanlúcar ?|Le Guadalquivir|Le Tage|L’Èbre|Le Douro|Le Guadalquivir traverse l’Andalousie et fut une voie majeure d’échanges.
-Quel fleuve traverse Saragosse ?|L’Èbre|Le Tage|Le Douro|Le Guadiana|L’Èbre traverse le nord-est de l’Espagne avant de former un delta méditerranéen.
-Quel fleuve traverse Bordeaux ?|La Garonne|La Loire|La Dordogne|L’Adour|En aval de Bordeaux, la Garonne rejoint la Dordogne pour former l’estuaire de la Gironde.
-Quel fleuve traverse Nantes ?|La Loire|La Seine|La Garonne|La Charente|Nantes se situe près de l’estuaire de la Loire, ouvert sur l’Atlantique.
-Quel fleuve traverse Dresde ?|L’Elbe|Le Rhin|L’Oder|Le Main|L’Elbe traverse la Saxe puis rejoint la mer du Nord près de Hambourg.
-Quel fleuve traverse Wrocław ?|L’Oder|La Vistule|L’Elbe|Le Niémen|Wrocław est bâtie sur plusieurs bras et îles de l’Oder.
-Quel fleuve traverse Kyiv ?|Le Dniepr|Le Don|La Volga|Le Dniestr|Le Dniepr partage Kyiv entre une rive droite historique et une vaste rive gauche.
-Quel fleuve traverse Tbilissi ?|La Koura|Le Rioni|L’Araxe|Le Don|La Koura traverse la Géorgie puis l’Azerbaïdjan avant d’atteindre la Caspienne.
-Quel fleuve traverse Mossoul ?|Le Tigre|L’Euphrate|L’Oronte|Le Jourdain|Mossoul s’étend sur les deux rives du Tigre dans le nord de l’Irak.
-Quel fleuve traverse Lahore ?|La Ravi|L’Indus|Le Gange|La Sutlej|La Ravi est l’un des cinq cours d’eau qui ont donné son nom au Pendjab.
+Quel fleuve arrose Hanoï et son vaste delta du nord du Viêt Nam ?|Le fleuve Rouge|Le Mékong|Le Salouen|L’Irrawaddy|Ses alluvions ferrugineuses lui donnent la couleur qui lui vaut son nom.
+Quel lac cambodgien inverse son cours deux fois par an au contact du Mékong ?|Le Tonlé Sap|Le lac Inle|Le lac Toba|Le lac Poyang|À la saison des pluies, le Mékong le gonfle et il quintuple de surface.
+Que se rejoint exactement à Khartoum ?|Le Nil Blanc et le Nil Bleu|Le Nil et l’Atbara|Le Nil Blanc et le Sobat|Le Nil Bleu et l’Atbara|Le Nil Bleu, venu d’Éthiopie, fournit l’essentiel de la crue annuelle.
+Quel fleuve décrit une large boucle avant d’arroser Niamey ?|Le Niger|Le Sénégal|La Volta|Le Chari|Il coule d’abord vers le Sahara, puis rebrousse chemin vers le golfe de Guinée.
+Quelles deux capitales se font face de part et d’autre du fleuve Congo ?|Kinshasa et Brazzaville|Luanda et Kinshasa|Libreville et Brazzaville|Bangui et Kinshasa|Ce sont les deux capitales les plus proches du monde, hormis Rome et le Vatican.
+Quel fleuve andalou fut une grande voie d’échange jusqu’à Cordoue et Séville ?|Le Guadalquivir|Le Tage|L’Èbre|Le Douro|Son nom vient de l’arabe al-wadi al-kabir, la grande rivière.
+Quel fleuve espagnol se jette dans la Méditerranée par un vaste delta ?|L’Èbre|Le Tage|Le Douro|Le Guadiana|Il traverse Saragosse et a donné son nom, via les Ibères, à la péninsule Ibérique.
+Quels deux fleuves s’unissent en aval de Bordeaux pour former la Gironde ?|La Garonne et la Dordogne|La Garonne et l’Adour|La Dordogne et la Charente|La Loire et la Garonne|La Gironde est le plus vaste estuaire d’Europe occidentale.
+Près de quel estuaire atlantique la ville de Nantes est-elle établie ?|Celui de la Loire|Celui de la Seine|Celui de la Garonne|Celui de la Charente|La Loire est le plus long fleuve de France, avec plus de mille kilomètres.
+Quel fleuve traverse la Saxe et Dresde avant de rejoindre la mer du Nord ?|L’Elbe|Le Rhin|L’Oder|Le Main|Il rejoint la mer près de Hambourg, dont il fait l’un des grands ports européens.
+Sur les bras et les îles de quel fleuve la ville de Wrocław est-elle bâtie ?|L’Oder|La Vistule|L’Elbe|Le Niémen|Une centaine de ponts lui valent le surnom de Venise polonaise.
+Quel fleuve partage Kyiv entre une rive droite historique et une vaste rive gauche ?|Le Dniepr|Le Don|La Volga|Le Dniestr|Troisième fleuve d’Europe par la longueur, il traverse la Biélorussie et l’Ukraine.
+Quel fleuve traverse la Géorgie et l’Azerbaïdjan avant d’atteindre la Caspienne ?|La Koura|Le Rioni|L’Araxe|Le Don|Tbilissi s’est développée sur ses rives, autour de sources chaudes sulfureuses.
+Sur les deux rives de quel fleuve la ville de Mossoul s’étend-elle ?|Le Tigre|L’Euphrate|L’Oronte|Le Jourdain|Les ruines de Ninive, capitale assyrienne, se trouvent sur la rive opposée à la vieille ville.
+Combien de cours d’eau ont donné son nom à la région du Pendjab ?|Cinq|Trois|Sept|Neuf|Pendjab signifie « cinq eaux » en persan ; la Ravi, qui arrose Lahore, en fait partie.
 Quel détroit sépare l’Espagne du Maroc ?|Le détroit de Gibraltar|Le Bosphore|Le détroit de Messine|Le Pas-de-Calais|À son point le plus étroit, Europe et Afrique ne sont séparées que par environ quatorze kilomètres.
 Quel passage maritime sépare la Sicile de la Tunisie ?|Le canal de Sicile|Le canal d’Otrante|Le détroit de Bonifacio|Le détroit de Messine|Le canal de Sicile relie les bassins oriental et occidental de la Méditerranée.
-Quel détroit relie la mer Noire à la mer d’Azov ?|Le détroit de Kertch|Le Bosphore|Les Dardanelles|Le canal de Corinthe|La péninsule de Kertch fait face à celle de Taman de part et d’autre du passage.
-Quel détroit relie la mer de Marmara à la mer Égée ?|Les Dardanelles|Le Bosphore|Le détroit d’Ormuz|Le canal d’Otrante|Les Dardanelles longent la péninsule turque de Gallipoli.
+Quel détroit sépare la Crimée de la péninsule de Taman ?|Le détroit de Kertch|Le Bosphore|Les Dardanelles|Le canal de Corinthe|Il commande l’accès à la mer d’Azov, la mer la moins profonde du monde.
+Comment appelait-on les Dardanelles dans l’Antiquité grecque ?|L’Hellespont|Le Pont-Euxin|Le Propontide|Le Chersonèse|Ce passage vers la mer Égée fut le théâtre de la sanglante campagne de 1915.
 Quel détroit sépare l’Iran de la péninsule d’Arabie ?|Le détroit d’Ormuz|Bab-el-Mandeb|Le Bosphore|Le détroit de Malacca|Ce passage relie le golfe Persique au golfe d’Oman.
-Quel détroit relie la mer Rouge au golfe d’Aden ?|Bab-el-Mandeb|Le détroit d’Ormuz|Le canal de Mozambique|Le Bosphore|Bab-el-Mandeb sépare Djibouti et l’Érythrée du Yémen.
+Quel détroit commande l’entrée de la mer Rouge depuis le golfe d’Aden ?|Bab-el-Mandeb|Ormuz|Malacca|Le Bosphore|Son nom arabe signifie « la porte des lamentations », en raison de ses naufrages.
 Quel détroit sépare l’île russe de Sakhaline du Japon ?|Le détroit de La Pérouse|Le détroit de Béring|Le détroit de Davis|Le détroit de Bass|Ce passage sépare Sakhaline de l’île japonaise de Hokkaidō.
 Quel détroit sépare le Groenland de l’île de Baffin ?|Le détroit de Davis|Le détroit d’Hudson|Le détroit de Béring|Le détroit de Fram|Le détroit de Davis relie la baie de Baffin à la mer du Labrador.
 Quel détroit sépare la Terre de Feu du continent sud-américain ?|Le détroit de Magellan|Le canal de Beagle|Le passage de Drake|Le détroit de Le Maire|Magellan emprunta ce passage lors de la première circumnavigation.
 Quel passage maritime sépare le cap Horn de l’Antarctique ?|Le passage de Drake|Le détroit de Magellan|Le canal de Beagle|Le passage du Nord-Ouest|Le passage de Drake relie les océans Atlantique et Pacifique au sud de l’Amérique.
 Quelle chaîne sépare en partie la France et l’Espagne ?|Les Pyrénées|Les Alpes|Les Carpates|Les Apennins|Les Pyrénées s’étirent de la Méditerranée au golfe de Gascogne.
 Quelle chaîne traverse la Slovaquie, l’Ukraine et la Roumanie ?|Les Carpates|Les Balkans|Les Alpes dinariques|Le Caucase|L’arc carpatique entoure en grande partie le bassin de Pannonie.
-Quelle chaîne longe la côte adriatique des Balkans ?|Les Alpes dinariques|Les Carpates|Les Apennins|Les monts Taurus|Ce relief karstique s’étend de la Slovénie à l’Albanie.
+Quel massif borde la côte adriatique des Balkans ?|Les Alpes dinariques|Les Balkans proprement dits|Le Pinde|Les Carpates|Ses calcaires ont donné leur nom au relief karstique, d’après la région du Karst.
 Quelle chaîne occupe l’axe de la péninsule italienne ?|Les Apennins|Les Alpes|Les Pyrénées|Les Sudètes|Les Apennins s’étendent de la Ligurie à la Calabre.
 Quelle chaîne sépare la Russie européenne de la Sibérie occidentale ?|L’Oural|Le Caucase|L’Altaï|Le Tian Shan|L’Oural sert traditionnellement de limite entre l’Europe et l’Asie.
 Quelle chaîne comprend l’Elbrouz ?|Le Caucase|L’Oural|Les Carpates|L’Hindou Kouch|L’Elbrouz est un volcan endormi du Grand Caucase.
 Quelle chaîne comprend le K2 ?|Le Karakoram|L’Himalaya|Le Pamir|Le Tian Shan|Le K2 se situe à la frontière entre le Pakistan et la Chine.
 Quelle chaîne s’étend entre le Kazakhstan, le Kirghizistan et la Chine ?|Le Tian Shan|L’Altaï|Le Zagros|Le Kunlun|Le nom Tian Shan signifie « montagnes célestes ».
 Quelle chaîne borde le plateau tibétain au nord ?|Le Kunlun|Le Karakoram|Le Caucase|Le Zagros|Les monts Kunlun forment un long arc à travers l’ouest de la Chine.
-Quelle chaîne longe l’ouest de l’Iran ?|Le Zagros|Le Taurus|L’Hindou Kouch|Le Caucase|Le Zagros résulte de la collision des plaques arabique et eurasienne.
+Quel massif iranien borde la plaine mésopotamienne à l’est ?|Le Zagros|L’Elbourz|L’Hindou Kouch|Le Kopet-Dag|Il s’est plissé sous la poussée de la plaque arabique contre l’Eurasie.
 Quelle chaîne domine le sud de la Turquie ?|Le Taurus|Le Zagros|Le Caucase|Les Balkans|Les monts Taurus séparent le plateau anatolien du littoral méditerranéen.
 Quelle chaîne forme l’épine dorsale de la péninsule Malaise ?|Les monts Titiwangsa|Les monts Arakan|Les Ghâts occidentaux|Les monts Annamites|Les Titiwangsa prolongent vers le sud le relief de la Thaïlande péninsulaire.
-Quelle chaîne longe l’ouest de l’Inde ?|Les Ghâts occidentaux|Les Ghâts orientaux|Les monts Arakan|Les monts Annamites|Les Ghâts occidentaux interceptent la mousson et abritent une forte biodiversité.
-Quelle chaîne longe la frontière entre le Viêt Nam et le Laos ?|La cordillère annamitique|Les monts Arakan|Les monts Titiwangsa|Les monts Qinling|Cette chaîne tropicale s’étire parallèlement à la côte vietnamienne.
+Quel massif sépare la côte occidentale de l’Inde du plateau du Deccan ?|Les Ghâts occidentaux|Les Ghâts orientaux|Les Vindhya|Les Aravalli|Ils bloquent la mousson et arrosent la côte de Malabar de plusieurs mètres de pluie.
+Quelle cordillère suit la frontière entre le Viêt Nam et le Laos ?|La cordillère annamitique|Les monts Cardamomes|Les monts Arakan|Le plateau de Khorat|La piste Hô Chi Minh en franchissait les cols pendant la guerre du Viêt Nam.
 Quelle chaîne sépare le nord et le sud de la Chine sur le plan biogéographique ?|Les monts Qinling|Le Kunlun|Le Tian Shan|L’Altaï|Avec la rivière Huai, les Qinling marquent une grande limite climatique chinoise.
-Quelle chaîne longe la côte pacifique de l’Amérique du Sud ?|Les Andes|Les Rocheuses|La Sierra Madre|Les Appalaches|Les Andes constituent la plus longue chaîne de montagnes continentale émergée.
+Quelle est la plus longue chaîne de montagnes émergée du monde ?|Les Andes|L’Himalaya|Les Rocheuses|Le Grand Rift|Elles s’étirent sur environ 7 000 kilomètres du Venezuela à la Terre de Feu.
 Quelle chaîne domine l’ouest de l’Amérique du Nord ?|Les Rocheuses|Les Appalaches|Les Adirondacks|Les Ozarks|Les Rocheuses s’étendent du Canada au Nouveau-Mexique.
-Quelle chaîne longe la côte pacifique du Canada et des États-Unis ?|La chaîne des Cascades|Les Appalaches|La Sierra Madre orientale|Les monts Ozark|Les Cascades comprennent plusieurs volcans, dont le mont Rainier.
+Quelle chaîne volcanique s’étend de la Colombie-Britannique à la Californie du Nord ?|La chaîne des Cascades|La Sierra Nevada|La chaîne Côtière|Les monts Olympiques|Le mont Saint Helens, qui a explosé en 1980, en fait partie.
 Quelle chaîne borde l’est de la Californie ?|La Sierra Nevada|Les Cascades|Les Appalaches|La chaîne Brooks|Le mont Whitney, point culminant des États-Unis contigus, appartient à la Sierra Nevada.
 Quelle chaîne traverse le nord de l’Alaska ?|La chaîne Brooks|Les Cascades|Les Adirondacks|La Sierra Madre|La chaîne Brooks sépare le versant arctique de l’intérieur de l’Alaska.
 Quelle chaîne mexicaine longe le golfe du Mexique ?|La Sierra Madre orientale|La Sierra Madre occidentale|La Sierra Madre del Sur|La cordillère Blanche|Elle borde le plateau mexicain sur son flanc oriental.
@@ -82,23 +82,23 @@ Quel lac africain est le plus vaste par sa superficie ?|Le lac Victoria|Le lac T
 Quel lac se trouve entre le Pérou et la Bolivie ?|Le lac Titicaca|Le lac Poopó|Le lac Maracaibo|Le salar d’Uyuni|Le Titicaca est navigué commercialement à plus de 3 800 mètres d’altitude.
 Quel lac salé borde Israël et la Jordanie ?|La mer Morte|Le lac de Tibériade|Le lac d’Ourmia|Le lac Van|Sa surface se situe à plus de 400 mètres sous le niveau marin.
 Quel lac se trouve entièrement en Hongrie ?|Le lac Balaton|Le lac de Constance|Le lac d’Ohrid|Le lac de Garde|Le Balaton est le plus grand lac d’Europe centrale.
-Quel lac est partagé par l’Allemagne, la Suisse et l’Autriche ?|Le lac de Constance|Le lac Léman|Le lac Majeur|Le lac Balaton|Le Rhin traverse le lac de Constance avant de poursuivre vers l’ouest.
-Quel lac est partagé par l’Albanie et la Macédoine du Nord ?|Le lac d’Ohrid|Le lac Prespa uniquement|Le lac Skadar|Le lac Balaton|Ohrid est l’un des lacs les plus anciens et les plus profonds d’Europe.
-Quel lac est partagé par l’Albanie et le Monténégro ?|Le lac de Skadar|Le lac d’Ohrid|Le lac Prespa|Le lac de Bled|Le lac de Skadar est le plus vaste lac des Balkans.
+Par quel fleuve le lac de Constance est-il traversé ?|Le Rhin|Le Danube|L’Inn|L’Aar|Partagé entre Allemagne, Suisse et Autriche, il n’a jamais fait l’objet d’un tracé frontalier précis.
+Quel est le lac le plus ancien et le plus profond des Balkans ?|Le lac d’Ohrid|Le lac de Skadar|Le lac Prespa|Le lac de Constance|Partagé entre Albanie et Macédoine du Nord, il abrite des espèces qu’on ne trouve nulle part ailleurs.
+Quel est le plus grand lac de la péninsule balkanique ?|Le lac de Skadar|Le lac d’Ohrid|Le lac Prespa|Le lac Vrana|Partagé entre l’Albanie et le Monténégro, il accueille une importante population de pélicans.
 Quel lac africain est le deuxième plus profond du monde ?|Le lac Tanganyika|Le lac Victoria|Le lac Albert|Le lac Kivu|Le Tanganyika occupe une partie du rift est-africain et dépasse 1 400 mètres de profondeur.
 Quel lac occupe une partie du rift entre la Tanzanie et la RDC ?|Le lac Tanganyika|Le lac Victoria|Le lac Turkana|Le lac Tchad|Le Tanganyika est le deuxième lac le plus profond du monde.
 Quelle mer sépare l’Italie des Balkans ?|La mer Adriatique|La mer Égée|La mer Ionienne|La mer Tyrrhénienne|L’Adriatique est reliée à la mer Ionienne par le canal d’Otrante.
 Quelle mer borde la Bulgarie à l’est ?|La mer Noire|La mer Égée|La mer Adriatique|La mer Caspienne|Le littoral bulgare s’étend entre la Roumanie et la Turquie.
 Quelle mer borde la Suède à l’est ?|La mer Baltique|La mer du Nord|La mer de Norvège|La mer de Barents|Le golfe de Botnie constitue le bras nord de la Baltique.
 Quelle mer borde la Roumanie ?|La mer Noire|La mer Adriatique|La mer Égée|La mer Caspienne|Le delta du Danube atteint la mer Noire entre Roumanie et Ukraine.
-Quelle mer se trouve entre la Grèce et la Turquie ?|La mer Égée|La mer Ionienne|La mer Adriatique|La mer Tyrrhénienne|La mer Égée est parsemée de nombreuses îles grecques.
+Quelle mer parsemée d’îles sépare la Grèce de la Turquie ?|La mer Égée|La mer de Marmara|La mer Ionienne|La mer Noire|Elle compte plusieurs milliers d’îles et d’îlots, dont les Cyclades et le Dodécanèse.
 Quelle mer borde l’Arabie saoudite à l’ouest ?|La mer Rouge|La mer d’Arabie|La mer Caspienne|La Méditerranée|La mer Rouge occupe un rift entre les plaques africaine et arabique.
-Quelle mer se trouve entre l’Afrique et la péninsule Arabique ?|La mer Rouge|La mer d’Arabie|La mer Noire|La mer Caspienne|Elle communique avec la Méditerranée par le canal de Suez.
+Quelle mer sépare l’Afrique de la péninsule Arabique ?|La mer Rouge|La mer d’Oman|Le golfe Persique|La mer d’Arabie|Elle s’élargit de quelques millimètres par an : c’est un océan en formation.
 Quelle mer borde le Pakistan au sud ?|La mer d’Arabie|La mer Rouge|La mer d’Andaman|La mer de Chine|Karachi est le principal port pakistanais sur cette mer.
 Quelle mer borde le Bangladesh au sud ?|Le golfe du Bengale|La mer d’Arabie|La mer d’Andaman|Le golfe de Thaïlande|Le Gange et le Brahmapoutre forment un immense delta sur ce golfe.
 Quelle mer sépare Sumatra de la péninsule Malaise ?|Le détroit de Malacca|La mer de Java|La mer de Banda|Le golfe de Thaïlande|Ce couloir maritime relie l’océan Indien à la mer de Chine méridionale.
 Quelle mer borde la côte nord de Java ?|La mer de Java|La mer de Banda|La mer de Timor|La mer des Célèbes|La mer de Java, peu profonde, appartient au plateau continental de la Sonde.
-Quelle mer se trouve entre l’Australie et la Nouvelle-Zélande ?|La mer de Tasman|La mer de Corail|La mer d’Arafura|La mer de Timor|Elle porte le nom du navigateur néerlandais Abel Tasman.
+De quel navigateur la mer située entre l’Australie et la Nouvelle-Zélande porte-t-elle le nom ?|Abel Tasman|James Cook|Willem Janszoon|Matthew Flinders|Ce Néerlandais l’a franchie en 1642 et a laissé son nom à la mer comme à la Tasmanie.
 Quelle mer borde le nord de l’Australie et le sud de la Nouvelle-Guinée ?|La mer d’Arafura|La mer de Tasman|La mer de Corail|La mer de Bismarck|La mer d’Arafura recouvre un plateau continental relativement peu profond.
 `);
 

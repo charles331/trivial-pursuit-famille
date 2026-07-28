@@ -2632,11 +2632,11 @@ export const GEOGRAPHIE_QUESTIONS: Question[] = [
   {
     id: "geo_293",
     categoryId: "geographie",
-    question: "Quelle est la capitale du Sri Lanka sur le plan législatif, souvent éclipsée par Colombo ?",
-    options: ["Kandy", "Sri Jayewardenepura Kotte", "Galle", "Jaffna"],
-    correctAnswerIndex: 1,
+    question: "Quelle culture le Sri Lanka exporte-t-elle sous le nom commercial de Ceylan ?",
+    options: ["Le thé", "Le café", "Le cacao", "Le tabac"],
+    correctAnswerIndex: 0,
     difficulty: "adulte",
-    explanation: "Le saviez-vous ? Le parlement sri-lankais siège à Sri Jayewardenepura Kotte, dans la banlieue de Colombo, depuis 1982."
+    explanation: "Le saviez-vous ? Les Britanniques ont converti l'île au thé après qu'un champignon a détruit ses caféiers dans les années 1870."
   },
   {
     id: "geo_294",
@@ -2929,11 +2929,11 @@ export const GEOGRAPHIE_QUESTIONS: Question[] = [
   {
     id: "geo_326",
     categoryId: "geographie",
-    question: "Quel détroit relie la mer Noire à la mer de Marmara ?",
-    options: ["Les Dardanelles", "Le détroit de Kertch", "Le Bosphore", "Le canal de Corinthe"],
-    correctAnswerIndex: 2,
+    question: "Quel canal grec creusé dans la roche sépare le Péloponnèse du continent ?",
+    options: ["Le canal de Corinthe", "Le détroit de Kertch", "Le Bosphore", "Les Dardanelles"],
+    correctAnswerIndex: 0,
     difficulty: "adulte",
-    explanation: "Le saviez-vous ? Le Bosphore traverse Istanbul en plein cœur : on peut prendre un ferry urbain pour changer de continent."
+    explanation: "Le saviez-vous ? Large de seulement 25 mètres, il est trop étroit pour les navires modernes et ne sert plus qu'au tourisme."
   },
   {
     id: "geo_327",

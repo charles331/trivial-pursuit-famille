@@ -75,6 +75,22 @@ function fullText(question: Question): string {
   );
 }
 
+/**
+ * Squelette d'un énoncé : on remplace les noms propres et les titres cités par
+ * un blanc. « Quel fleuve traverse Budapest ? » et « Quel fleuve traverse
+ * Belgrade ? » donnent alors la même clé, alors qu'un découpage sur les
+ * premiers mots les distinguait à tort.
+ */
+function skeleton(question: string): string {
+  return question
+    .replace(/[«"][^»"]*[»"]/g, '_')
+    .split(/\s+/)
+    .map((word, index) => (index > 0 && /^[A-ZÀ-Ý]/.test(word) ? '_' : deaccent(word)))
+    .join(' ')
+    .replace(/(?:_[\s,]*)+/g, '_ ')
+    .trim();
+}
+
 function rowsOf(categoryId: CategoryId, difficulty: DifficultyLevel): Question[] {
   return QUESTIONS_DATABASE.filter(
     (question) => question.categoryId === categoryId
@@ -190,8 +206,7 @@ for (const categoryId of CATEGORIES) {
   const rows = rowsOf(categoryId, 'adulte');
   const molds = new Map<string, number>();
   for (const question of rows) {
-    const tokens: string[] = deaccent(question.question).match(/[\wà-ÿ'’-]+/g) ?? [];
-    const key = tokens.slice(0, 5).join(' ');
+    const key = skeleton(question.question);
     molds.set(key, (molds.get(key) ?? 0) + 1);
   }
   const overused = [...molds.entries()]

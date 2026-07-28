@@ -51,7 +51,7 @@ const drafts: Draft[] = [
   ["Comment appelle-t-on la technique indienne consistant à faire crépiter des épices dans une matière grasse ?", "Le tadka", "Le dum", "Le tandoor", "Le dhungar", "Le tadka est versé sur un plat ou réalisé au début de la cuisson afin de libérer les arômes des épices."],
   ["Quelle crêpe fermentée du sud de l'Inde est préparée avec riz et lentilles ?", "Le dosa", "Le chapati", "Le puri", "Le paratha", "La fermentation de la pâte de riz et d'urad dal contribue à la texture croustillante et à la légère acidité."],
   ["Quel mets chinois correspond à de petites bouchées servies notamment avec le thé ?", "Les dim sum", "Le hot pot", "Le canard laqué", "Les nouilles biang biang", "Le dim sum appartient à la tradition cantonaise du yum cha et couvre de nombreuses préparations vapeur, frites ou cuites au four."],
-  ["Quel mode de cuisson chinois consiste à saisir rapidement de petits morceaux dans un wok ?", "Le sauté au wok", "Le braisage rouge", "La cuisson vapeur douce", "La cuisson en papillote", "Une forte chaleur et des ingrédients préparés à l'avance permettent une cuisson brève en remuant constamment."],
+  ["Pourquoi découpe-t-on les ingrédients très finement avant une cuisson au wok ?", "Pour qu'ils cuisent en quelques secondes à feu vif", "Pour qu'ils absorbent plus d'huile", "Pour éviter de devoir remuer", "Pour pouvoir couvrir le wok", "Tout est préparé avant d'allumer le feu : la cuisson elle-même dure souvent moins de deux minutes."],
   ["Quel thé chinois semi-oxydé se situe entre thé vert et thé noir ?", "Le oolong", "Le pu-erh", "Le matcha", "Le lapsang souchong", "Le degré d'oxydation des oolongs varie largement, produisant des profils floraux, fruités ou torréfiés."],
 ];
 

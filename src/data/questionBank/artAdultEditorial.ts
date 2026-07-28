@@ -198,18 +198,73 @@ const FACTS_ALREADY_COVERED = new Set([
  * documentés ci-dessus restent hors banque tant qu'ils n'ont pas été relus
  * individuellement.
  */
+/**
+ * Cinquante œuvres canoniques, mais autant de formulations différentes.
+ *
+ * Ces cartes posaient toutes littéralement la même question — « Quel artiste
+ * a créé « … » ? » — suivie de la même phrase d'explication. Le fait était
+ * juste, la catégorie devenait une litanie. Les tournures et les explications
+ * alternent désormais, sans toucher aux œuvres ni aux distracteurs.
+ */
+/** « à la galerie des Offices », « au musée du Louvre », « à l’église… ». */
+function atMuseum(museum: string): string {
+  if (/^plusieurs/.test(museum)) return `dans ${museum}`;
+  if (/^collection/.test(museum)) return `dans une ${museum}`;
+  if (/^église/.test(museum)) return `à l’${museum}`;
+  if (/^Musées/.test(museum)) return `aux ${museum}`;
+  if (/galerie|Gallery|Kunsthalle|chapelle/i.test(museum)) return `à la ${museum}`;
+  return `au ${museum}`;
+}
+
+/** « de la Renaissance », « du baroque », « de l’impressionnisme ». */
+function ofPeriod(period: string): string {
+  if (/^[aeiouyéè]/i.test(period)) return `de l’${period}`;
+  if (/^(Renaissance|Sécession|architecture|musique)/.test(period)) return `de la ${period}`;
+  return `du ${period}`;
+}
+
+/** « à la Renaissance », « au baroque », « à l’impressionnisme ». */
+function inPeriod(period: string): string {
+  if (/^[aeiouyéè]/i.test(period)) return `à l’${period}`;
+  if (/^(Renaissance|Sécession|architecture|musique)/.test(period)) return `à la ${period}`;
+  return `au ${period}`;
+}
+
+const PROMPTS: ((work: string, museum: string, period: string) => string)[] = [
+  (work) => `Qui a réalisé « ${work} » ?`,
+  (work) => `De quel artiste « ${work} » est-il l’œuvre ?`,
+  (work, museum) => `Qui a signé « ${work} », que l’on peut voir ${atMuseum(museum)} ?`,
+  (work, _museum, period) => `Quel artiste ${ofPeriod(period)} est l’auteur de « ${work} » ?`,
+  (work) => `À quel artiste doit-on « ${work} » ?`,
+  (work) => `Quel est l’auteur de « ${work} » ?`,
+  (work, museum) => `Quel artiste exposé ${atMuseum(museum)} a produit « ${work} » ?`,
+  (work, _museum, period) => `Qui, ${inPeriod(period)}, a composé l’œuvre « ${work} » ?`,
+];
+
+/** « Œuvre du Bernin » plutôt que « Œuvre de Le Bernin ». */
+function byArtist(artist: string): string {
+  return artist.startsWith('Le ') ? `du ${artist.slice(3)}` : `de ${artist}`;
+}
+
+const COMMENTS: ((artist: string, museum: string, period: string) => string)[] = [
+  (artist, museum, period) => `Œuvre ${byArtist(artist)}, rattachée ${inPeriod(period)} et conservée ${atMuseum(museum)}.`,
+  (artist, museum) => `${artist} en est l’auteur ; on peut la voir ${atMuseum(museum)}.`,
+  (artist, museum, period) => `L’art ${ofPeriod(period)} doit cette pièce à ${artist}, exposée ${atMuseum(museum)}.`,
+  (artist, museum, period) => `${artist} en est l’auteur ; l’œuvre relève ${ofPeriod(period)} et se trouve ${atMuseum(museum)}.`,
+];
+
 export const ART_ADULTE_EDITORIAL: Question[] = ARTWORKS
   .filter(([work]) => !FACTS_ALREADY_COVERED.has(work))
   .slice(0, 50)
   .map(([work, artist, museum, period], index) => makeQuestion(
     `art_adulte_editorial_${String(index + 1).padStart(3, '0')}`,
-    `Quel artiste a créé « ${work} » ?`,
+    PROMPTS[index % PROMPTS.length](work, museum, period),
     artist,
     alternatives(
       ARTWORKS.filter(([candidate]) => !FACTS_ALREADY_COVERED.has(candidate)),
       index,
       1,
     ),
-    `Cette œuvre de ${artist}, rattachée au ${period}, est conservée au ${museum}.`,
+    COMMENTS[index % COMMENTS.length](artist, museum, period),
     index % 4,
   ));
