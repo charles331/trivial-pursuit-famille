@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Question, Player, CategoryId } from '../types';
 import { CATEGORIES } from '../data/categories';
 import { PlayerWedgeBadge } from './PlayerWedgeBadge';
+import { LiveSpotlight } from './LiveSpotlight';
 import { soundManager } from '../utils/sound';
 import { Timer, CheckCircle2, XCircle, Sparkles, HelpCircle, ArrowRight, Eye, EyeOff, BookOpen, Volume2 } from 'lucide-react';
 
@@ -200,6 +201,10 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
             </div>
           )}
         </div>
+
+        {/* Live camera thumbnail: spectators watch the player who has to answer,
+            the answering player sees their own preview and controls. */}
+        <LiveSpotlight />
 
         {/* Progress Timer Line */}
         {effectiveTimerSeconds > 0 && !lastAnswerResult && (

@@ -16,7 +16,8 @@ import { GameCanvasBoard } from './components/GameCanvasBoard';
 import { QuestionModal } from './components/QuestionModal';
 import { LiveChat } from './components/LiveChat';
 import { VictoryModal } from './components/VictoryModal';
-import { LiveCameraOverlay } from './components/LiveCameraOverlay';
+import { LiveCameraProvider } from './components/LiveCameraOverlay';
+import { LiveCameraStatusBar } from './components/LiveSpotlight';
 import { questionRevealDelayMs, usePrefersReducedMotion } from './utils/motion';
 
 export default function App() {
@@ -283,13 +284,18 @@ export default function App() {
   const isMyTurn = activePlayer?.id === currentUserId || gameState.settings.isLocalMode || (activePlayer?.id?.startsWith('local_') ?? false);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between select-none">
+    // The provider owns the camera/mic session and exposes it through context, so
+    // the live thumbnail can be rendered inside the question card instead of in a
+    // sibling layer that the card would paint over.
+    <LiveCameraProvider socket={socket} gameState={gameState} currentUserId={currentUserId}>
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between select-none">
       {/* Top Header Controls */}
       <InGameHeader gameState={gameState} onLeaveGame={handleLeaveGame} />
 
       {/* Main Game Stage */}
       {/* Bottom padding keeps the floating emoji bar from covering the board legend */}
       <main className="flex-1 w-full max-w-5xl mx-auto p-2 sm:p-4 pb-20 sm:pb-24 flex flex-col justify-center">
+        <LiveCameraStatusBar />
         <GameCanvasBoard
           gameState={gameState}
           currentUserId={currentUserId}
@@ -345,9 +351,7 @@ export default function App() {
 
       {/* Live Reactions Emoji Toolbar & Overlay */}
       <LiveChat onSendEmoji={handleSendEmoji} emojiEvent={emojiEvent} />
-
-      {/* WebRTC Live Camera & Mic Spotlight */}
-      <LiveCameraOverlay socket={socket} gameState={gameState} currentUserId={currentUserId} />
-    </div>
+      </div>
+    </LiveCameraProvider>
   );
 }

@@ -954,9 +954,14 @@ io.on('connection', (socket: Socket) => {
 
   socket.on('webrtc-stop', (data: { roomCode: string }) => {
     const room = getRoom(data.roomCode);
-    if (!room || !isActiveBroadcaster(room, socket.id)) return;
+    // Any room member may announce that their own stream stopped: a sender can
+    // only ever speak about itself here. Requiring the broadcaster role would
+    // reject the notice sent at the end of a turn, since the phase has already
+    // left `question` by then — which left every viewer holding a dead peer
+    // connection until ICE eventually timed out.
+    if (!room || !room.sockets.has(socket.id)) return;
 
-    io.to(data.roomCode).emit('webrtc-stopped', {
+    socket.to(data.roomCode).emit('webrtc-stopped', {
       senderPlayerId: socket.id
     });
   });

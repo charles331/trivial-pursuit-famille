@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Socket } from 'socket.io-client';
 import { GameState } from '../types';
-import { Camera, CameraOff, Mic, MicOff, Video, VideoOff, Volume2, VolumeX, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Camera, ShieldCheck, AlertTriangle } from 'lucide-react';
 import {
   BROADCAST_CONSTRAINTS,
   PERMISSION_PROBE_CONSTRAINTS,
@@ -34,10 +34,92 @@ const ICE_SERVERS: RTCConfiguration = {
   ]
 };
 
-export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
+/**
+ * Everything the spotlight UI needs, exposed through context.
+ *
+ * The live video used to be a `fixed` panel rendered as a sibling of the
+ * question card. The card is `z-50` with a `backdrop-blur`, so the panel was
+ * painted *underneath* it during the only phase where the camera is live: the
+ * stream was running (and draining the battery) while nobody could see it, and
+ * every control — mute, stop, "tap to hear" — was unreachable behind the card.
+ * The stream is now consumed inside the card itself, which removes that whole
+ * class of stacking bugs.
+ */
+export interface LiveCameraContextValue {
+  isCameraEnabled: boolean;
+  mediaAvailable: boolean;
+  mediaMessage: string | null;
+  sharingPreference: 'pending' | 'enabled' | 'disabled';
+  isActivePlayer: boolean;
+  activePlayerName: string | undefined;
+
+  // Broadcaster side
+  isBroadcasting: boolean;
+  localStream: MediaStream | null;
+  attachLocalVideo: (element: HTMLVideoElement | null) => void;
+  isMuted: boolean;
+  toggleMic: () => void;
+  isVideoOff: boolean;
+  toggleVideo: () => void;
+  stopBroadcast: () => void;
+  needsManualStart: boolean;
+  startBroadcast: () => void;
+
+  // Spectator side
+  remoteStream: MediaStream | null;
+  attachRemoteVideo: (element: HTMLVideoElement | null) => void;
+  isRemoteMuted: boolean;
+  toggleRemoteMute: () => void;
+  isAudioBlocked: boolean;
+  enableRemoteAudio: () => void;
+
+  cameraError: string | null;
+  connectionWarning: string | null;
+  enableSharing: () => void;
+  disableSharing: () => void;
+}
+
+const NOOP = () => undefined;
+
+const DEFAULT_CONTEXT: LiveCameraContextValue = {
+  isCameraEnabled: false,
+  mediaAvailable: false,
+  mediaMessage: null,
+  sharingPreference: 'disabled',
+  isActivePlayer: false,
+  activePlayerName: undefined,
+  isBroadcasting: false,
+  localStream: null,
+  attachLocalVideo: NOOP,
+  isMuted: false,
+  toggleMic: NOOP,
+  isVideoOff: false,
+  toggleVideo: NOOP,
+  stopBroadcast: NOOP,
+  needsManualStart: false,
+  startBroadcast: NOOP,
+  remoteStream: null,
+  attachRemoteVideo: NOOP,
+  isRemoteMuted: false,
+  toggleRemoteMute: NOOP,
+  isAudioBlocked: false,
+  enableRemoteAudio: NOOP,
+  cameraError: null,
+  connectionWarning: null,
+  enableSharing: NOOP,
+  disableSharing: NOOP
+};
+
+const LiveCameraContext = React.createContext<LiveCameraContextValue>(DEFAULT_CONTEXT);
+
+/** Safe outside a provider: returns an inert value so the UI simply renders nothing. */
+export const useLiveCamera = (): LiveCameraContextValue => React.useContext(LiveCameraContext);
+
+export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: React.ReactNode }> = ({
   socket,
   gameState,
-  currentUserId
+  currentUserId,
+  children
 }) => {
   const activePlayer = gameState.players[gameState.activePlayerIndex];
   const isActivePlayer = activePlayer?.id === currentUserId;
@@ -51,8 +133,6 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [isRemoteMuted, setIsRemoteMuted] = useState(false);
   const [isAudioBlocked, setIsAudioBlocked] = useState(false);
-  const [isLocalMinimized, setIsLocalMinimized] = useState(false);
-  const [isRemoteMinimized, setIsRemoteMinimized] = useState(false);
   const [isTestMode, setIsTestMode] = useState(false);
   const [showPermissionSetup, setShowPermissionSetup] = useState(false);
   const [isCheckingPermission, setIsCheckingPermission] = useState(false);
@@ -165,6 +245,10 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
 
     setRemoteStream(null);
     setIsAudioBlocked(false);
+    // Reset the muted fallback for the next turn. Leaving it sticky meant that a
+    // single autoplay rejection (iOS refuses audible playback outside a user
+    // gesture) silenced every following turn of the game.
+    setIsRemoteMuted(false);
     setIsStreaming(false);
     setIsTestMode(false);
     setConnectionWarning(null);
@@ -629,11 +713,54 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
     });
   };
 
-  if (!isCameraEnabled) return null;
+  const toggleRemoteMute = () => {
+    if (isRemoteMuted) {
+      enableRemoteAudio();
+      return;
+    }
+    if (remoteVideoRef.current) remoteVideoRef.current.muted = true;
+    setIsRemoteMuted(true);
+  };
+
+  const contextValue: LiveCameraContextValue = {
+    isCameraEnabled,
+    mediaAvailable: media.isAvailable,
+    mediaMessage: media.message,
+    sharingPreference,
+    isActivePlayer,
+    activePlayerName: activePlayer?.name,
+
+    isBroadcasting: isStreaming,
+    localStream,
+    attachLocalVideo,
+    isMuted,
+    toggleMic,
+    isVideoOff,
+    toggleVideo,
+    stopBroadcast: handleStopBroadcasting,
+    needsManualStart,
+    startBroadcast: handleManualStart,
+
+    remoteStream,
+    attachRemoteVideo,
+    isRemoteMuted,
+    toggleRemoteMute,
+    isAudioBlocked,
+    enableRemoteAudio,
+
+    cameraError,
+    connectionWarning,
+    enableSharing: () => void enableSharing(),
+    disableSharing
+  };
 
   return (
-    <div className="w-full">
-      {showPermissionSetup && (
+    <LiveCameraContext.Provider value={contextValue}>
+      {children}
+
+      {/* Consent dialog: the only piece that legitimately covers the game, and
+          it sits above every other layer so it is always actionable. */}
+      {isCameraEnabled && showPermissionSetup && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
           <div
             role="dialog"
@@ -652,8 +779,8 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
             </div>
 
             <p className="text-sm leading-relaxed text-slate-200">
-              Quand ce sera votre tour, les autres joueurs pourront vous voir et vous entendre.
-              Autorisez maintenant cet appareil pour éviter de bloquer la partie plus tard.
+              Quand ce sera votre tour, les autres joueurs pourront vous voir et vous entendre
+              dans un petit cadre au coin de la carte question.
             </p>
 
             <div className="my-4 rounded-2xl border border-emerald-500/30 bg-emerald-950/40 p-3 text-xs leading-relaxed text-emerald-100">
@@ -681,7 +808,7 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
                 type="button"
                 onClick={handlePrepareCameraAndMic}
                 disabled={isCheckingPermission}
-                className="rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 px-4 py-3 text-sm font-black text-slate-950 shadow-lg disabled:cursor-wait disabled:opacity-60"
+                className="tap-target rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 px-4 py-3 text-sm font-black text-slate-950 shadow-lg disabled:cursor-wait disabled:opacity-60"
               >
                 {isCheckingPermission ? 'Demande d’autorisation…' : 'J’accepte pour cette partie'}
               </button>
@@ -689,7 +816,7 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
                 type="button"
                 onClick={() => rememberSharingPreference('disabled')}
                 disabled={isCheckingPermission}
-                className="rounded-xl px-4 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800 hover:text-white"
+                className="tap-target rounded-xl px-4 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800 hover:text-white"
               >
                 Jouer sans caméra ni micro
               </button>
@@ -697,227 +824,6 @@ export const LiveCameraOverlay: React.FC<LiveCameraOverlayProps> = ({
           </div>
         </div>
       )}
-
-      {gameState.phase !== 'lobby' && gameState.phase !== 'game_over' && sharingPreference !== 'pending' && (
-        <div className="mb-3 rounded-2xl border border-purple-400/40 bg-slate-900/90 p-3 text-white shadow-lg">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-2">
-              {sharingPreference === 'enabled'
-                ? <Camera className="h-4 w-4 shrink-0 text-emerald-400" />
-                : <CameraOff className="h-4 w-4 shrink-0 text-slate-400" />}
-              <p className="text-xs">
-                <span className="font-black">Mon direct pendant mes tours :</span>{' '}
-                <span className={sharingPreference === 'enabled' ? 'text-emerald-300' : 'text-slate-400'}>
-                  {sharingPreference === 'enabled' ? 'activé' : 'désactivé'}
-                </span>
-              </p>
-            </div>
-            {media.isAvailable && (
-              <button
-                type="button"
-                onClick={() => {
-                  if (sharingPreference === 'enabled') {
-                    disableSharing();
-                  } else {
-                    void enableSharing();
-                  }
-                }}
-                className={`tap-target shrink-0 rounded-xl px-3 py-1.5 text-xs font-black transition-colors ${
-                  sharingPreference === 'enabled'
-                    ? 'bg-slate-700 text-white hover:bg-slate-600'
-                    : 'bg-purple-600 text-white hover:bg-purple-500'
-                }`}
-              >
-                {sharingPreference === 'enabled' ? 'Désactiver' : 'Réactiver'}
-              </button>
-            )}
-          </div>
-
-          {/* Why capture is impossible on this page, instead of a dead retry button */}
-          {!media.isAvailable && media.message && (
-            <p className="mt-2 rounded-xl border border-amber-500/40 bg-amber-950/60 p-2 text-xs font-bold text-amber-200">
-              <AlertTriangle className="mr-1 inline h-3.5 w-3.5" />
-              {media.message}
-            </p>
-          )}
-
-          {cameraError && (
-            <p className="mt-2 rounded-xl border border-red-500/40 bg-red-950/70 p-2 text-xs font-bold text-red-200">
-              {cameraError}
-            </p>
-          )}
-
-          {connectionWarning && (
-            <p className="mt-2 rounded-xl border border-slate-600 bg-slate-800/80 p-2 text-xs font-bold text-slate-300">
-              {connectionWarning}
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* 1. Active Player View: Prompt or Control Bar */}
-      {isActivePlayer && sharingPreference === 'enabled' && (
-        <div className="bg-slate-900/90 border border-amber-500/40 rounded-2xl p-3 text-white flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl mb-3 animate-fadeIn">
-          <div className="flex items-center gap-2 text-xs">
-            <Video className="w-4 h-4 text-amber-400 shrink-0" />
-            <div>
-              <span className="font-bold text-amber-300">Option Caméra & Micro en Direct :</span>
-              <span className="text-slate-300 ml-1">
-                {isStreaming
-                  ? 'Vous êtes en direct auprès des autres joueurs !'
-                  : needsManualStart
-                  ? 'Touchez le bouton pour autoriser la caméra sur cet appareil.'
-                  : 'Votre direct démarre automatiquement pour ce tour.'}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            {!isStreaming ? (
-              needsManualStart ? (
-                <button
-                  type="button"
-                  onClick={handleManualStart}
-                  className="tap-target rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 px-4 py-2 text-xs font-black text-slate-950 shadow-lg"
-                >
-                  📷 Activer ma caméra
-                </button>
-              ) : (
-                <span className="px-3 py-1.5 text-xs font-bold text-amber-300">
-                  Connexion du direct…
-                </span>
-              )
-            ) : (
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={toggleMic}
-                  className={`p-1.5 rounded-lg border text-xs font-bold transition-colors ${
-                    isMuted ? 'bg-red-500/20 border-red-500 text-red-400' : 'bg-slate-800 border-slate-700 text-emerald-400'
-                  }`}
-                  title={isMuted ? 'Réactiver le micro' : 'Couper le micro'}
-                >
-                  {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                </button>
-                <button
-                  type="button"
-                  onClick={toggleVideo}
-                  className={`p-1.5 rounded-lg border text-xs font-bold transition-colors ${
-                    isVideoOff ? 'bg-red-500/20 border-red-500 text-red-400' : 'bg-slate-800 border-slate-700 text-emerald-400'
-                  }`}
-                  title={isVideoOff ? 'Réactiver la vidéo' : 'Désactiver la vidéo'}
-                >
-                  {isVideoOff ? <VideoOff className="w-4 h-4" /> : <Video className="w-4 h-4" />}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleStopBroadcasting}
-                  className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-xl shadow transition-colors"
-                >
-                  🛑 Arrêter
-                </button>
-              </div>
-            )}
-          </div>
-
-          {cameraError && (
-            <div className="w-full text-xs font-bold text-red-300 bg-red-950/80 p-2 rounded-xl text-center border border-red-500/40">
-              {cameraError}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Local Video Preview for Active Player if streaming or testing.
-          No backdrop blur and no infinite animation here: compositing a blurred
-          backdrop and a pinging dot on top of a playing <video> keeps the GPU
-          busy every frame, which is one of the heaviest battery drains on iOS. */}
-      {isActivePlayer && isStreaming && localStream && (
-        <div className="fixed bottom-4 left-4 z-40 bg-slate-900 border border-amber-500/50 rounded-2xl p-2 shadow-2xl">
-          <div className="flex items-center justify-between text-[11px] text-slate-300 font-bold mb-1 px-1">
-            <span className="flex items-center gap-1.5 text-emerald-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              {isTestMode ? '🧪 Mode Test Caméra' : 'Mon flux direct'}
-            </span>
-            <button
-              onClick={() => setIsLocalMinimized(!isLocalMinimized)}
-              className="text-slate-400 hover:text-white px-1"
-              aria-label={isLocalMinimized ? 'Afficher mon aperçu' : 'Masquer mon aperçu'}
-            >
-              {isLocalMinimized ? '＋' : 'ー'}
-            </button>
-          </div>
-          {/* Kept mounted and merely hidden, so collapsing never detaches the stream */}
-          <div className={`relative w-36 h-28 bg-black rounded-xl overflow-hidden border border-slate-800 ${isLocalMinimized ? 'hidden' : ''}`}>
-            <video
-              ref={attachLocalVideo}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover transform -scale-x-100"
-            />
-            {isVideoOff && (
-              <div className="absolute inset-0 flex items-center justify-center bg-slate-950/85 text-[11px] font-bold text-slate-300">
-                Vidéo coupée
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* 2. Spectator PIP Overlay (When Active Player is Broadcasting) */}
-      {!isActivePlayer && (remoteStream || isTestMode) && (
-        <div className="fixed top-20 right-4 z-40 bg-slate-900 border-2 border-amber-500/60 rounded-2xl p-2.5 shadow-2xl w-48 sm:w-56">
-          <div className="flex items-center justify-between gap-1 mb-1.5">
-            <div className="flex items-center gap-1.5 overflow-hidden">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0" />
-              <span className="font-extrabold text-xs text-white truncate">
-                {activePlayer?.name || 'Joueur Actif'}
-              </span>
-            </div>
-            <div className="flex items-center gap-1 shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsRemoteMuted(!isRemoteMuted)}
-                className="p-1 text-slate-300 hover:text-white"
-                title={isRemoteMuted ? 'Activer le son du joueur' : 'Couper le son du joueur'}
-              >
-                {isRemoteMuted ? <VolumeX className="w-3.5 h-3.5 text-red-400" /> : <Volume2 className="w-3.5 h-3.5 text-amber-400" />}
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsRemoteMinimized(!isRemoteMinimized)}
-                className="p-1 text-slate-300 hover:text-white font-bold text-xs"
-                aria-label={isRemoteMinimized ? 'Afficher le direct' : 'Masquer le direct'}
-              >
-                {isRemoteMinimized ? '＋' : 'ー'}
-              </button>
-            </div>
-          </div>
-
-          <div className={`relative w-full h-36 bg-black rounded-xl overflow-hidden border border-slate-800 shadow-inner ${isRemoteMinimized ? 'hidden' : ''}`}>
-            <video
-              ref={attachRemoteVideo}
-              autoPlay
-              playsInline
-              muted={isRemoteMuted}
-              className="w-full h-full object-cover"
-            />
-            {isAudioBlocked && (
-              <button
-                type="button"
-                onClick={enableRemoteAudio}
-                className="absolute inset-x-2 bottom-2 rounded-lg bg-amber-500 px-2 py-1.5 text-xs font-black text-slate-950 shadow-lg"
-              >
-                🔊 Toucher pour entendre
-              </button>
-            )}
-            <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-black/60 text-[10px] font-bold text-amber-300">
-              🎥 Direct
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    </LiveCameraContext.Provider>
   );
 };
