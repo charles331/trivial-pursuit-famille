@@ -6,6 +6,7 @@ import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
 import { QUESTIONS_DATABASE } from './src/data/questions.js';
 import { BOARD_PRESETS } from './src/data/boards.js';
+import { loadRooms, startRoomPersistence, saveRooms, ROOM_STORE_PATH } from './roomStore.js';
 import { 
   GameState, 
   Player, 
@@ -227,7 +228,20 @@ interface Room {
   hostDisconnectedAt: number | null;
 }
 
-const rooms = new Map<string, Room>();
+/** Mélange de Fisher-Yates, partagé par le démarrage de partie et la reprise. */
+function shuffled<T>(values: T[]): T[] {
+  const result = [...values];
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+// Les parties survivent au redémarrage : sans cela, un redéploiement, un
+// plantage ou un simple rechargement de tsx en développement effaçait toutes
+// les salles en cours.
+const rooms: Map<string, Room> = loadRooms(QUESTIONS_DATABASE, shuffled);
 const positiveDuration = (value: string | undefined, fallback: number): number => {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
@@ -260,6 +274,9 @@ function closeRoom(code: string, reason: string): boolean {
   room.gameState.usedQuestionIds.length = 0;
   room.gameState.customPacks = [];
   rooms.delete(code);
+  // Écriture immédiate : une salle fermée ne doit pas réapparaître si le
+  // serveur redémarre dans les secondes qui suivent.
+  saveRooms(rooms);
   console.log(`[Room] Salon supprimé: ${code} (${reason}). Salons actifs: ${rooms.size}`);
   return true;
 }
@@ -669,13 +686,7 @@ io.on('connection', (socket: Socket) => {
     }
 
     // Shuffle questions pool on game start (custom pack questions included first)
-    const combinedPool = [...customQuestions, ...QUESTIONS_DATABASE];
-    const shuffledPool = [...combinedPool];
-    for (let i = shuffledPool.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffledPool[i], shuffledPool[j]] = [shuffledPool[j], shuffledPool[i]];
-    }
-    room.gameState.questionsPool = shuffledPool;
+    room.gameState.questionsPool = shuffled([...customQuestions, ...QUESTIONS_DATABASE]);
     room.gameState.usedQuestionIds = [];
 
     room.gameState.phase = 'rolling';
@@ -1126,8 +1137,11 @@ async function startServer() {
     });
   }
 
+  startRoomPersistence(rooms);
+
   httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`🎮 Serveur Trivial Pursuit Famille en ligne sur http://0.0.0.0:${PORT}`);
+    console.log(`💾 Parties sauvegardées dans ${ROOM_STORE_PATH}`);
   });
 }
 
