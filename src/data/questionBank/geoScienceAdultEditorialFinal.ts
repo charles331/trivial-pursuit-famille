@@ -6,7 +6,7 @@ const G = (raw: string): Fact[] => raw.trim().split('\n').map(line => line.split
 
 const GEOGRAPHY = G(`
 Dans quel pays se trouve la Transylvanie ?|La Roumanie|La Bulgarie|La Hongrie|La Serbie|Cette région historique occupe le centre de la Roumanie, à l’intérieur de l’arc des Carpates.
-Dans quel pays se trouve la Cappadoce ?|La Turquie|La Géorgie|L’Arménie|La Grèce|La Cappadoce est un plateau d’Anatolie centrale célèbre pour ses formations volcaniques.
+Dans quel pays se trouve le site néolithique de Çatal Höyük ?|La Turquie|La Géorgie|L’Arménie|La Grèce|Çatal Höyük se situe en Anatolie centrale et conserve les vestiges d’une vaste agglomération préhistorique.
 Dans quel pays se trouve la vallée de la Bekaa ?|Le Liban|La Jordanie|La Syrie|Israël|La Bekaa s’étend entre les chaînes du Mont-Liban et de l’Anti-Liban.
 Dans quel pays se trouve le delta de l’Okavango ?|Le Botswana|La Namibie|La Zambie|Le Zimbabwe|L’Okavango se disperse dans les sables du Kalahari sans atteindre la mer.
 Dans quel pays se trouve le salar d’Uyuni ?|La Bolivie|Le Chili|Le Pérou|L’Argentine|Ce désert de sel occupe l’Altiplano bolivien à plus de 3 600 mètres d’altitude.
@@ -35,7 +35,7 @@ Quel fleuve traverse Phnom Penh ?|Le Mékong|Le Chao Phraya|Le fleuve Rouge|Le Y
 Quel fleuve traverse Khartoum ?|Le Nil|Le Congo|Le Zambèze|Le Limpopo|Le Nil Blanc et le Nil Bleu se rejoignent à Khartoum.
 Quel fleuve traverse Niamey ?|Le Niger|Le Sénégal|La Volta|Le Chari|Le Niger décrit une large boucle avant de traverser la capitale du Niger.
 Quel fleuve traverse Kinshasa ?|Le Congo|Le Niger|L’Ogooué|Le Zambèze|Kinshasa fait face à Brazzaville sur la rive opposée du fleuve Congo.
-Quel fleuve traverse Séville ?|Le Guadalquivir|Le Tage|L’Èbre|Le Douro|Le Guadalquivir est navigable jusqu’à Séville depuis l’Atlantique.
+Quel fleuve traverse Cordoue avant de rejoindre l’Atlantique près de Sanlúcar ?|Le Guadalquivir|Le Tage|L’Èbre|Le Douro|Le Guadalquivir traverse l’Andalousie et fut une voie majeure d’échanges.
 Quel fleuve traverse Saragosse ?|L’Èbre|Le Tage|Le Douro|Le Guadiana|L’Èbre traverse le nord-est de l’Espagne avant de former un delta méditerranéen.
 Quel fleuve traverse Bordeaux ?|La Garonne|La Loire|La Dordogne|L’Adour|En aval de Bordeaux, la Garonne rejoint la Dordogne pour former l’estuaire de la Gironde.
 Quel fleuve traverse Nantes ?|La Loire|La Seine|La Garonne|La Charente|Nantes se situe près de l’estuaire de la Loire, ouvert sur l’Atlantique.
@@ -85,7 +85,7 @@ Quel lac se trouve entièrement en Hongrie ?|Le lac Balaton|Le lac de Constance|
 Quel lac est partagé par l’Allemagne, la Suisse et l’Autriche ?|Le lac de Constance|Le lac Léman|Le lac Majeur|Le lac Balaton|Le Rhin traverse le lac de Constance avant de poursuivre vers l’ouest.
 Quel lac est partagé par l’Albanie et la Macédoine du Nord ?|Le lac d’Ohrid|Le lac Prespa uniquement|Le lac Skadar|Le lac Balaton|Ohrid est l’un des lacs les plus anciens et les plus profonds d’Europe.
 Quel lac est partagé par l’Albanie et le Monténégro ?|Le lac de Skadar|Le lac d’Ohrid|Le lac Prespa|Le lac de Bled|Le lac de Skadar est le plus vaste lac des Balkans.
-Quel lac est la principale source du Nil Blanc ?|Le lac Victoria|Le lac Albert|Le lac Édouard|Le lac Kivu|Le Nil Victoria quitte le lac près de Jinja, en Ouganda.
+Quel lac africain est le deuxième plus profond du monde ?|Le lac Tanganyika|Le lac Victoria|Le lac Albert|Le lac Kivu|Le Tanganyika occupe une partie du rift est-africain et dépasse 1 400 mètres de profondeur.
 Quel lac occupe une partie du rift entre la Tanzanie et la RDC ?|Le lac Tanganyika|Le lac Victoria|Le lac Turkana|Le lac Tchad|Le Tanganyika est le deuxième lac le plus profond du monde.
 Quelle mer sépare l’Italie des Balkans ?|La mer Adriatique|La mer Égée|La mer Ionienne|La mer Tyrrhénienne|L’Adriatique est reliée à la mer Ionienne par le canal d’Otrante.
 Quelle mer borde la Bulgarie à l’est ?|La mer Noire|La mer Égée|La mer Adriatique|La mer Caspienne|Le littoral bulgare s’étend entre la Roumanie et la Turquie.
@@ -128,7 +128,7 @@ Quelle structure bactérienne assure principalement la propulsion de nombreuses 
 Quel mécanisme permet à une cellule d’engloutir une grosse particule ?|La phagocytose|L’osmose|La diffusion simple|L’exocytose|La membrane entoure la particule et forme une vésicule appelée phagosome.
 Quelle étape de la respiration cellulaire se déroule dans le cytosol ?|La glycolyse|Le cycle de Krebs|La chaîne respiratoire|La bêta-oxydation uniquement|La glycolyse transforme une molécule de glucose en deux molécules de pyruvate.
 Dans quelle structure végétale ont lieu les réactions lumineuses de la photosynthèse ?|Les thylakoïdes|Le noyau|La vacuole|La paroi cellulaire|Les membranes des thylakoïdes portent les photosystèmes et la chaîne de transport d’électrons.
-Quel tissu végétal transporte principalement les sucres ?|Le phloème|Le xylème|Le cambium|L’épiderme|Le phloème distribue notamment le saccharose des organes sources vers les organes consommateurs.
+Quel tissu végétal produit les nouvelles cellules du bois et du liber ?|Le cambium|Le xylème|Le phloème|L’épiderme|Le cambium vasculaire assure la croissance en épaisseur des tiges et des racines.
 Quel tissu végétal transporte principalement l’eau depuis les racines ?|Le xylème|Le phloème|Le parenchyme|Le liège|La transpiration foliaire contribue à tirer la colonne d’eau dans les vaisseaux du xylème.
 Quel gaz les stomates absorbent-ils pour la photosynthèse ?|Le dioxyde de carbone|Le dioxygène|Le diazote|L’ozone|L’ouverture des stomates permet l’entrée du CO₂ mais entraîne aussi une perte d’eau.
 Quel groupe végétal produit des graines sans fruits ?|Les gymnospermes|Les angiospermes|Les bryophytes|Les fougères|Chez les gymnospermes, les graines ne sont pas enfermées dans un ovaire devenu fruit.
@@ -148,7 +148,7 @@ Quelle interaction maintient les quarks liés dans les protons ?|L’interaction
 Quelle interaction est responsable de la désintégration bêta ?|L’interaction faible|L’interaction forte|La gravitation|L’électromagnétisme|La désintégration bêta transforme notamment un neutron en proton ou inversement.
 Quel effet décrit l’émission d’électrons par un matériau éclairé ?|L’effet photoélectrique|L’effet Doppler|L’effet Hall|L’effet Joule|L’énergie des électrons émis dépend de la fréquence de la lumière incidente.
 Quel effet modifie la fréquence perçue quand une source se déplace ?|L’effet Doppler|L’effet Zeeman|L’effet Compton|L’effet tunnel|Une source qui approche produit généralement une fréquence perçue plus élevée.
-Quel phénomène sépare la lumière blanche en couleurs dans un prisme ?|La dispersion|La diffraction|La polarisation|La réflexion totale|L’indice du verre varie avec la longueur d’onde, déviant différemment chaque couleur.
+Quel phénomène courbe la lumière lorsqu’elle passe d’un milieu à un autre ?|La réfraction|La diffraction|La polarisation|La réflexion totale|La vitesse de propagation change entre les milieux, ce qui modifie généralement la direction du rayon.
 Quel phénomène empêche un rayon de sortir d’un milieu au-delà d’un angle critique ?|La réflexion totale interne|La réfraction simple|La diffusion Rayleigh|L’interférence destructive|Les fibres optiques guident la lumière grâce à cette réflexion.
 Quelle loi donne la force électrique entre deux charges ponctuelles ?|La loi de Coulomb|La loi d’Ampère|La loi de Lenz|La loi de Kepler|La force varie comme l’inverse du carré de la distance entre les charges.
 Quelle règle donne le sens du courant induit qui s’oppose à sa cause ?|La loi de Lenz|La loi d’Ohm|La loi de Gauss|La loi de Wien|Cette opposition traduit la conservation de l’énergie dans l’induction.
@@ -172,8 +172,8 @@ Quelle roche volcanique vitreuse résulte d’un refroidissement très rapide ?|
 Quel type d’onde sismique ne traverse pas les liquides ?|L’onde S|L’onde P|L’onde sonore dans l’air|L’onde de marée|L’absence d’ondes S dans le noyau externe a montré que celui-ci est liquide.
 Quelle discontinuité sépare le manteau terrestre du noyau externe ?|La discontinuité de Gutenberg|La discontinuité de Mohorovičić|La discontinuité de Lehmann|La limite de Roche|À environ 2 900 kilomètres de profondeur, les ondes S cessent de se propager dans le noyau externe liquide.
 Quelle échelle moderne mesure la magnitude d’un séisme à partir de son moment sismique ?|La magnitude de moment|L’échelle de Beaufort|L’échelle de Saffir-Simpson|L’échelle de Mohs|Elle évite la saturation de l’ancienne magnitude de Richter pour les très grands séismes.
-Quel nuage est typiquement associé aux orages ?|Le cumulonimbus|Le cirrus|Le stratus|L’altocumulus|Un cumulonimbus peut s’étendre jusqu’à la tropopause et produire grêle ou éclairs.
-Quel instrument mesure l’humidité de l’air ?|L’hygromètre|Le baromètre|L’anémomètre|Le pluviomètre|L’humidité relative compare la vapeur présente à la quantité maximale possible à cette température.
+Quel nuage en forme d’enclume atteint souvent la tropopause ?|Le cumulonimbus|Le cirrus|Le stratus|L’altocumulus|Ses puissants courants ascendants peuvent produire grêle, éclairs et fortes précipitations.
+Quel instrument enregistre la durée d’ensoleillement ?|L’héliographe|Le baromètre|L’anémomètre|Le pluviomètre|L’héliographe traditionnel concentre les rayons du Soleil pour marquer une bande de papier.
 Quelle échelle classe la force du vent d’après ses effets observés ?|L’échelle de Beaufort|L’échelle de Mercalli|L’échelle de Mohs|L’échelle de pH|Elle va traditionnellement de 0 pour le calme à 12 pour l’ouragan.
 Quel gaz est le principal responsable naturel de l’effet de serre terrestre ?|La vapeur d’eau|Le méthane|L’ozone|Le protoxyde d’azote|La vapeur d’eau contribue fortement à l’effet de serre naturel et agit surtout comme rétroaction climatique.
 Quelle couche atmosphérique contient la majeure partie de l’ozone protecteur ?|La stratosphère|La troposphère|La mésosphère|La thermosphère|La couche d’ozone absorbe une grande partie du rayonnement ultraviolet solaire.

@@ -37,7 +37,7 @@ const GEOGRAPHY: Fact[] = [
   ['Quelle chaîne de montagnes longe l’est des États-Unis ?', 'Les Appalaches', 'Les Cascades', 'La Sierra Nevada', 'Les Rocheuses', 'Les Appalaches sont bien plus anciennes et plus érodées que les Rocheuses.'],
   ['Quel pays des Caraïbes partage l’île de Saint-Martin avec la France ?', 'Les Pays-Bas', 'Le Royaume-Uni', 'Les États-Unis', 'L’Espagne', 'La partie méridionale, Sint Maarten, est un pays constitutif du royaume des Pays-Bas.'],
   ['Quel golfe sépare principalement la péninsule de Basse-Californie du Mexique continental ?', 'Le golfe de Californie', 'Le golfe du Mexique', 'Le golfe de Tehuantepec', 'Le golfe d’Alaska', 'Le golfe de Californie est aussi appelé mer de Cortés.'],
-  ['Quelle capitale d’Amérique centrale est bordée par le lac Managua ?', 'Managua', 'San Salvador', 'Tegucigalpa', 'San José', 'Managua s’étend sur la rive sud du lac Xolotlán, autre nom du lac Managua.'],
+  ['Quelle capitale d’Amérique centrale s’étend sur la rive sud du lac Xolotlán ?', 'Managua', 'San Salvador', 'Tegucigalpa', 'San José', 'Xolotlán est l’autre nom du lac Managua, au Nicaragua.'],
   ['Quel pays a pour capitale Douchanbé ?', 'Le Tadjikistan', 'Le Turkménistan', 'L’Ouzbékistan', 'Le Kirghizistan', 'Douchanbé se trouve dans la vallée de Hissar, à l’ouest du Tadjikistan.'],
   ['Quelle mer intérieure borde l’Azerbaïdjan à l’est ?', 'La mer Caspienne', 'La mer Noire', 'La mer d’Aral', 'La mer d’Azov', 'Bakou s’étend sur la péninsule d’Abşeron, sur la rive occidentale de la Caspienne.'],
   ['Quel fleuve traverse la ville chinoise de Wuhan ?', 'Le Yangtsé', 'Le fleuve Jaune', 'La rivière des Perles', 'Le Mékong', 'À Wuhan, le Yangtsé reçoit la rivière Han, l’un de ses principaux affluents.'],

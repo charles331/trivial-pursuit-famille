@@ -50,7 +50,7 @@ const FACTS: Fact[] = [
   ['Quelle bataille de 1859 opposa Français et Piémontais aux Autrichiens en Lombardie ?', 'Solferino', 'Magenta', 'Novare', 'Custoza', 'Le spectacle des blessés de Solferino inspira à Henry Dunant la création de la Croix-Rouge.'],
   ['Quelle bataille navale de 1905 anéantit la flotte russe de la Baltique ?', 'Tsushima', 'Port-Arthur', 'Jutland', 'Manille', 'L’amiral Tōgō remporta à Tsushima une victoire décisive pour le Japon.'],
   ['Quelle bataille de 1942 stoppa l’expansion japonaise vers l’Australie ?', 'La mer de Corail', 'Midway', 'Guadalcanal', 'Leyte', 'La bataille de la mer de Corail fut le premier grand affrontement naval où les flottes ne se virent pas directement.'],
-  ['Quelle bataille de chars de 1943 se déroula autour du saillant de Koursk ?', 'Koursk', 'Kharkov', 'Smolensk', 'Kiev', 'L’offensive allemande Citadelle échoua face aux défenses soviétiques préparées autour de Koursk.'],
+  ['Quelle bataille de 1943 vit échouer l’offensive allemande Citadelle face aux défenses soviétiques ?', 'Koursk', 'Kharkov', 'Smolensk', 'Kiev', 'Les combats autour du saillant de Koursk comptèrent parmi les plus grandes confrontations blindées de la guerre.'],
   ['Quelle bataille de 1954 mit fin à la domination française en Indochine ?', 'Điện Biên Phủ', 'Khe Sanh', 'Saïgon', 'Hué', 'Le camp retranché français capitula face au Việt Minh de Võ Nguyên Giáp le 7 mai 1954.'],
   ['Quelle bataille de 1968 dura plusieurs mois autour d’une base américaine au Viêt Nam ?', 'Khe Sanh', 'Ia Drang', 'Ap Bac', 'Hamburger Hill', 'Le siège de Khe Sanh coïncida avec l’offensive du Têt et mobilisa d’importants moyens aériens américains.'],
 ];
