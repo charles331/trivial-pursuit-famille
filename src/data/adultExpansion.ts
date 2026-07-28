@@ -74,6 +74,13 @@ function directAdultQuestion(
 export function completeAdultQuestionBank(questions: Question[]): Question[] {
   const categories = [...new Set(questions.map((question) => question.categoryId))];
   const additions: Question[] = [];
+  const childSourceSignatures = new Set(
+    questions
+      .filter((question) => question.difficulty === 'enfant')
+      .map((question) => (
+        `${normalize(question.question)}|${normalize(answerOf(question))}`
+      )),
+  );
 
   for (const categoryId of categories) {
     const categoryQuestions = questions.filter(
@@ -100,6 +107,7 @@ export function completeAdultQuestionBank(questions: Question[]): Question[] {
         && !revealsAnswer
         && question.question.length <= 105
         && question.options.every((option) => option.length <= 55)
+        && !childSourceSignatures.has(signature)
         && !seenSourceSignatures.has(signature);
       if (isEligible) seenSourceSignatures.add(signature);
       return isEligible;
