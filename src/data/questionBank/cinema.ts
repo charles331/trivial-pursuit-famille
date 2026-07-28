@@ -2245,11 +2245,11 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_250",
     categoryId: "cinema",
-    question: "Quelle est la grande faiblesse de Superman ?",
-    options: ["Le feu", "L'eau", "L'argent", "La kryptonite"],
+    question: "De quelle planète Superman est-il originaire ?",
+    options: ["Mars", "Vulcain", "Tatooine", "Krypton"],
     correctAnswerIndex: 3,
     difficulty: "ado",
-    explanation: "La kryptonite est un fragment radioactif de sa planète natale détruite."
+    explanation: "Krypton a explosé peu après le départ du bébé Kal-El, envoyé sur Terre par ses parents."
   },
   {
     id: "cin_251",

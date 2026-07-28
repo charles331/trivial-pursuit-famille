@@ -141,6 +141,13 @@ for (const question of QUESTIONS_DATABASE) {
     errors.push(`Bonne réponse invalide : ${question.id}`);
   }
 
+  // Le niveau ado ne doit jamais être complété en recopiant la banque enfant :
+  // cela supprime une marche entière de la progression enfant -> ado -> adulte.
+  if (question.difficulty === 'ado'
+    && childFactSignatures.has(sourceFactSignature(question))) {
+    editorialError(`Question enfant recopiée au niveau ado`, question.id);
+  }
+
   if (question.difficulty === 'adulte') {
     const texts = adultTextsByCategory.get(question.categoryId) ?? new Set<string>();
     const signature = `${normalize(question.question)}|${question.options.map(normalize).join('|')}`;

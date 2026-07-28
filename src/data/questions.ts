@@ -75,7 +75,11 @@ import { GASTRONOMIE_ADULT_CURATED_05 } from './questionBank/gastronomieAdultCur
 import { GASTRONOMIE_ADULT_CURATED_06 } from './questionBank/gastronomieAdultCurated06';
 import { GASTRONOMIE_ADULT_CURATED_FINAL } from './questionBank/gastronomieAdultCuratedFinal';
 import { ADULT_KNOWLEDGE_SUPPLEMENT } from './questionBank/adultKnowledgeSupplement';
-import { completeTeenQuestionBank } from './adultExpansion';
+import { SCIENCES_ADO_EDITORIAL } from './questionBank/sciencesAdoEditorial';
+import {
+  POPCULTURE_ADO_EDITORIAL,
+  GASTRONOMIE_ADO_EDITORIAL,
+} from './questionBank/popcultureGastronomieAdoEditorial';
 
 const CURATED_QUESTIONS: Question[] = [
   ...HISTOIRE_QUESTIONS,
@@ -102,6 +106,7 @@ const CURATED_QUESTIONS: Question[] = [
   ...CINEMA_ADULT_EDITORIAL_06,
   ...CINEMA_ADULTE_EDITORIAL_FINAL,
   ...SCIENCES_QUESTIONS,
+  ...SCIENCES_ADO_EDITORIAL,
   ...ADULT_QUALITY_SCIENCE,
   ...SCIENCES_ADULTE_EDITORIAL_02,
   ...SCIENCES_ADULTE_EDITORIAL_03,
@@ -125,6 +130,7 @@ const CURATED_QUESTIONS: Question[] = [
   ...SPORTS_ADULT_CURATED_06,
   ...SPORTS_ADULT_CURATED_FINAL,
   ...POPCULTURE_QUESTIONS,
+  ...POPCULTURE_ADO_EDITORIAL,
   ...POPCULTURE_ADULT_EDITORIAL,
   ...POPCULTURE_ADULT_EDITORIAL_02,
   ...POPCULTURE_ADULT_EDITORIAL_03,
@@ -134,6 +140,7 @@ const CURATED_QUESTIONS: Question[] = [
   ...POPCULTURE_ADULTE_EDITORIAL_FINAL,
   ...CINEMA_POP_ADULT_EDITORIAL_FINAL_02,
   ...GASTRONOMIE_QUESTIONS,
+  ...GASTRONOMIE_ADO_EDITORIAL,
   ...GASTRONOMIE_ADULT_CURATED_01,
   ...GASTRONOMIE_ADULT_CURATED_02,
   ...GASTRONOMIE_ADULT_CURATED_03,
@@ -146,9 +153,11 @@ const CURATED_QUESTIONS: Question[] = [
 
 // Safety net: guarantee unique ids even if two bank files ever collide
 const seenIds = new Set<string>();
-// Adult cards are deliberately not completed from teen or child material.
-// A category reaches its adult target only through explicit editorial banks.
-const COMPLETED_QUESTIONS = completeTeenQuestionBank(CURATED_QUESTIONS);
+// No level is completed from another level's material. Promoting a child card
+// to the teen bank removed a whole step from the difficulty ladder: a teenager
+// received the child questions verbatim. Every level now reaches its target
+// only through banks written for that level.
+const COMPLETED_QUESTIONS = CURATED_QUESTIONS;
 
 function balanceAdultAnswerPositions(questions: Question[]): Question[] {
   const sequenceByCategory = new Map<string, number>();
