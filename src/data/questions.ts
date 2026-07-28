@@ -78,6 +78,7 @@ import { ADULT_KNOWLEDGE_SUPPLEMENT } from './questionBank/adultKnowledgeSupplem
 import { MUSIQUE_CLASSIQUE_ADULTE } from './questionBank/musiqueClassiqueAdultEditorial';
 import { POPCULTURE_FRANCOPHONE_ADULTE } from './questionBank/popcultureFrancophoneAdultEditorial';
 import { GASTRONOMIE_FRANCOPHONE_ADULTE } from './questionBank/gastronomieFrancophoneAdultEditorial';
+import { SPORTS_FRANCOPHONE_ADULTE } from './questionBank/sportsFrancophoneAdultEditorial';
 import { SERIES_TV_ADULTE } from './questionBank/seriesTvAdultEditorial';
 import { ART_BD_LITTERATURE_ADULTE } from './questionBank/artBdLitteratureAdultEditorial';
 import { SCIENCES_ADO_EDITORIAL } from './questionBank/sciencesAdoEditorial';
@@ -129,6 +130,7 @@ const CURATED_QUESTIONS: Question[] = [
   ...ART_ADULTE_EDITORIAL_07,
   ...ART_ADULTE_EDITORIAL_FINAL,
   ...SPORTS_QUESTIONS,
+  ...SPORTS_FRANCOPHONE_ADULTE,
   ...SPORTS_ADULT_CURATED_01,
   ...SPORTS_ADULT_CURATED_02,
   ...SPORTS_ADULT_CURATED_03,
