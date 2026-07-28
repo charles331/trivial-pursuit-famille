@@ -39,18 +39,15 @@ const D: Q[] = [
 ["Quel film de Kathryn Bigelow suit une équipe de déminage en Irak ?",["Démineurs","Zero Dark Thirty","Detroit","K-19"],0,"Bigelow fut la première femme récompensée par l'Oscar de la réalisation."],
 ["Quel cinéaste palestinien a réalisé Intervention divine ?",["Elia Suleiman","Hany Abu-Assad","Annemarie Jacir","Michel Khleifi"],0,"Suleiman mêle burlesque silencieux et observation du quotidien sous occupation."],
 ["Qui joue la gouvernante dans Les Innocents de Jack Clayton ?",["Deborah Kerr","Julie Harris","Simone Signoret","Ingrid Bergman"],0,"Le film adapte Le Tour d'écrou de Henry James."],
-["Quel film de Denis Villeneuve revient sur la tuerie antiféministe commise à Montréal en 1989 ?",["Polytechnique","Incendies","Prisoners","Maelström"],0,"Le récit adopte plusieurs points de vue autour de l'attaque d'une école d'ingénierie."],
 ["Quel réalisateur a signé Le Salaire de la peur ?",["Henri-Georges Clouzot","Julien Duvivier","Jean Grémillon","Marcel Carné"],0,"Des chauffeurs transportent de la nitroglycérine sur des routes dangereuses."],
 ["Quel film de Todd Haynes suit une jeune vendeuse et une cliente aisée dans le New York des années 1950 ?",["Carol","Loin du paradis","May December","Velvet Goldmine"],0,"Cate Blanchett et Rooney Mara adaptent les personnages de Patricia Highsmith."],
 ["Qui a réalisé Le Ballon rouge ?",["Albert Lamorisse","Jacques Tati","Jean Rouch","Chris Marker"],0,"Ce moyen métrage suit un enfant dans le quartier parisien de Ménilmontant."],
 ["Quel film de Ryūsuke Hamaguchi adapte librement Oncle Vania ?",["Drive My Car","Contes du hasard","Senses","Asako I & II"],0,"Les répétitions de Tchekhov structurent le deuil du metteur en scène Kafuku."],
-["Quel réalisateur a signé Les Chiens de paille ?",["Sam Peckinpah","John Boorman","Don Siegel","Walter Hill"],0,"Dustin Hoffman incarne un mathématicien confronté à une violence croissante."],
 ["Quel film de Claire Denis se déroule dans la Légion étrangère à Djibouti ?",["Beau Travail","White Material","35 Rhums","Trouble Every Day"],0,"Le récit s'inspire librement de Billy Budd de Herman Melville."],
 ["Qui joue la mère dans Tout sur ma mère ?",["Cecilia Roth","Marisa Paredes","Victoria Abril","Carmen Maura"],0,"Cecilia Roth incarne Manuela, partie à Barcelone après la mort de son fils."],
 ["Quel film de Satoshi Kon brouille l'identité d'une chanteuse devenue actrice ?",["Perfect Blue","Paprika","Millennium Actress","Tokyo Godfathers"],0,"Perfect Blue explore la célébrité, le regard des fans et la perte de repères."],
 ["Quel cinéaste belge a réalisé Toto le héros ?",["Jaco Van Dormael","Bouli Lanners","Joachim Lafosse","Fabrice Du Welz"],0,"Le film reçut la Caméra d'or au Festival de Cannes 1991."],
 ["Quel film de Céline Sciamma suit deux fillettes liées par un étrange passage temporel ?",["Petite Maman","Tomboy","Bande de filles","Naissance des pieuvres"],0,"Nelly rencontre Marion enfant dans le bois derrière la maison familiale."],
-["Qui incarne le père dans Le Voleur de bicyclette ?",["Lamberto Maggiorani","Vittorio Gassman","Marcello Mastroianni","Totò"],0,"Maggiorani était ouvrier d'usine avant d'être choisi par Vittorio De Sica."],
 ];
 export const CINEMA_ADULT_EDITORIAL_03: Question[]=D.map(([question,options,,explanation],i)=>{
   const shift=i%4;

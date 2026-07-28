@@ -238,7 +238,7 @@ const PROMPTS: ((work: string, museum: string, period: string) => string)[] = [
   (work) => `À quel artiste doit-on « ${work} » ?`,
   (work) => `Quel est l’auteur de « ${work} » ?`,
   (work, museum) => `Quel artiste exposé ${atMuseum(museum)} a produit « ${work} » ?`,
-  (work, _museum, period) => `Qui, ${inPeriod(period)}, a composé l’œuvre « ${work} » ?`,
+  (work, _museum, period) => `Qui, ${inPeriod(period)}, a réalisé l’œuvre « ${work} » ?`,
 ];
 
 /** « Œuvre du Bernin » plutôt que « Œuvre de Le Bernin ». */
