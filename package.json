@@ -10,6 +10,7 @@
     "clean": "rm -rf dist server.cjs",
     "lint": "tsc --noEmit",
     "audit:questions": "node --import tsx scripts/audit-questions.ts",
+    "analyze:difficulty": "node --import tsx scripts/analyze-difficulty.ts",
     "check": "npm run lint && npm run audit:questions && npm run build"
   },
   "dependencies": {
