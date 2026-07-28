@@ -250,8 +250,13 @@ const MAX_ROOMS = 250;
 const MAX_PLAYERS_PER_ROOM = 12;
 const MAX_CUSTOM_PACKS_PER_ROOM = 3;
 const MAX_CUSTOM_QUESTIONS_PER_ROOM = 180;
-const HOST_RECONNECT_GRACE_MS = positiveDuration(process.env.ROOM_HOST_GRACE_MS, 2 * 60 * 1000);
-const EMPTY_ROOM_GRACE_MS = positiveDuration(process.env.ROOM_EMPTY_GRACE_MS, 2 * 60 * 1000);
+// Dix minutes : après un redéploiement ou une coupure de réseau, il faut laisser
+// à toute la famille le temps de revenir avant de fermer le salon.
+const HOST_RECONNECT_GRACE_MS = positiveDuration(process.env.ROOM_HOST_GRACE_MS, 10 * 60 * 1000);
+const EMPTY_ROOM_GRACE_MS = positiveDuration(process.env.ROOM_EMPTY_GRACE_MS, 10 * 60 * 1000);
+// Partie en pause : le salon est conservé quatre heures, le temps d'un repas ou
+// d'une soirée, même si tout le monde a fermé son navigateur.
+const PAUSED_ROOM_TTL_MS = positiveDuration(process.env.ROOM_PAUSED_TTL_MS, 4 * 60 * 60 * 1000);
 const ROOM_IDLE_TTL_MS = positiveDuration(process.env.ROOM_IDLE_TTL_MS, 4 * 60 * 60 * 1000);
 const ROOM_MAX_AGE_MS = positiveDuration(process.env.ROOM_MAX_AGE_MS, 12 * 60 * 60 * 1000);
 const ROOM_SWEEP_INTERVAL_MS = positiveDuration(process.env.ROOM_SWEEP_INTERVAL_MS, 30 * 1000);
@@ -310,6 +315,17 @@ function leaveAllRoomsForSocket(socketId: string, reason: string): void {
 const roomSweep = setInterval(() => {
   const now = Date.now();
   for (const [code, room] of rooms.entries()) {
+    // Une partie en pause échappe aux délais courts : ni l'absence de
+    // l'organisateur ni un salon vide ne la ferment. Seule la fenêtre de pause
+    // la limite, afin qu'un salon oublié ne reste pas indéfiniment ouvert.
+    if (room.gameState.isPaused) {
+      const pausedSince = room.gameState.pausedAt ?? now;
+      if (now - pausedSince >= PAUSED_ROOM_TTL_MS) {
+        closeRoom(code, 'La partie est restée en pause trop longtemps.');
+      }
+      continue;
+    }
+
     if (now - room.createdAt >= ROOM_MAX_AGE_MS) {
       closeRoom(code, 'Durée maximale du salon atteinte.');
     } else if (now - room.lastActivityAt >= ROOM_IDLE_TTL_MS) {
@@ -725,10 +741,48 @@ io.on('connection', (socket: Socket) => {
     return players[readerIndex]?.id === socketId;
   }
 
+  /**
+   * Bascule la pause. Réservée à l'organisateur.
+   *
+   * À la reprise, `questionStartTime` est décalé de la durée de la pause : le
+   * minuteur repart là où il s'était arrêté au lieu d'avoir expiré entre-temps.
+   */
+  socket.on('toggle-pause', (data: { roomCode: string }) => {
+    const room = getRoom(data.roomCode);
+    if (!room || room.hostSocketId !== socket.id) return;
+    if (room.gameState.phase === 'lobby' || room.gameState.phase === 'game_over') return;
+
+    const now = Date.now();
+    if (room.gameState.isPaused) {
+      const pausedFor = now - (room.gameState.pausedAt ?? now);
+      if (room.gameState.questionStartTime) {
+        room.gameState.questionStartTime += pausedFor;
+      }
+      room.gameState.isPaused = false;
+      room.gameState.pausedAt = null;
+      room.gameState.lastTurnEventMessage = 'La partie reprend !';
+      console.log(`[Room] Partie reprise: ${room.code} (pause de ${Math.round(pausedFor / 1000)} s)`);
+    } else {
+      room.gameState.isPaused = true;
+      room.gameState.pausedAt = now;
+      room.gameState.lastTurnEventMessage = 'Partie en pause.';
+      console.log(`[Room] Partie mise en pause: ${room.code}`);
+    }
+
+    io.to(room.code).emit('game-state-update', room.gameState);
+    saveRooms(rooms);
+  });
+
+  /** Pendant la pause, aucune action de jeu n'est acceptée. */
+  function isPaused(room: Room): boolean {
+    return room.gameState.isPaused === true;
+  }
+
   // Roll Dice
   socket.on('roll-dice', (data: { roomCode: string }) => {
     const room = getRoom(data.roomCode);
     if (!room || room.gameState.phase !== 'rolling') return;
+    if (isPaused(room)) return;
 
     if (!isPlayerAllowedToAct(room, socket.id)) {
       console.warn(`[Roll Rejected] Socket ${socket.id} is not active player ${room.gameState.players[room.gameState.activePlayerIndex]?.id}`);
@@ -757,6 +811,7 @@ io.on('connection', (socket: Socket) => {
   socket.on('move-player', (data: { roomCode: string; destinationTileId: number }) => {
     const room = getRoom(data.roomCode);
     if (!room || room.gameState.phase !== 'moving') return;
+    if (isPaused(room)) return;
 
     if (!isPlayerAllowedToAct(room, socket.id)) {
       console.warn(`[Move Rejected] Socket ${socket.id} not allowed to move for player`);
@@ -807,6 +862,7 @@ io.on('connection', (socket: Socket) => {
   socket.on('submit-answer', (data: { roomCode: string; optionIndex: number }) => {
     const room = getRoom(data.roomCode);
     if (!room || room.gameState.phase !== 'question' || !room.gameState.currentQuestion) return;
+    if (isPaused(room)) return;
     if (!isPlayerAllowedToAnswer(room, socket.id)) return;
     if (!Number.isInteger(data.optionIndex) || data.optionIndex < -1 || data.optionIndex > 3) return;
 
@@ -861,6 +917,7 @@ io.on('connection', (socket: Socket) => {
   socket.on('next-turn', (data: { roomCode: string }) => {
     const room = getRoom(data.roomCode);
     if (!room || room.gameState.phase === 'game_over') return;
+    if (isPaused(room)) return;
 
     // Guardrail: next-turn CAN ONLY BE EXECUTED when phase is evaluating or question
     if (room.gameState.phase !== 'evaluating' && room.gameState.phase !== 'question') {

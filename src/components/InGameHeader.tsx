@@ -2,14 +2,24 @@ import React, { useState } from 'react';
 import { GameState } from '../types';
 import { soundManager } from '../utils/sound';
 import { AVATARS } from '../data/avatars';
-import { Volume2, VolumeX, Copy, Check, Users, HelpCircle, LogOut, Share2 } from 'lucide-react';
+import { Volume2, VolumeX, Copy, Check, Users, HelpCircle, LogOut, Share2, Pause, Play } from 'lucide-react';
 
 interface InGameHeaderProps {
   gameState: GameState;
   onLeaveGame: () => void;
+  /** Met la partie en pause : le salon est alors conservé quatre heures. */
+  onTogglePause?: () => void;
+  /** Seul l'organisateur peut mettre la partie en pause. */
+  isHost?: boolean;
 }
 
-export const InGameHeader: React.FC<InGameHeaderProps> = ({ gameState, onLeaveGame }) => {
+export const InGameHeader: React.FC<InGameHeaderProps> = ({
+  gameState,
+  onLeaveGame,
+  onTogglePause,
+  isHost = false,
+}) => {
+  const isPaused = gameState.isPaused === true;
   const [isMuted, setIsMuted] = useState(soundManager.getMuted());
   const [copied, setCopied] = useState(false);
   const [showPlayersDrawer, setShowPlayersDrawer] = useState(false);
@@ -44,6 +54,16 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({ gameState, onLeaveGa
 
   return (
     <>
+      {isPaused && (
+        <div className="w-full bg-sky-600 text-white text-center text-xs sm:text-sm font-bold px-3 py-2 z-30">
+          ⏸️ Partie en pause
+          <span className="font-normal opacity-90">
+            {isHost
+              ? ' — reprenez quand vous voulez, le salon est gardé 4 heures.'
+              : ' — l’organisateur reprendra la partie. Le salon est gardé 4 heures.'}
+          </span>
+        </div>
+      )}
       <header className="w-full bg-slate-900 border-b border-slate-800 px-3 py-2.5 flex items-center justify-between text-white z-20">
         {/* App Title & Room Code */}
         <div className="flex items-center gap-2">
@@ -78,6 +98,22 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({ gameState, onLeaveGa
           >
             {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-amber-400" />}
           </button>
+
+          {isHost && onTogglePause && gameState.phase !== 'game_over' && (
+            <button
+              onClick={() => { soundManager.playClick(); onTogglePause(); }}
+              className={`p-2 rounded-xl transition-colors ${
+                isPaused
+                  ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+              }`}
+              title={isPaused ? 'Reprendre la partie' : 'Mettre en pause (le salon est gardé 4 h)'}
+            >
+              {isPaused
+                ? <Play className="w-4 h-4" />
+                : <Pause className="w-4 h-4 text-sky-400" />}
+            </button>
+          )}
 
           {/* Players List Button */}
           <button

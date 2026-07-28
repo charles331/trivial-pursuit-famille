@@ -228,6 +228,12 @@ export default function App() {
     }
   };
 
+  const handleTogglePause = () => {
+    if (socket && gameState) {
+      socket.emit('toggle-pause', { roomCode: gameState.roomCode });
+    }
+  };
+
   const handleSendEmoji = (emoji: string) => {
     if (socket && gameState) {
       socket.emit('send-emoji', { roomCode: gameState.roomCode, emoji });
@@ -290,7 +296,12 @@ export default function App() {
     <LiveCameraProvider socket={socket} gameState={gameState} currentUserId={currentUserId}>
       <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between select-none">
       {/* Top Header Controls */}
-      <InGameHeader gameState={gameState} onLeaveGame={handleLeaveGame} />
+      <InGameHeader
+        gameState={gameState}
+        onLeaveGame={handleLeaveGame}
+        onTogglePause={handleTogglePause}
+        isHost={gameState.players.find(p => p.id === currentUserId)?.isHost ?? false}
+      />
 
       {/* Main Game Stage */}
       {/* Bottom padding keeps the floating emoji bar from covering the board legend */}
