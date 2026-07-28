@@ -159,6 +159,15 @@ const seenIds = new Set<string>();
 // only through banks written for that level.
 const COMPLETED_QUESTIONS = CURATED_QUESTIONS;
 
+/**
+ * Répartit les bonnes réponses adultes entre A, B, C et D.
+ *
+ * Le serveur remélange les options à chaque tirage (`shuffleQuestionOptions`),
+ * donc cet équilibrage n'a aucun effet en partie. Il reste utile hors jeu :
+ * il garantit que les banques relues à la main ne concentrent pas leurs bonnes
+ * réponses sur une position, ce que l'audit vérifie et ce qui compte si l'on
+ * exporte les cartes pour les imprimer.
+ */
 function balanceAdultAnswerPositions(questions: Question[]): Question[] {
   const sequenceByCategory = new Map<string, number>();
 

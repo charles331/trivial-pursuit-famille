@@ -3,6 +3,13 @@
 Date : juillet 2026 — corpus analysé : 5 360 cartes
 (8 catégories × 135 enfant + 135 ado + 400 adulte).
 
+> **État d'avancement.** Les propositions 1 à 7 et 9 de la section 6 ont été
+> appliquées ; le détail des cartes modifiées figure dans l'historique git.
+> La section 7 bis, en fin de document, récapitule ce qui a été fait, les
+> chiffres avant/après et ce qui reste ouvert. Les constats ci-dessous
+> décrivent l'état initial : ils sont conservés tels quels pour garder la
+> trace du diagnostic.
+
 Référence visée : **Trivial Pursuit Famille**, c'est-à-dire de la culture
 générale grand public où un adulte informé répond correctement à peu près
 une fois sur deux, où l'on apprend quelque chose en perdant, et où un ado
@@ -373,3 +380,81 @@ culture générale partagée. Ce qu'il faut retirer, ce n'est pas « le monde »
 c'est **la longue traîne** : le nước mắm, le thulium, Pen-ek Ratanaruang, les
 logogrammes de Dotremont. La distinction utile n'est pas géographique, elle
 est de notoriété.
+
+
+---
+
+## 7 bis. Ce qui a été appliqué
+
+### Mesures avant / après
+
+| Indicateur | Avant | Après |
+|---|---:|---:|
+| Cartes ado recopiées du niveau enfant | 227 / 1 080 | **0** |
+| dont sciences | 135 / 135 | **0** |
+| Cartes de tableau périodique en sciences adulte | 154 / 400 | **11** |
+| Cartes adultes à quatre nombres nus (sciences) | 77 | **3** |
+| Paires de cartes adultes reformulant le même fait | 39 | **0** |
+| Cartes adultes réutilisant un moule plus de 8 fois | 205 | **0** |
+| Réponses inconnues du foyer — popculture | 50 % | **36 %** |
+| Réponses inconnues du foyer — cinéma | 41 % | **34 %** |
+| Réponses inconnues du foyer — art | 36 % | **33 %** |
+| Ancrage francophone adulte — gastronomie | 13 % | **37 %** |
+| Ancrage francophone adulte — cinéma | 12 % | **37 %** |
+| Ancrage francophone adulte — histoire | 23 % | **32 %** |
+| Réponses partagées entre cinéma et popculture (enfant) | 47 | **0** |
+
+Volumes inchangés : 135 enfant, 135 ado et 400 adulte par catégorie,
+5 360 cartes au total.
+
+### Travaux menés
+
+1. **Niveau ado (proposition 1).** 227 cartes écrites : 135 en sciences
+   (`sciencesAdoEditorial.ts`), 65 en popculture et 27 en gastronomie
+   (`popcultureGastronomieAdoEditorial.ts`). Le remplissage automatique depuis
+   la banque enfant est supprimé.
+2. **Sciences adulte (proposition 2).** Les 215 cartes générées par boucle dans
+   `adultKnowledgeSupplement.ts` sont réécrites une par une : douze cartes de
+   tableau périodique sur des éléments familiers, puis astronomie, physique,
+   chimie, corps humain, biologie, Terre et climat, technologies.
+3. **Cartes défectueuses (proposition 3).** Onze cartes dont l'énoncé annonçait
+   la réponse, une réponse discutable (Grand Zimbabwe), deux orthographes
+   divergentes (Katmandou, Sri Jayawardenepura) et 39 paires de doublons
+   reformulés sont corrigées.
+4. **Audit renforcé (proposition 4).** Quatre contrôles bloquants s'ajoutent :
+   carte enfant recopiée au niveau ado, fait adulte reformulé, moule d'énoncé
+   réutilisé plus de huit fois, plafond de cartes à quatre nombres nus.
+5. **Plafond adulte et ancrage francophone (propositions 5 et 6).** 44 cartes
+   de la longue traîne remplacées par des cartes grand public francophones :
+   20 en gastronomie, 24 en cinéma. Le canon international reconnu est conservé.
+6. **Niveau enfant (proposition 7).** Les 43 cartes de cinéma enfant qui
+   doublaient une carte de popculture sont réécrites, moitié en culture
+   enfantine francophone (Petit Nicolas, Astérix, Kirikou, Ernest et Célestine,
+   Belle et Sébastien, Panique au village, Le Roi et l'Oiseau), moitié en
+   coulisses du cinéma — clap, bruitage, storyboard, doublage, fond vert,
+   24 images par seconde. C'est la partie du corpus où l'« utile » manquait le
+   plus.
+7. **Dette technique (proposition 9).** `src/data/adultExpansion.ts` est
+   supprimé : plus aucun module ne s'y réfère. Le rôle réel de
+   `balanceAdultAnswerPositions` est documenté dans le code.
+
+### Ce qui reste ouvert
+
+- **Proposition 8 — composition de la catégorie art.** La répartition interne
+  (52 cartes de musique classique, 50 de littérature, 26 de design et mode,
+  37 d'arts non occidentaux) n'a pas été retouchée. C'est un arbitrage
+  éditorial à trancher avant de déplacer des cartes : faut-il une catégorie
+  « Arts & Littérature » à dominante peinture, ou assumer le fourre-tout ?
+- **Plafond adulte, seconde passe.** Cinq catégories restent au-dessus de la
+  cible de 20 % de réponses inconnues du foyer : popculture 36 %,
+  gastronomie 35 %, cinéma 34 %, art 33 %, sciences 29 %. Descendre plus bas
+  demande d'écarter des cartes correctes mais pointues, ce qui suppose de
+  choisir jusqu'où l'on veut baisser le niveau.
+- **Ancrage francophone de sports et popculture.** 17 % et 28 %, contre une
+  cible de 30 %. Le sport se prête bien à un rattrapage (Diables rouges,
+  cyclisme belge, Tour de France, Ligue 1, Jeux de Paris 2024).
+- **Cartes de sports à quatre nombres nus.** 17 cartes, soit 4 % : sous la
+  limite mais le plafond est presque atteint.
+- **Répétition de la formule « Le saviez-vous ? »** en tête d'un grand nombre
+  d'explications des niveaux enfant et ado. Sans effet sur la difficulté, mais
+  lassant à la lecture à voix haute.

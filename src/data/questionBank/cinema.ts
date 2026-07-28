@@ -4,38 +4,38 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_001",
     categoryId: "cinema",
-    question: "Dans Le Roi Lion, comment s'appelle le papa de Simba ?",
-    options: ["Scar", "Rafiki", "Mufasa", "Zazu"],
-    correctAnswerIndex: 2,
+    question: "Combien d'images par seconde défilent dans un film de cinéma ?",
+    options: ["24", "5", "100", "1"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Le saviez-vous ? Mufasa signifie « roi » dans une langue africaine, le manazoto."
+    explanation: "Le saviez-vous ? Notre œil ne les distingue pas une par une : il croit voir un mouvement continu."
   },
   {
     id: "cin_002",
     categoryId: "cinema",
-    question: "Dans La Reine des Neiges, comment s'appelle la sœur d'Elsa ?",
-    options: ["Anna", "Ariel", "Belle", "Vaiana"],
+    question: "Qui a inventé le cinéma en présentant les premières séances payantes à Paris ?",
+    options: ["Les frères Lumière", "Les frères Grimm", "Walt Disney", "Georges Méliès"],
     correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Anna est inspirée de Gerda, l'héroïne du conte La Reine des Neiges d'Andersen."
+    explanation: "Le saviez-vous ? Leur toute première séance, en 1895, ne durait que quelques minutes en tout."
   },
   {
     id: "cin_003",
     categoryId: "cinema",
-    question: "Quel type de poisson est Nemo dans Le Monde de Nemo ?",
-    options: ["Un requin", "Un poisson rouge", "Un dauphin", "Un poisson-clown"],
-    correctAnswerIndex: 3,
+    question: "Comment appelle-t-on la personne qui dirige les acteurs sur un tournage ?",
+    options: ["Le réalisateur", "Le caméraman", "Le producteur", "Le figurant"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Après la sortie du film, les vrais poissons-clowns sont devenus très populaires dans les aquariums."
+    explanation: "Le saviez-vous ? C'est lui qui crie « Action ! » puis « Coupez ! » à chaque prise."
   },
   {
     id: "cin_004",
     categoryId: "cinema",
-    question: "Dans Toy Story, comment s'appelle le jouet cow-boy ?",
-    options: ["Buzz", "Woody", "Bayonne", "Rex"],
-    correctAnswerIndex: 1,
+    question: "Comment appelle-t-on un dessin animé fait avec de la pâte à modeler ?",
+    options: ["Un film en volume", "Un film muet", "Un documentaire", "Un film en relief"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Toy Story, sorti en 1995, est le tout premier film entièrement réalisé par ordinateur."
+    explanation: "Le saviez-vous ? On déplace les figurines un tout petit peu entre chaque photo, des milliers de fois."
   },
   {
     id: "cin_005",
@@ -58,11 +58,11 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_007",
     categoryId: "cinema",
-    question: "Combien de nains accompagnent Blanche-Neige ?",
-    options: ["5", "7", "9", "12"],
-    correctAnswerIndex: 1,
+    question: "Que fait un comédien qui prête sa voix à un personnage de dessin animé ?",
+    options: ["Il fait du doublage", "Il fait de la figuration", "Il fait du montage", "Il fait de la cascade"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Parmi eux, Prof, Grincheux, Atchoum, Timide, Dormeur, Joyeux et Simplet, qui ne parle jamais."
+    explanation: "Le saviez-vous ? Un même comédien de doublage prête souvent sa voix à plusieurs personnages célèbres."
   },
   {
     id: "cin_008",
@@ -85,38 +85,38 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_010",
     categoryId: "cinema",
-    question: "Comment s'appelle la petite fée qui accompagne Peter Pan ?",
-    options: ["Paillette", "Étincelle", "Clochette", "Libellule"],
-    correctAnswerIndex: 2,
+    question: "Comment s'appelle le petit garçon farceur des livres et des films de Sempé et Goscinny ?",
+    options: ["Le Petit Nicolas", "Le Petit Prince", "Titeuf", "Cédric"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "La fée Clochette est devenue si populaire qu'elle a eu ses propres films chez Disney."
+    explanation: "Le saviez-vous ? Ses histoires ont d'abord paru dans un journal, avant les livres et les films."
   },
   {
     id: "cin_011",
     categoryId: "cinema",
-    question: "Dans Le Livre de la jungle, comment s'appelle l'ours ami de Mowgli ?",
-    options: ["Bagheera", "Baloo", "Kaa", "Hathi"],
-    correctAnswerIndex: 1,
+    question: "Dans le film Kirikou, quelle est la particularité du héros ?",
+    options: ["Il est tout petit et parle déjà", "Il est invisible", "Il vole", "Il ne dort jamais"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Baloo signifie tout simplement « ours » en hindi."
+    explanation: "Le saviez-vous ? L'histoire s'inspire de contes racontés en Afrique de l'Ouest."
   },
   {
     id: "cin_012",
     categoryId: "cinema",
-    question: "Par quels animaux Mowgli a-t-il été élevé dans la jungle ?",
-    options: ["Des singes", "Des tigres", "Des éléphants", "Des loups"],
-    correctAnswerIndex: 3,
+    question: "Quels animaux sont les héros du film d'animation Ernest et Célestine ?",
+    options: ["Un ours et une souris", "Un lion et un oiseau", "Un chien et un chat", "Un loup et un lapin"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Le Livre de la jungle est adapté des histoires de l'écrivain Rudyard Kipling."
+    explanation: "Le saviez-vous ? Le film est dessiné à l'aquarelle, comme les albums dont il est tiré."
   },
   {
     id: "cin_013",
     categoryId: "cinema",
-    question: "Grâce à quoi Dumbo arrive-t-il à voler ?",
-    options: ["Ses grandes oreilles", "Sa trompe", "Une cape magique", "Un ballon"],
+    question: "Dans Le Petit Prince, sur quoi le héros vit-il avant son voyage ?",
+    options: ["Une toute petite planète", "Un bateau", "Un nuage", "Une île déserte"],
     correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Dumbo, sorti en 1941, est l'un des films Disney les plus courts : à peine plus d'une heure."
+    explanation: "Le saviez-vous ? Antoine de Saint-Exupéry, l'auteur, était aviateur ; il a dessiné lui-même le livre."
   },
   {
     id: "cin_014",
@@ -130,20 +130,20 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_015",
     categoryId: "cinema",
-    question: "Comment s'appelle la méchante des 101 Dalmatiens ?",
-    options: ["Maléfique", "Cruella", "Ursula", "Gothel"],
-    correctAnswerIndex: 1,
+    question: "Dans le film Astérix et Obélix, quelle boisson donne sa force à Astérix ?",
+    options: ["La potion magique", "Le lait de chèvre", "Le jus de pomme", "La soupe de poisson"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Son nom, Cruella d'Enfer, est un jeu de mots avec « cruelle » et « enfer »."
+    explanation: "Le saviez-vous ? C'est le druide Panoramix qui garde jalousement la recette."
   },
   {
     id: "cin_016",
     categoryId: "cinema",
-    question: "Comment s'appelle la Petite Sirène chez Disney ?",
-    options: ["Aurore", "Jasmine", "Moana", "Ariel"],
-    correctAnswerIndex: 3,
+    question: "Quel animal est Idéfix, le compagnon d'Obélix ?",
+    options: ["Un petit chien", "Un sanglier", "Un chat", "Un aigle"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Ariel échange sa voix contre des jambes auprès de la sorcière Ursula."
+    explanation: "Le saviez-vous ? Il n'aime pas qu'on abîme les arbres : il pleure quand on en arrache un."
   },
   {
     id: "cin_017",
@@ -184,11 +184,11 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_021",
     categoryId: "cinema",
-    question: "Dans Cars, qu'est-ce que Flash McQueen ?",
-    options: ["Une voiture de course", "Un camion de pompiers", "Un avion", "Un tracteur"],
+    question: "Comment appelle-t-on le grand écran blanc sur lequel on projette un film ?",
+    options: ["L'écran de projection", "Le rideau", "Le tableau", "Le miroir"],
     correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Son numéro est le 95, en clin d'œil à 1995, l'année de sortie de Toy Story."
+    explanation: "Le saviez-vous ? Il est légèrement perforé pour laisser passer le son des haut-parleurs placés derrière."
   },
   {
     id: "cin_022",
@@ -220,11 +220,11 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_025",
     categoryId: "cinema",
-    question: "Comment s'appelle le panda héros de Kung Fu Panda ?",
-    options: ["Po", "Ping", "Shifu", "Taï"],
+    question: "Que mange-t-on traditionnellement en regardant un film au cinéma ?",
+    options: ["Du pop-corn", "De la soupe", "Des frites", "Du poisson"],
     correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Po est le fils adoptif d'une oie, M. Ping, qui tient un restaurant de nouilles."
+    explanation: "Le saviez-vous ? Le maïs à pop-corn éclate parce que l'eau qu'il contient se transforme en vapeur."
   },
   {
     id: "cin_026",
@@ -238,20 +238,20 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_027",
     categoryId: "cinema",
-    question: "Dans L'Âge de glace, que cherche sans arrêt l'écureuil Scrat ?",
-    options: ["Une noisette", "Un gland", "Une pomme", "Un os"],
-    correctAnswerIndex: 1,
+    question: "Comment s'appelle un film où les personnages ne parlent pas et où l'on lit des textes à l'écran ?",
+    options: ["Un film muet", "Un film sous-titré", "Un film d'animation", "Un documentaire"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Scrat ne parle jamais, mais il est devenu le personnage le plus célèbre de la saga."
+    explanation: "Le saviez-vous ? Un pianiste jouait souvent en direct dans la salle pour accompagner ces films."
   },
   {
     id: "cin_028",
     categoryId: "cinema",
-    question: "De quelle couleur sont les Minions ?",
-    options: ["Verts", "Bleus", "Rouges", "Jaunes"],
-    correctAnswerIndex: 3,
+    question: "Comment appelle-t-on les mots écrits en bas de l'image quand un film est en langue étrangère ?",
+    options: ["Les sous-titres", "Les crédits", "Les légendes", "Les didascalies"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Les Minions parlent un langage inventé qui mélange plein de langues, dont le français."
+    explanation: "Le saviez-vous ? Il faut les raccourcir : on lit moins vite qu'on ne parle."
   },
   {
     id: "cin_029",
@@ -283,20 +283,20 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_032",
     categoryId: "cinema",
-    question: "Comment s'appelle le chien de Mickey ?",
-    options: ["Dingo", "Milou", "Idéfix", "Pluto"],
-    correctAnswerIndex: 3,
+    question: "Comment appelle-t-on la personne qui remplace un acteur dans les scènes dangereuses ?",
+    options: ["Un cascadeur", "Un figurant", "Un doubleur", "Un machiniste"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Contrairement à Dingo, Pluto ne parle pas : il se comporte comme un vrai chien."
+    explanation: "Le saviez-vous ? Beaucoup de cascades sont d'abord répétées sur des tapis avant d'être filmées."
   },
   {
     id: "cin_033",
     categoryId: "cinema",
-    question: "Quel animal est Donald chez Disney ?",
-    options: ["Un canard", "Une oie", "Un poussin", "Un cygne"],
+    question: "Comment appelle-t-on les personnes qui apparaissent à l'arrière-plan sans parler ?",
+    options: ["Des figurants", "Des cascadeurs", "Des doubleurs", "Des techniciens"],
     correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Donald Duck a trois neveux : Riri, Fifi et Loulou."
+    explanation: "Le saviez-vous ? Certaines scènes de foule en réunissent plusieurs centaines."
   },
   {
     id: "cin_034",
@@ -328,38 +328,38 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_037",
     categoryId: "cinema",
-    question: "De quelle couleur sont les Schtroumpfs ?",
-    options: ["Bleus", "Verts", "Roses", "Gris"],
+    question: "À quoi sert un grand drap vert derrière les acteurs pendant un tournage ?",
+    options: ["À remplacer le décor par des images", "À protéger du soleil", "À amortir les chutes", "À cacher les câbles"],
     correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Les Schtroumpfs ont été inventés par Peyo, un dessinateur belge."
+    explanation: "Le saviez-vous ? On choisit le vert parce que cette couleur ne ressemble pas à la peau."
   },
   {
     id: "cin_038",
     categoryId: "cinema",
-    question: "Comment s'appelle le chat du méchant Gargamel ?",
-    options: ["Félix", "Grosminet", "Azraël", "Moustache"],
-    correctAnswerIndex: 2,
+    question: "Comment appelle-t-on les bruits ajoutés après le tournage, comme des pas ou une porte ?",
+    options: ["Les bruitages", "Les répliques", "Les génériques", "Les cascades"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Gargamel rêve de capturer les Schtroumpfs, mais il n'y arrive jamais."
+    explanation: "Le saviez-vous ? Pour un bruit de pas dans la neige, les bruiteurs écrasent souvent de la fécule de pomme de terre."
   },
   {
     id: "cin_039",
     categoryId: "cinema",
-    question: "Comment s'appelle le petit chien blanc de Tintin ?",
-    options: ["Idéfix", "Milou", "Rantanplan", "Bill"],
-    correctAnswerIndex: 1,
+    question: "Qu'est-ce que le générique d'un film ?",
+    options: ["La liste de tous ceux qui l'ont fabriqué", "Le résumé de l'histoire", "La bande-annonce", "La chanson du film"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Tintin et Milou ont été créés par Hergé, un dessinateur belge, en 1929."
+    explanation: "Le saviez-vous ? Un grand film d'animation peut faire défiler plus de mille noms."
   },
   {
     id: "cin_040",
     categoryId: "cinema",
-    question: "Quel ami de Tintin est un capitaine de bateau au caractère bien trempé ?",
-    options: ["Le professeur Tournesol", "Dupond", "Nestor", "Le capitaine Haddock"],
-    correctAnswerIndex: 3,
+    question: "Qu'est-ce qu'une bande-annonce ?",
+    options: ["Un court extrait pour donner envie de voir le film", "La musique du film", "La suite du film", "Le résumé écrit du film"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Le capitaine Haddock est célèbre pour ses jurons comme « Mille sabords ! »."
+    explanation: "Le saviez-vous ? Elle ne doit surtout pas raconter la fin, sinon plus personne n'irait voir le film."
   },
   {
     id: "cin_041",
@@ -373,11 +373,11 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_042",
     categoryId: "cinema",
-    question: "Pourquoi Obélix n'a-t-il pas besoin de boire de potion magique ?",
-    options: ["Il est trop grand", "Il n'aime pas le goût", "Il est tombé dedans quand il était petit", "Il est déjà druide"],
-    correctAnswerIndex: 2,
+    question: "Comment appelle-t-on la musique composée spécialement pour un film ?",
+    options: ["La bande originale", "La bande-annonce", "Le générique muet", "Le refrain"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Depuis, Panoramix lui interdit d'en reprendre, ce qui vexe beaucoup Obélix."
+    explanation: "Le saviez-vous ? Une même mélodie revient souvent quand un personnage apparaît : c'est son thème."
   },
   {
     id: "cin_043",
@@ -391,29 +391,29 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_044",
     categoryId: "cinema",
-    question: "Comment s'appelle le cheval de Lucky Luke ?",
-    options: ["Tornado", "Épona", "Flèche", "Jolly Jumper"],
-    correctAnswerIndex: 3,
+    question: "Dans le film Belle et Sébastien, quel animal accompagne le petit garçon ?",
+    options: ["Un grand chien de montagne", "Un cheval", "Un aigle", "Un renard"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Lucky Luke est l'homme qui tire plus vite que son ombre, créé par le Belge Morris."
+    explanation: "Le saviez-vous ? Belle est une chienne de race patou, utilisée pour garder les troupeaux en montagne."
   },
   {
     id: "cin_045",
     categoryId: "cinema",
-    question: "Comment s'appelle l'école de magie de Harry Potter ?",
-    options: ["Poudlard", "Beauxbâtons", "Durmstrang", "Salem"],
+    question: "Comment s'appelle le film d'animation belge où un cheval et un pingouin sont en pâte à modeler ?",
+    options: ["Panique au village", "Le Chat du rabbin", "Ma vie de courgette", "Azur et Asmar"],
     correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "En anglais, l'école s'appelle Hogwarts."
+    explanation: "Le saviez-vous ? Il est né d'une série télévisée belge tournée avec des figurines en plastique."
   },
   {
     id: "cin_046",
     categoryId: "cinema",
-    question: "Quel animal de compagnie accompagne Harry Potter ?",
-    options: ["Un chat", "Un crapaud", "Une chouette", "Un rat"],
-    correctAnswerIndex: 2,
+    question: "Dans le film Ma vie de courgette, pourquoi le héros porte-t-il ce surnom ?",
+    options: ["C'est sa maman qui l'appelait ainsi", "Il adore les légumes", "Il est vert", "Il cultive un potager"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Sa chouette blanche s'appelle Hedwige, un cadeau de Hagrid."
+    explanation: "Le saviez-vous ? Le film est entièrement animé avec des marionnettes à tête sculptée."
   },
   {
     id: "cin_047",
@@ -436,20 +436,20 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_049",
     categoryId: "cinema",
-    question: "Quelle est la nourriture préférée de Winnie l'ourson ?",
-    options: ["Le miel", "La confiture", "Le chocolat", "Les carottes"],
+    question: "À quoi sert un clap sur un tournage ?",
+    options: ["À repérer le début d'une prise et à caler le son", "À applaudir les acteurs", "À faire du vent", "À signaler la pause"],
     correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Winnie garde son miel dans des pots marqués « miel » qu'il vide très vite."
+    explanation: "Le saviez-vous ? Le claquement sec permet de faire correspondre exactement l'image et le son."
   },
   {
     id: "cin_050",
     categoryId: "cinema",
-    question: "Quel animal est Bourriquet, l'ami de Winnie l'ourson ?",
-    options: ["Un cochon", "Un lapin", "Un âne", "Un hibou"],
-    correctAnswerIndex: 2,
+    question: "Que fait la personne chargée du montage d'un film ?",
+    options: ["Elle choisit et assemble les plans", "Elle construit les décors", "Elle écrit l'histoire", "Elle vend les billets"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Bourriquet est toujours un peu triste et perd souvent sa queue, fixée par un clou."
+    explanation: "Le saviez-vous ? On tourne souvent dix fois plus d'images que ce qu'on garde au final."
   },
   {
     id: "cin_051",
@@ -517,11 +517,11 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_058",
     categoryId: "cinema",
-    question: "Dans quoi habite Bob l'éponge ?",
-    options: ["Un rocher", "Un coquillage", "Un ananas", "Un bateau"],
-    correctAnswerIndex: 2,
+    question: "Comment appelle-t-on une salle de cinéma en plein air ?",
+    options: ["Un cinéma de plein air", "Un studio", "Un théâtre", "Un planétarium"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Bob habite dans un ananas au fond de la mer, à Bikini Bottom."
+    explanation: "Le saviez-vous ? Il faut attendre la nuit pour commencer la projection, sinon l'image serait invisible."
   },
   {
     id: "cin_059",
@@ -544,20 +544,20 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_061",
     categoryId: "cinema",
-    question: "Dans la Pat' Patrouille, comment s'appelle le garçon qui dirige les chiots ?",
-    options: ["Ryder", "Marcus", "Tom", "Léo"],
+    question: "Qu'est-ce qu'un dessin animé fait entièrement sur ordinateur ?",
+    options: ["Un film en images de synthèse", "Un film muet", "Un film en volume", "Un documentaire"],
     correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Ryder n'a que 10 ans et dirige toute l'équipe depuis sa grande tour de contrôle."
+    explanation: "Le saviez-vous ? Chaque poil d'un personnage à fourrure doit être calculé image par image."
   },
   {
     id: "cin_062",
     categoryId: "cinema",
-    question: "Quel animal est Peppa Pig ?",
-    options: ["Une vache", "Un mouton", "Un cochon", "Une poule"],
-    correctAnswerIndex: 2,
+    question: "Comment appelle-t-on un film qui raconte des choses vraies, sans acteurs qui jouent ?",
+    options: ["Un documentaire", "Une comédie", "Un dessin animé", "Un film d'aventures"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Peppa adore sauter dans les flaques de boue avec son petit frère George."
+    explanation: "Le saviez-vous ? Pour filmer des animaux sauvages, il faut parfois attendre des semaines cachés."
   },
   {
     id: "cin_063",
@@ -571,11 +571,11 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_064",
     categoryId: "cinema",
-    question: "Comment s'appelle le renne de Kristoff dans La Reine des Neiges ?",
-    options: ["Rudolphe", "Tonnerre", "Flocon", "Sven"],
-    correctAnswerIndex: 3,
+    question: "Que porte-t-on sur le nez pour voir un film en relief ?",
+    options: ["Des lunettes spéciales", "Un masque", "Un casque", "Des jumelles"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Kristoff s'amuse à parler à la place de Sven en prenant une grosse voix."
+    explanation: "Le saviez-vous ? Chaque œil reçoit une image un peu différente : c'est ce qui crée l'impression de profondeur."
   },
   {
     id: "cin_065",
@@ -589,20 +589,20 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_066",
     categoryId: "cinema",
-    question: "Quelle chanson très célèbre Elsa chante-t-elle dans La Reine des Neiges ?",
-    options: ["Un jour mon prince viendra", "Sous l'océan", "Libérée, délivrée", "Ce rêve bleu"],
-    correctAnswerIndex: 2,
+    question: "Comment s'appelle le grand festival de cinéma qui se tient chaque année dans le sud de la France ?",
+    options: ["Le Festival de Cannes", "Le Festival de Nice", "Le Festival d'Avignon", "Le Festival de Lyon"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "En anglais, la chanson s'appelle Let It Go et a gagné un Oscar."
+    explanation: "Le saviez-vous ? On y monte des marches rouges et le grand prix s'appelle la Palme d'or."
   },
   {
     id: "cin_067",
     categoryId: "cinema",
-    question: "Quelle fête le Grinch déteste-t-il par-dessus tout ?",
-    options: ["Pâques", "Noël", "Halloween", "Le carnaval"],
-    correctAnswerIndex: 1,
+    question: "Dans le film Azur et Asmar, qu'est-ce qui rapproche les deux garçons ?",
+    options: ["Ils ont été élevés comme des frères", "Ils sont jumeaux", "Ils vivent dans le même château", "Ils ont le même cheval"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Le Grinch est un personnage vert et grognon inventé par le Dr. Seuss."
+    explanation: "Le saviez-vous ? Une partie des dialogues est en arabe, sans être traduite, pour que l'on ressente le voyage."
   },
   {
     id: "cin_068",
@@ -616,11 +616,11 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_069",
     categoryId: "cinema",
-    question: "Quel animal est Scooby-Doo ?",
-    options: ["Un chien", "Un chat", "Un singe", "Un ours"],
+    question: "Quel animal parle et conseille les autres dans le film Le Grand Méchant Renard ?",
+    options: ["Un renard maladroit", "Un ours grognon", "Un hibou savant", "Un chien de ferme"],
     correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Scooby-Doo est un dogue allemand très peureux qui adore les Scooby Snacks."
+    explanation: "Le saviez-vous ? Le film est adapté d'une bande dessinée de Benjamin Renner, dessinée à l'aquarelle."
   },
   {
     id: "cin_070",
@@ -697,11 +697,11 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_078",
     categoryId: "cinema",
-    question: "Dans Dragons, comment s'appelle le dragon de Harold ?",
-    options: ["Fumée", "Griffe", "Krokmou", "Braise"],
-    correctAnswerIndex: 2,
+    question: "Comment appelle-t-on le petit dessin ou plan qui prépare chaque scène avant le tournage ?",
+    options: ["Le storyboard", "Le générique", "L'affiche", "Le clap"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Krokmou est une Furie Nocturne, le dragon le plus rare et le plus rapide."
+    explanation: "Le saviez-vous ? On l'appelle aussi scénarimage : c'est une bande dessinée du film à venir."
   },
   {
     id: "cin_079",
@@ -715,11 +715,11 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_080",
     categoryId: "cinema",
-    question: "Dans quelle ville se passe le film Ratatouille ?",
-    options: ["Rome", "Londres", "New York", "Paris"],
-    correctAnswerIndex: 3,
+    question: "Que fait un chef décorateur sur un film ?",
+    options: ["Il imagine et fabrique les décors", "Il choisit la musique", "Il dirige les acteurs", "Il vend les places"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "On y voit la tour Eiffel et un grand restaurant, celui du chef Gusteau."
+    explanation: "Le saviez-vous ? Beaucoup de décors ne sont que des façades : derrière, il n'y a rien du tout."
   },
   {
     id: "cin_081",
@@ -733,11 +733,11 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_082",
     categoryId: "cinema",
-    question: "Qu'est-ce que Wall-E ?",
-    options: ["Un extraterrestre", "Un jouet", "Un robot", "Un vaisseau spatial"],
-    correctAnswerIndex: 2,
+    question: "Comment appelle-t-on une image de film où l'on voit un visage de très près ?",
+    options: ["Un gros plan", "Un plan large", "Un travelling", "Un fondu"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Wall-E est resté tout seul sur Terre pour ramasser et compacter les déchets."
+    explanation: "Le saviez-vous ? Les réalisateurs l'utilisent pour montrer une émotion sans un seul mot."
   },
   {
     id: "cin_083",
@@ -886,11 +886,11 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_099",
     categoryId: "cinema",
-    question: "Quel fruit empoisonné Blanche-Neige croque-t-elle ?",
-    options: ["Une poire", "Une pomme", "Une cerise", "Une fraise"],
-    correctAnswerIndex: 1,
+    question: "Comment appelle-t-on un mouvement où la caméra se déplace en suivant un personnage ?",
+    options: ["Un travelling", "Un gros plan", "Un fondu", "Un zoom fixe"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Blanche-Neige et les Sept Nains est le tout premier long métrage de Walt Disney, sorti en 1937."
+    explanation: "Le saviez-vous ? La caméra roule souvent sur de vrais petits rails posés au sol."
   },
   {
     id: "cin_100",
@@ -1048,11 +1048,11 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_117",
     categoryId: "cinema",
-    question: "Comment s'appelle le papa de Nemo, qui traverse l'océan pour le retrouver ?",
-    options: ["Marin", "Coral", "Bruce", "Gill"],
+    question: "Comment s'appelle l'affiche qui annonce un film devant le cinéma ?",
+    options: ["L'affiche du film", "Le générique", "La bande originale", "Le storyboard"],
     correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Marin traverse tout l'océan jusqu'à Sydney, en Australie, pour sauver son fils."
+    explanation: "Le saviez-vous ? Autrefois, elles étaient peintes à la main par des affichistes."
   },
   {
     id: "cin_118",
@@ -1111,20 +1111,20 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_124",
     categoryId: "cinema",
-    question: "Quel animal est Babar ?",
-    options: ["Un rhinocéros", "Un hippopotame", "Une girafe", "Un éléphant"],
-    correctAnswerIndex: 3,
+    question: "Quel animal est le héros du dessin animé français Le Roi et l'Oiseau ?",
+    options: ["Un oiseau moqueur", "Un lion", "Un chat", "Un ours"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Babar devient roi des éléphants et se marie avec Céleste."
+    explanation: "Le saviez-vous ? Ce film a mis plus de trente ans à être terminé, entre 1948 et 1980."
   },
   {
     id: "cin_125",
     categoryId: "cinema",
-    question: "Comment s'appelle le singe qui accompagne Dora l'exploratrice ?",
-    options: ["Babouche", "Kiki", "Zouzou", "Banane"],
+    question: "Dans le film Dilili à Paris, quel moyen de transport la petite fille emprunte-t-elle souvent ?",
+    options: ["Un triporteur", "Un train à vapeur", "Une montgolfière", "Un tramway"],
     correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Babouche porte toujours ses petites bottes rouges."
+    explanation: "Le saviez-vous ? Les décors du film sont faits de photographies du vrai Paris de l'époque."
   },
   {
     id: "cin_126",
@@ -1165,11 +1165,11 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_130",
     categoryId: "cinema",
-    question: "Quel animal est Pascal, le compagnon de Raiponce ?",
-    options: ["Une grenouille", "Un lézard vert", "Un caméléon", "Une salamandre"],
-    correctAnswerIndex: 2,
+    question: "Comment appelle-t-on la personne qui écrit l'histoire d'un film ?",
+    options: ["Le scénariste", "Le monteur", "Le producteur", "Le bruiteur"],
+    correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Pascal change de couleur selon ses émotions, comme un vrai caméléon."
+    explanation: "Le saviez-vous ? Un scénario indique aussi les décors et les gestes, pas seulement les dialogues."
   },
   {
     id: "cin_131",
@@ -1192,11 +1192,11 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_133",
     categoryId: "cinema",
-    question: "Dans L'Âge de glace, quel animal est Sid ?",
-    options: ["Un paresseux", "Un tatou", "Un opossum", "Un castor"],
+    question: "Que reste-t-il d'un film quand on enlève toutes les couleurs ?",
+    options: ["Un film en noir et blanc", "Un film muet", "Un film en relief", "Un film sous-titré"],
     correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Sid parle beaucoup, zozote un peu et agace souvent ses amis."
+    explanation: "Le saviez-vous ? Certains réalisateurs choisissent encore le noir et blanc aujourd'hui, pour l'ambiance."
   },
   {
     id: "cin_134",
