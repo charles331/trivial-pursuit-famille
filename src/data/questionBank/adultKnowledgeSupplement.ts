@@ -28,6 +28,14 @@ function rotate<T>(values: T[], offset: number): T[] {
   return values.map((_, index) => values[(index + offset) % values.length]);
 }
 
+function elementWithArticle(name: string): string {
+  return /^[aeiouyéh]/i.test(name) ? `de l’${name}` : `du ${name}`;
+}
+
+function elementWithDefiniteArticle(name: string): string {
+  return /^[aeiouyéh]/i.test(name) ? `L’${name}` : `Le ${name}`;
+}
+
 function symbolQuestion(element: ElementFact, index: number): Question {
   const symbols = [
     element[1],
@@ -39,11 +47,11 @@ function symbolQuestion(element: ElementFact, index: number): Question {
   return {
     id: `sci_adulte_symbole_${index + 1}`,
     categoryId: 'sciences',
-    question: `Quel est le symbole chimique du ${element[0]} ?`,
+    question: `Quel est le symbole chimique ${elementWithArticle(element[0])} ?`,
     options: rotate(symbols, rotation),
     correctAnswerIndex: (4 - rotation) % 4,
     difficulty: 'adulte',
-    explanation: `Le symbole international du ${element[0]} est ${element[1]}.`,
+    explanation: `Dans le tableau périodique, ${elementWithDefiniteArticle(element[0]).toLowerCase()} est noté ${element[1]}.`,
   };
 }
 
@@ -59,11 +67,11 @@ function atomicNumberQuestion(element: ElementFact, index: number): Question {
   return {
     id: `sci_adulte_numero_atomique_${atomicNumber}`,
     categoryId: 'sciences',
-    question: `Quel est le numéro atomique du ${element[0]} ?`,
+    question: `Quel est le numéro atomique ${elementWithArticle(element[0])} ?`,
     options: rotate(numbers, rotation),
     correctAnswerIndex: (4 - rotation) % 4,
     difficulty: 'adulte',
-    explanation: `Le ${element[0]} occupe la place ${atomicNumber} dans le tableau périodique.`,
+    explanation: `${element[0][0].toUpperCase()}${element[0].slice(1)} occupe la place ${atomicNumber} dans le tableau périodique.`,
   };
 }
 
