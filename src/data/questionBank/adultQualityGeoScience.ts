@@ -121,7 +121,6 @@ const SCIENCE_ROWS: EditorialCard[] = [
   ['Quel nerf transmet principalement les informations visuelles au cerveau ?', ['Nerf optique', 'Nerf vague', 'Nerf trijumeau', 'Nerf auditif'], 0, 'Les axones des cellules ganglionnaires de la rétine forment le nerf optique.'],
   ['Quel métal est extrait principalement du minerai appelé bauxite ?', ['Aluminium', 'Fer', 'Cuivre', 'Étain'], 0, 'La bauxite est raffinée en alumine, puis électrolysée pour produire l’aluminium.'],
   ['Quelle force explique la poussée subie par un corps immergé ?', ['Poussée d’Archimède', 'Force de Coriolis', 'Force de Lorentz', 'Force centrifuge'], 0, 'La poussée égale le poids du fluide déplacé par le corps.'],
-  ['Quel est le nom de la mort cellulaire programmée ?', ['Apoptose', 'Mitose', 'Osmose', 'Nécrose'], 0, 'L’apoptose élimine de façon contrôlée des cellules devenues inutiles ou dangereuses.'],
   ['Quelle étoile est la plus proche du Soleil ?', ['Proxima du Centaure', 'Sirius', 'Véga', 'Bételgeuse'], 0, 'Proxima du Centaure se situe à environ 4,24 années-lumière du Soleil.'],
   ['Quel phénomène climatique correspond au réchauffement périodique du Pacifique équatorial ?', ['El Niño', 'La Niña', 'Mousson', 'Oscillation arctique'], 0, 'El Niño modifie les vents et les précipitations dans de nombreuses régions du globe.'],
 ];
