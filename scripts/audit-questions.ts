@@ -22,7 +22,78 @@ function normalize(value: string): string {
     .trim();
 }
 
+const CONTENT_STOP_WORDS = new Set([
+  'alors', 'avec', 'avoir', 'cette', 'comme', 'dans', 'depuis', 'elle', 'elles',
+  'entre', 'etre', 'fait', 'font', 'leur', 'leurs', 'mais', 'meme', 'pour',
+  'quel', 'quelle', 'quels', 'quelles', 'sans', 'sont', 'sous', 'tous', 'toutes',
+  'vers', 'votre',
+]);
+
+function contentWords(value: string): Set<string> {
+  return new Set(
+    normalize(value)
+      .split(' ')
+      .filter((word) => word.length >= 4 && !CONTENT_STOP_WORDS.has(word)),
+  );
+}
+
+function containsWholeNormalizedPhrase(haystack: string, needle: string): boolean {
+  const normalizedHaystack = ` ${normalize(haystack)} `;
+  const normalizedNeedle = normalize(needle);
+  return normalizedNeedle.length >= 4
+    && normalizedHaystack.includes(` ${normalizedNeedle} `);
+}
+
+function leaksCorrectAnswer(question: string, correctAnswer: string): boolean {
+  if (!containsWholeNormalizedPhrase(question, correctAnswer)) return false;
+
+  const prompt = ` ${normalize(question)} `;
+  const answer = normalize(correctAnswer);
+  const occurrences = prompt.split(` ${answer} `).length - 1;
+  if (occurrences > 1) return true;
+
+  // Deliberately conservative: merely naming an answer candidate in the
+  // question can be legitimate ("entre le lièvre et la tortue"). We only
+  // reject wording which explicitly asserts that candidate as the answer.
+  return [
+    ` est ${answer} `,
+    ` s appelle ${answer} `,
+    ` appele ${answer} `,
+    ` appelee ${answer} `,
+    ` nomme ${answer} `,
+    ` nommee ${answer} `,
+  ].some((assertion) => prompt.includes(assertion));
+}
+
+function isArtificialFillIn(question: string): boolean {
+  return (
+    /\b(?:compl[eè]te|compl[eé]tez|compl[eè]te-t-il|manque)\b.{0,45}\b(?:fait|phrase|affirmation|citation)\b/i.test(question)
+    || /\bquel (?:mot|[ée]l[ée]ment) compl[eè]te\b/i.test(question)
+    || /(?:_{2,}|[…]{1,3})\s*[a-z]{0,3}\b.*\?/iu.test(question)
+  );
+}
+
+function merelyRestatesQuestion(question: Question, correctAnswer: string): boolean {
+  const explanation = question.explanation?.trim() ?? '';
+  if (!explanation) return true;
+
+  const explanationWithoutLabel = explanation
+    .replace(/^\s*le saviez-vous\s*\?\s*/i, '')
+    .replace(/^\s*(?:r[ée]ponse|explication)\s*:\s*/i, '');
+  const explanationWords = contentWords(explanationWithoutLabel);
+  if (explanationWords.size === 0) return true;
+
+  const knownWords = contentWords(`${question.question} ${correctAnswer}`);
+  return [...explanationWords].every((word) => knownWords.has(word));
+}
+
 const errors: string[] = [];
+const editorialIssueCounts = new Map<string, number>();
+function editorialError(issue: string, id: string): void {
+  editorialIssueCounts.set(issue, (editorialIssueCounts.get(issue) ?? 0) + 1);
+  errors.push(`${issue} : ${id}`);
+}
+
 const ids = new Set<string>();
 const adultTextsByCategory = new Map<CategoryId, Set<string>>();
 const adultFactsByCategory = new Map<CategoryId, Set<string>>();
@@ -68,6 +139,24 @@ for (const question of QUESTIONS_DATABASE) {
     if (/^(question flash|défi express|à vous de jouer)\s*:/i.test(question.question)) {
       errors.push(`Préfixe artificiel interdit : ${question.id}`);
     }
+    if (question.id.includes('_adulte_anecdote_')) {
+      editorialError(`Carte adulte issue du générateur d'anecdotes interdite`, question.id);
+    }
+    if (isArtificialFillIn(question.question)) {
+      editorialError(`Question adulte à trou artificielle`, question.id);
+    }
+    if (leaksCorrectAnswer(question.question, correctAnswer)) {
+      editorialError(`Bonne réponse adulte révélée dans l'énoncé`, question.id);
+    }
+    if (merelyRestatesQuestion(question, correctAnswer)) {
+      editorialError(`Explication adulte non informative`, question.id);
+    }
+    if (
+      /(?:_{2,}|[…]{1,3})\s*(?:s|e|es|ent)\b/iu.test(question.question)
+      || /\b(?:un|une|des|le|la|les)\s+(?:_{2,}|[…]{1,3})/iu.test(question.question)
+    ) {
+      editorialError(`Indice grammatical autour d'un blanc`, question.id);
+    }
     if (question.options.some((option) => option.length > 72)) longAdultOptions += 1;
     if (question.question.length > 125) longAdultQuestions += 1;
     if (question.id.includes('_adulte_association_')) associationCards += 1;
@@ -105,6 +194,13 @@ if (longAdultQuestions > 0) {
 
 if (errors.length > 0) {
   console.error(`\nAudit échoué (${errors.length} erreur(s)) :`);
+  if (editorialIssueCounts.size > 0) {
+    console.error('Synthèse éditoriale :');
+    for (const [issue, count] of editorialIssueCounts) {
+      console.error(`- ${issue} : ${count}`);
+    }
+    console.error('');
+  }
   console.error(errors.slice(0, 50).map((error) => `- ${error}`).join('\n'));
   process.exitCode = 1;
 } else {
