@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'fs';
+import { mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'fs';
 import { mkdir, rename, writeFile } from 'fs/promises';
 import path from 'path';
 import { GameSettings, GameState, Player, Question } from './src/types.js';
@@ -219,6 +219,43 @@ export function loadRooms(
     );
   }
   return rooms;
+}
+
+/**
+ * Vérifie au démarrage que le dossier de sauvegarde est réellement utilisable.
+ *
+ * Sans cela, une erreur de configuration — volume monté sur un autre chemin que
+ * `DATA_DIR`, dossier en lecture seule — ne se découvrirait qu'en perdant une
+ * partie. Le test écrit puis supprime un fichier témoin, et distingue un dossier
+ * neuf d'un dossier qui contient déjà une sauvegarde.
+ */
+export function checkStore(): void {
+  const probe = path.join(DATA_DIR, '.write-test');
+  try {
+    mkdirSync(DATA_DIR, { recursive: true });
+    writeFileSync(probe, 'ok', 'utf8');
+    rmSync(probe, { force: true });
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    console.error(`❌ ${DATA_DIR} n'est pas accessible en écriture (${detail}).`);
+    console.error('   Les parties ne seront PAS sauvegardées.');
+    console.error('   Sur Railway : vérifiez que le volume est monté exactement sur');
+    console.error(`   le chemin de DATA_DIR, ici « ${DATA_DIR} ».`);
+    return;
+  }
+
+  const configured = process.env.DATA_DIR
+    ? `DATA_DIR=${process.env.DATA_DIR}`
+    : 'DATA_DIR non défini, dossier local par défaut';
+  let existing = 'aucune sauvegarde pour le moment';
+  try {
+    const stats = statSync(STORE_PATH);
+    const age = Math.round((Date.now() - stats.mtimeMs) / 1000);
+    existing = `sauvegarde existante de ${stats.size} octets, écrite il y a ${age} s`;
+  } catch {
+    // premier démarrage sur ce volume : cas normal
+  }
+  console.log(`✅ Sauvegarde des parties opérationnelle (${configured}) — ${existing}.`);
 }
 
 /**

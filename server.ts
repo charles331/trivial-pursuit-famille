@@ -6,7 +6,7 @@ import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
 import { QUESTIONS_DATABASE } from './src/data/questions.js';
 import { BOARD_PRESETS } from './src/data/boards.js';
-import { loadRooms, startRoomPersistence, saveRooms, ROOM_STORE_PATH } from './roomStore.js';
+import { checkStore, loadRooms, startRoomPersistence, saveRooms, ROOM_STORE_PATH } from './roomStore.js';
 import { 
   GameState, 
   Player, 
@@ -1194,6 +1194,7 @@ async function startServer() {
     });
   }
 
+  checkStore();
   startRoomPersistence(rooms);
 
   httpServer.listen(PORT, '0.0.0.0', () => {
