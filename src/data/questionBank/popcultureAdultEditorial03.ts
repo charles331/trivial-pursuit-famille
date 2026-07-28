@@ -34,7 +34,6 @@ const D: Q[] = [
 ["Quel jeu d'aventure suit Max Caulfield à Arcadia Bay ?",["Life Is Strange","Gone Home","Oxenfree","Tell Me Why"],0,"Max peut remonter le temps et modifier ses décisions."],
 ["Quel auteur a créé Sandman ?",["Neil Gaiman","Alan Moore","Grant Morrison","Warren Ellis"],0,"La série met en scène Dream, l'un des Éternels."],
 ["Qui a enregistré l'album Homogenic ?",["Björk","Fiona Apple","PJ Harvey","Tori Amos"],0,"Björk y associe cordes islandaises et rythmes électroniques."],
-["Quelle série israélienne a inspiré Homeland ?",["Hatufim","Fauda","Shtisel","Téhéran"],0,"Hatufim suit des soldats rentrés après de longues années de captivité."],
 ["Quel jeu permet d'incarner Geralt de Riv ?",["The Witcher","Dragon Age","Elden Ring","Skyrim"],0,"Geralt est un sorceleur créé par l'écrivain Andrzej Sapkowski."],
 ["Quel héros de BD conduit une Ford T jaune et noire ?",["Gaston Lagaffe","Spirou","Michel Vaillant","Natacha"],0,"La vieille voiture de Gaston produit souvent fumée et pannes."],
 ["Quel groupe belge est formé autour de Tom Barman ?",["dEUS","Triggerfinger","Balthazar","Girls in Hawaii"],0,"Tom Barman est chanteur, guitariste et principal auteur de dEUS."],

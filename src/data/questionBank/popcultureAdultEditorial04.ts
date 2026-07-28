@@ -1,7 +1,6 @@
 import { Question } from '../../types';
 type Q=[string,[string,string,string,string],string];
 const D:Q[]=[
-["Quel musicien de Bristol a publié l'album Maxinquaye ?",["Tricky","Geoff Barrow","Roni Size","Goldie"],"Tricky donne à l'album le nom de sa mère Maxine Quaye; Martina Topley-Bird y chante plusieurs titres."],
 ["Qui chante Glory Box avec Portishead ?",["Beth Gibbons","PJ Harvey","Elizabeth Fraser","Shirley Manson"],"Glory Box clôt l'album Dummy, publié en 1994."],
 ["Quel duo français a enregistré l'album Moon Safari ?",["Air","Daft Punk","Cassius","Justice"],"Moon Safari contient Sexy Boy et All I Need et paraît en 1998."],
 ["Quel groupe islandais a publié Ágætis byrjun ?",["Sigur Rós","The Sugarcubes","Múm","Of Monsters and Men"],"Cet album de 1999 a contribué à la reconnaissance internationale de Sigur Rós."],
@@ -23,9 +22,7 @@ const D:Q[]=[
 ["Quel jeu d'exploration recommence après une boucle temporelle de 22 minutes ?",["Outer Wilds","The Forgotten City","Deathloop","Twelve Minutes"],"Le joueur explore un petit système solaire condamné par l'explosion de son étoile."],
 ["Quel studio belge a développé Baldur's Gate 3 ?",["Larian Studios","Guerrilla Games","Remedy","Arkane"],"Larian, fondé à Gand, a adapté les règles de Donjons et Dragons dans ce jeu de rôle."],
 ["Quel jeu de rôle tactique de Larian sorti en 2014 a relancé la série Divinity ?",["Divinity: Original Sin","Divine Divinity","Dragon Commander","Beyond Divinity"],"Le jeu précède directement Original Sin 2 et met l'accent sur les interactions élémentaires."],
-["Quel jeu combine construction de deck et ascension d'une tour changeante ?",["Slay the Spire","Inscryption","Monster Train","Balatro"],"Chaque tentative propose cartes, reliques et événements dans une structure de roguelike."],
 ["Quel jeu demande de gérer une ferme héritée près de Pelican Town ?",["Stardew Valley","Harvest Moon 64","Animal Crossing","Terraria"],"Eric Barone a développé seul l'essentiel du jeu initial pendant plusieurs années."],
-["Quel jeu narratif réunit des adolescents sur l'île d'Edwards ?",["Oxenfree","Night in the Woods","Gone Home","Firewatch"],"Une fréquence radio ouvre des phénomènes temporels autour du groupe."],
 ["Quel jeu se déroule dans la ville frappée par la peste de Dunwall ?",["Dishonored","Prey","Thief","BioShock Infinite"],"Corvo Attano utilise armes, pouvoirs et infiltration pour démasquer une conspiration."],
 ["Quel jeu de rôle met en scène l'ordre des Gardes des ombres ?",["Dragon Age: Origins","Mass Effect","The Witcher","Pillars of Eternity"],"Les Gardes combattent l'Enclin et les engeances dans le royaume de Férelden."],
 ["Quel jeu de stratégie met l'accent sur une dynastie médiévale plutôt que sur un État ?",["Crusader Kings","Civilization","Age of Empires","Total War"],"Mariages, successions et relations entre personnages structurent la partie."],

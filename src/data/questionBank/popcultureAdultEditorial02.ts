@@ -4,11 +4,9 @@ type Q = [string, [string, string, string, string], number, string];
 
 const DATA: Q[] = [
   ["Quel groupe belge a enregistré « Not an Addict » ?", ["K's Choice", "dEUS", "Hooverphonic", "Soulwax"], 0, "Le titre figure sur Paradise in Me, album publié par K's Choice en 1995."],
-  ["Quel jeu vidéo se déroule dans la ville fictive de Revachol ?", ["Disco Elysium", "Control", "Alan Wake", "Deus Ex"], 0, "Disco Elysium place le joueur dans le rôle d'un détective amnésique."],
   ["Quel auteur belge a créé le commissaire Maigret ?", ["Agatha Christie", "Georges Simenon", "Stanislas-André Steeman", "Jean Ray"], 1, "Le Liégeois Georges Simenon a fait apparaître Maigret dans soixante-quinze romans."],
   ["Quel groupe interprète « Blue Monday » ?", ["New Order", "The Cure", "Depeche Mode", "Joy Division"], 0, "Le maxi de New Order paru en 1983 est célèbre pour sa pochette inspirée d'une disquette."],
   ["Dans Better Call Saul, quel est le véritable nom de Saul Goodman ?", ["Jimmy McGill", "Chuck McGill", "Howard Hamlin", "Gene Takavic"], 0, "Jimmy adopte Saul Goodman comme identité professionnelle avant les événements de Breaking Bad."],
-  ["Quel studio a développé le jeu The Witcher 3 ?", ["CD Projekt Red", "BioWare", "Bethesda", "Larian Studios"], 0, "Le studio polonais CD Projekt Red adapte l'univers littéraire d'Andrzej Sapkowski."],
   ["Quel personnage de Franquin est un animal jaune à taches noires doté d'une longue queue ?", ["Le Marsupilami", "Spip", "Bill", "Cubitus"], 0, "Le Marsupilami apparaît en 1952 dans Spirou et les Héritiers."],
   ["Quel album de Radiohead contient « Paranoid Android » ?", ["OK Computer", "The Bends", "Kid A", "In Rainbows"], 0, "OK Computer, publié en 1997, développe des thèmes liés à la technologie et à l'aliénation."],
   ["Quel jeu de Nintendo permet de gérer une île peuplée d'animaux anthropomorphes ?", ["Animal Crossing: New Horizons", "Stardew Valley", "The Sims 4", "Harvest Moon"], 0, "New Horizons est sorti sur Nintendo Switch en mars 2020."],
@@ -35,7 +33,6 @@ const DATA: Q[] = [
   ["Quel jeu met en scène le chevalier silencieux explorant Hallownest ?", ["Hollow Knight", "Shovel Knight", "Dead Cells", "Ori and the Blind Forest"], 0, "Le studio australien Team Cherry a créé cet univers peuplé d'insectes."],
   ["Quelle série de BD humoristique de Cauvin et Lambil se déroule pendant la guerre de Sécession ?", ["Les Tuniques bleues", "Les Femmes en blanc", "Sammy", "Pauvre Lampil"], 0, "Le caporal Blutch et le sergent Chesterfield servent dans l'armée de l'Union."],
   ["Quel groupe punk britannique a publié London Calling ?", ["The Clash", "Sex Pistols", "The Jam", "Buzzcocks"], 0, "Le double album de 1979 mêle punk, reggae, ska et rockabilly."],
-  ["Quelle série de science-fiction est adaptée d'une saga de James S. A. Corey ?", ["The Expanse", "Foundation", "Silo", "Altered Carbon"], 0, "The Expanse imagine un système solaire politiquement partagé entre Terre, Mars et la Ceinture."],
   ["Quel jeu de stratégie permet de diriger une civilisation de la préhistoire à l'ère spatiale ?", ["Civilization", "Total War", "Crusader Kings", "Anno"], 0, "Sid Meier a conçu le premier Civilization, publié en 1991."],
   ["Quel héros de BD créé par Morris tire plus vite que son ombre ?", ["Lucky Luke", "Jerry Spring", "Blueberry", "Chick Bill"], 0, "Morris crée Lucky Luke en 1946; René Goscinny en scénarisera de nombreux albums."],
   ["Quelle chanteuse capverdienne a popularisé la morna dans le monde ?", ["Cesária Évora", "Mayra Andrade", "Lura", "Sara Tavares"], 0, "Cesária Évora était surnommée la « diva aux pieds nus »."],

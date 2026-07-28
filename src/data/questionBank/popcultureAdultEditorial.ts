@@ -10,7 +10,6 @@ type EditorialQuestion = [
 const QUESTIONS: EditorialQuestion[] = [
   ["Quelle artiste belge a remporté l'Eurovision 1986 avec « J'aime la vie » ?", ["Lio", "Kate Ryan", "Sandra Kim", "Maurane"], 2, "Sandra Kim reste la seule représentante belge à avoir remporté le concours Eurovision."],
   ["Quel artiste se cache derrière le personnage scénique de Ziggy Stardust ?", ["David Bowie", "Lou Reed", "Marc Bolan", "Iggy Pop"], 0, "David Bowie présente Ziggy sur l'album The Rise and Fall of Ziggy Stardust and the Spiders from Mars."],
-  ["Quel studio japonais a créé la série de jeux Dark Souls ?", ["Capcom", "Square Enix", "FromSoftware", "Konami"], 2, "FromSoftware a développé Dark Souls sous la direction de Hidetaka Miyazaki."],
   ["Quel duo français se produisait avec des casques de robots ?", ["Air", "Cassius", "Daft Punk", "Justice"], 2, "Thomas Bangalter et Guy-Manuel de Homem-Christo ont formé Daft Punk de 1993 à 2021."],
   ["Qui a créé le personnage de Tintin ?", ["Peyo", "Hergé", "André Franquin", "Edgar P. Jacobs"], 1, "Hergé est le nom de plume de Georges Remi, obtenu en inversant ses initiales R. G."],
   ["Quel album de Lauryn Hill contient « Doo Wop (That Thing) » ?", ["The Score", "The Miseducation of Lauryn Hill", "Baduizm", "Mama's Gun"], 1, "Cet unique album studio solo de Lauryn Hill a remporté cinq Grammy Awards."],
@@ -44,7 +43,6 @@ const QUESTIONS: EditorialQuestion[] = [
   ["Quel jeu de stratégie oppose trois races nommées Terrans, Zergs et Protoss ?", ["Warcraft III", "StarCraft", "Command & Conquer", "Age of Empires II"], 1, "Blizzard a lancé StarCraft en 1998; son équilibre en a fait un titre majeur de l'esport."],
   ["Quel scénariste belge est le principal créateur de la série XIII ?", ["Jean Van Hamme", "Raoul Cauvin", "Philippe Geluck", "Hermann"], 0, "Jean Van Hamme écrit XIII avec le dessinateur William Vance à partir de 1984."],
   ["Quelle artiste a interprété « Running Up That Hill » à l'origine ?", ["Kate Bush", "Tori Amos", "Annie Lennox", "Siouxsie Sioux"], 0, "Paru en 1985, le titre a retrouvé un succès mondial grâce à la série Stranger Things en 2022."],
-  ["Quelle série de Michaela Coel traite du consentement après une agression sexuelle ?", ["Chewing Gum", "I May Destroy You", "Insecure", "Feel Good"], 1, "Michaela Coel a créé, co-réalisé et interprété cette mini-série diffusée en 2020."],
   ["Quel jeu vidéo permet d'incarner Zagreus tentant de fuir les Enfers ?", ["Hades", "Dead Cells", "Bastion", "Transistor"], 0, "Dans Hades de Supergiant Games, chaque échec fait progresser les relations et le récit."],
   ["Quel personnage de BD travaille comme groom au Moustic-Hôtel ?", ["Spirou", "Fantasio", "Gaston Lagaffe", "Tif"], 0, "La tenue rouge de groom est restée l'un des signes distinctifs de Spirou."],
   ["Quel producteur américain a fondé le label Motown à Detroit ?", ["Quincy Jones", "Berry Gordy", "Phil Spector", "Ahmet Ertegun"], 1, "Berry Gordy fonde Tamla Records en 1959, qui devient le cœur de la Motown."],
