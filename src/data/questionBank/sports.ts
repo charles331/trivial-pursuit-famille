@@ -2431,4 +2431,634 @@ export const SPORTS_QUESTIONS: Question[] = [
     difficulty: "ado",
     explanation: "Les rameurs avancent... dos à la ligne d'arrivée : ils ne voient jamais où ils vont !"
   },
+  {
+    id: "spo_271",
+    categoryId: "sports",
+    question: "Quel pays a remporté la toute première Coupe du monde de football, en 1930 ?",
+    options: ["Le Brésil", "L'Italie", "L'Uruguay", "L'Argentine"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "L'Uruguay, pays hôte, a battu l'Argentine 4-2 en finale à Montevideo, devant 93 000 spectateurs !"
+  },
+  {
+    id: "spo_272",
+    categoryId: "sports",
+    question: "Quel joueur détient le record de buts en Coupe du monde avec 16 réalisations ?",
+    options: ["Ronaldo", "Miroslav Klose", "Gerd Müller", "Just Fontaine"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "L'Allemand Klose a battu le record du Brésilien Ronaldo en 2014, lors du fameux 7-1 contre le Brésil !"
+  },
+  {
+    id: "spo_273",
+    categoryId: "sports",
+    question: "Le drame du Heysel, en 1985 à Bruxelles, s'est produit avant une finale entre Liverpool et quel club ?",
+    options: ["La Juventus de Turin", "Le Real Madrid", "Le Bayern Munich", "L'AS Rome"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Cette tragédie, qui fit 39 morts, entraîna l'exclusion des clubs anglais des Coupes d'Europe pendant cinq ans !"
+  },
+  {
+    id: "spo_274",
+    categoryId: "sports",
+    question: "Quel club belge a remporté la Coupe d'Europe des vainqueurs de coupe en 1988 ?",
+    options: ["Anderlecht", "Le Standard de Liège", "Le Club Bruges", "Le FC Malines"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le modeste FC Malines avait battu l'Ajax d'Amsterdam en finale, un exploit retentissant du football belge !"
+  },
+  {
+    id: "spo_275",
+    categoryId: "sports",
+    question: "Combien de Coupes du monde le Diable Rouge Enzo Scifo a-t-il disputées ?",
+    options: ["2", "4", "3", "5"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Scifo a joué les Mondiaux 1986, 1990, 1994 et 1998, un record de longévité pour un Belge !"
+  },
+  {
+    id: "spo_276",
+    categoryId: "sports",
+    question: "Quelle équipe a éliminé la Belgique en demi-finale de la Coupe du monde 1986 ?",
+    options: ["L'Argentine", "L'Allemagne de l'Ouest", "La France", "L'Angleterre"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Diego Maradona avait marqué les deux buts argentins, quelques jours après son doublé légendaire contre l'Angleterre !"
+  },
+  {
+    id: "spo_277",
+    categoryId: "sports",
+    question: "Combien de buts Just Fontaine a-t-il marqués lors de la seule Coupe du monde 1958, un record toujours invaincu ?",
+    options: ["10", "11", "13", "15"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Fontaine a réussi cet exploit en seulement six matchs, avec des chaussures empruntées à un coéquipier !"
+  },
+  {
+    id: "spo_278",
+    categoryId: "sports",
+    question: "Qui a reçu le tout premier Ballon d'Or, en 1956 ?",
+    options: ["Alfredo Di Stéfano", "Raymond Kopa", "Ferenc Puskás", "Stanley Matthews"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "L'ailier anglais Stanley Matthews a joué en première division jusqu'à l'âge incroyable de 50 ans !"
+  },
+  {
+    id: "spo_279",
+    categoryId: "sports",
+    question: "Quel pays a remporté la Coupe du monde de football 1966, disputée à domicile ?",
+    options: ["Le Portugal", "L'Angleterre", "L'Allemagne de l'Ouest", "Le Brésil"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "La finale reste célèbre pour le but « fantôme » de Geoff Hurst, dont on débat encore aujourd'hui !"
+  },
+  {
+    id: "spo_280",
+    categoryId: "sports",
+    question: "Que désigne le « catenaccio » dans le vocabulaire du football ?",
+    options: ["Une tactique très défensive d'origine italienne", "Un geste technique brésilien", "Un type de tir enroulé", "Un schéma offensif hollandais"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "« Catenaccio » signifie « verrou » en italien, avec un défenseur libre appelé « libero » derrière la défense !"
+  },
+  {
+    id: "spo_281",
+    categoryId: "sports",
+    question: "Que récompense le « Soulier d'or » décerné chaque année en Belgique ?",
+    options: ["Le meilleur buteur d'Europe", "Le meilleur espoir belge à l'étranger", "Le meilleur joueur du championnat belge", "Le plus beau but de la saison"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Paul Van Himst et Jan Ceulemans détiennent le record avec quatre Souliers d'or chacun !"
+  },
+  {
+    id: "spo_282",
+    categoryId: "sports",
+    question: "De quel club belge Paul Van Himst, légende du football national, est-il l'icône ?",
+    options: ["Le Standard de Liège", "La Gantoise", "L'Antwerp", "Anderlecht"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Van Himst a remporté huit titres de champion avec Anderlecht et fut ensuite sélectionneur des Diables Rouges !"
+  },
+  {
+    id: "spo_283",
+    categoryId: "sports",
+    question: "Quel joueur a été sacré champion d'Europe 1984 avec la France en marquant 9 buts dans le tournoi ?",
+    options: ["Alain Giresse", "Michel Platini", "Jean Tigana", "Dominique Rocheteau"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Neuf buts en cinq matchs : ce record de Platini dans un Euro n'a jamais été approché depuis !"
+  },
+  {
+    id: "spo_284",
+    categoryId: "sports",
+    question: "En quart de finale du Mondial 2010, Luis Suárez stoppe un ballon de la main sur sa ligne ; quel pays africain est finalement éliminé ?",
+    options: ["Le Ghana", "Le Nigeria", "Le Cameroun", "La Côte d'Ivoire"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Asamoah Gyan a raté le penalty qui aurait envoyé le Ghana en demi-finale, une première pour l'Afrique !"
+  },
+  {
+    id: "spo_285",
+    categoryId: "sports",
+    question: "À quel poste jouait Jean-Marie Pfaff, figure des Diables Rouges et du Bayern Munich ?",
+    options: ["Attaquant", "Libéro", "Gardien de but", "Milieu offensif"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Pfaff a été élu meilleur gardien du monde en 1987 et fut ensuite vedette d'une émission de téléréalité en Belgique !"
+  },
+  {
+    id: "spo_286",
+    categoryId: "sports",
+    question: "Quelle équipe a perdu les finales des Coupes du monde 1974 et 1978, malgré son « football total » ?",
+    options: ["La Hongrie", "L'Italie", "La Pologne", "Les Pays-Bas"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Les Pays-Bas de Johan Cruyff ont marqué l'histoire sans jamais soulever le trophée, perdant encore la finale en 2010 !"
+  },
+  {
+    id: "spo_287",
+    categoryId: "sports",
+    question: "Qui est le seul gardien de but à avoir remporté le Ballon d'Or, en 1963 ?",
+    options: ["Dino Zoff", "Lev Yachine", "Gordon Banks", "Sepp Maier"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Surnommé « l'Araignée noire », le Soviétique Yachine aurait arrêté environ 150 penalties dans sa carrière !"
+  },
+  {
+    id: "spo_288",
+    categoryId: "sports",
+    question: "En quelle année la Belgique a-t-elle atteint pour la première fois la place de numéro 1 mondial au classement FIFA ?",
+    options: ["2015", "2008", "2020", "2002"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "La Belgique est l'un des rares pays numéro 1 mondial à n'avoir jamais gagné ni Coupe du monde ni Euro !"
+  },
+  {
+    id: "spo_289",
+    categoryId: "sports",
+    question: "En quelle année l'Olympique de Marseille a-t-il remporté la Ligue des champions ?",
+    options: ["1991", "1998", "1993", "1996"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Grâce au but de Basile Boli contre l'AC Milan, l'OM reste le seul club français vainqueur de la compétition !"
+  },
+  {
+    id: "spo_290",
+    categoryId: "sports",
+    question: "Quelle fonction George Weah, Ballon d'Or 1995, a-t-il exercée après sa carrière ?",
+    options: ["Entraîneur du Brésil", "Président de la FIFA", "Secrétaire général de l'ONU", "Président du Liberia"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Élu en 2017, Weah est le seul Ballon d'Or de l'histoire devenu chef d'État !"
+  },
+  {
+    id: "spo_291",
+    categoryId: "sports",
+    question: "En quelle année s'est couru le premier Tour de France ?",
+    options: ["1913", "1903", "1893", "1923"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le Tour a été créé pour relancer les ventes du journal L'Auto, ancêtre de L'Équipe !"
+  },
+  {
+    id: "spo_292",
+    categoryId: "sports",
+    question: "Qui a remporté le premier Tour de France en 1903 ?",
+    options: ["Maurice Garin", "Henri Desgrange", "Louison Bobet", "Philippe Thys"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Surnommé « le petit ramoneur », Garin a gagné avec près de trois heures d'avance sur le deuxième !"
+  },
+  {
+    id: "spo_293",
+    categoryId: "sports",
+    question: "En quelle année le maillot jaune a-t-il été porté pour la première fois sur le Tour de France ?",
+    options: ["1903", "1936", "1919", "1947"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Son premier porteur, Eugène Christophe, était surnommé « le Vieux Gaulois » et n'a jamais gagné le Tour !"
+  },
+  {
+    id: "spo_294",
+    categoryId: "sports",
+    question: "Combien de fois Eddy Merckx a-t-il remporté Milan-San Remo, un record ?",
+    options: ["4", "5", "6", "7"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Sept victoires sur la « Primavera » entre 1966 et 1976 : aucun coureur n'a fait mieux sur un monument !"
+  },
+  {
+    id: "spo_295",
+    categoryId: "sports",
+    question: "Quel est le surnom de Liège-Bastogne-Liège, la plus ancienne des grandes classiques ?",
+    options: ["La Grande Dame", "La Doyenne", "L'Ancêtre", "La Wallonne"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Créée en 1892 pour des amateurs, elle est plus vieille que le Tour de France lui-même !"
+  },
+  {
+    id: "spo_296",
+    categoryId: "sports",
+    question: "De combien de victoires dans le Tour de France Lance Armstrong a-t-il été déchu pour dopage ?",
+    options: ["7", "5", "6", "8"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Ses sept Tours (1999-2005) ont été rayés du palmarès sans être réattribués à personne !"
+  },
+  {
+    id: "spo_297",
+    categoryId: "sports",
+    question: "Dans quelle ville Eddy Merckx a-t-il battu le record de l'heure en 1972 ?",
+    options: ["Bruxelles", "Milan", "Mexico", "Bordeaux"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Merckx avait choisi l'altitude de Mexico pour profiter d'un air moins dense ; il a parcouru 49,431 km en une heure !"
+  },
+  {
+    id: "spo_298",
+    categoryId: "sports",
+    question: "Avec Anquetil, Merckx et Hinault, quel coureur complète le club des quintuples vainqueurs du Tour de France ?",
+    options: ["Greg LeMond", "Fausto Coppi", "Chris Froome", "Miguel Indurain"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "L'Espagnol Indurain est le seul à avoir gagné ses cinq Tours consécutivement, de 1991 à 1995 !"
+  },
+  {
+    id: "spo_299",
+    categoryId: "sports",
+    question: "Qui est le dernier Français à avoir remporté le Tour de France, en 1985 ?",
+    options: ["Laurent Fignon", "Bernard Hinault", "Bernard Thévenet", "Richard Virenque"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Surnommé « le Blaireau », Hinault avait promis de se retirer à 32 ans, promesse tenue jour pour jour !"
+  },
+  {
+    id: "spo_300",
+    categoryId: "sports",
+    question: "Au sommet de quelle côte mythique se juge l'arrivée de la Flèche wallonne ?",
+    options: ["Le Mur de Huy", "La Redoute", "Le Mur de Grammont", "La côte de Stockeu"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le Mur de Huy affiche des passages à 19 % : certains spectateurs y grimpent plus vite à pied que les coureurs épuisés !"
+  },
+  {
+    id: "spo_301",
+    categoryId: "sports",
+    question: "Quel exploit le Belge Philippe Gilbert a-t-il réalisé lors de la saison 2011 ?",
+    options: ["Gagner le Tour de France", "Gagner les trois grands tours", "Remporter les trois classiques ardennaises", "Être champion du monde sur piste"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Amstel Gold Race, Flèche wallonne et Liège-Bastogne-Liège en une semaine : le triplé ardennais parfait !"
+  },
+  {
+    id: "spo_302",
+    categoryId: "sports",
+    question: "Sous quel nom les Flamands désignent-ils le Tour des Flandres ?",
+    options: ["De Klassieker", "De Muur", "Het Volk", "De Ronde"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "« De Ronde » est une véritable fête nationale en Flandre, avec des centaines de milliers de spectateurs sur les monts pavés !"
+  },
+  {
+    id: "spo_303",
+    categoryId: "sports",
+    question: "Combien de courses forment les « monuments » du cyclisme ?",
+    options: ["3", "5", "7", "10"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Milan-San Remo, le Tour des Flandres, Paris-Roubaix, Liège-Bastogne-Liège et le Tour de Lombardie : Merckx les a tous gagnés !"
+  },
+  {
+    id: "spo_304",
+    categoryId: "sports",
+    question: "Quel était le surnom du champion cycliste italien Fausto Coppi ?",
+    options: ["Il Campionissimo", "Il Pirata", "Il Diavolo", "Lo Squalo"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le « champion des champions » fut le premier à réussir le doublé Giro-Tour la même année, en 1949 !"
+  },
+  {
+    id: "spo_305",
+    categoryId: "sports",
+    question: "Quel grimpeur belge a remporté le Tour de France 1976 ?",
+    options: ["Freddy Maertens", "Roger De Vlaeminck", "Lucien Van Impe", "Walter Godefroot"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Van Impe reste le dernier Belge vainqueur du Tour au XXe siècle, avec aussi six maillots de meilleur grimpeur !"
+  },
+  {
+    id: "spo_306",
+    categoryId: "sports",
+    question: "Combien de titres du Grand Chelem Novak Djokovic totalisait-il fin 2023, un record masculin ?",
+    options: ["22", "24", "23", "25"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "En 2023, Djokovic a dépassé les 22 titres de Nadal et égalé le total absolu de Margaret Court !"
+  },
+  {
+    id: "spo_307",
+    categoryId: "sports",
+    question: "Combien de fois Rafael Nadal a-t-il remporté Roland-Garros ?",
+    options: ["11", "12", "13", "14"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Quatorze titres sur un même tournoi du Grand Chelem : un record qui semble intouchable !"
+  },
+  {
+    id: "spo_308",
+    categoryId: "sports",
+    question: "Contre quel Français John Isner a-t-il disputé le plus long match de l'histoire du tennis, à Wimbledon en 2010 ?",
+    options: ["Nicolas Mahut", "Michaël Llodra", "Gilles Simon", "Julien Benneteau"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "11 heures et 5 minutes de jeu sur trois jours, avec un cinquième set gagné 70 jeux à 68 !"
+  },
+  {
+    id: "spo_309",
+    categoryId: "sports",
+    question: "Quel exploit unique Steffi Graf a-t-elle réalisé en 1988 ?",
+    options: ["Gagner Wimbledon sans perdre un jeu", "Être n°1 pendant toute l'année sans défaite", "Le Grand Chelem plus l'or olympique la même année", "Gagner en simple et en double dans les 4 majeurs"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Ce « Golden Slam » — les quatre tournois majeurs et l'or olympique à Séoul — n'a jamais été réédité !"
+  },
+  {
+    id: "spo_310",
+    categoryId: "sports",
+    question: "Qui est le dernier Français à avoir remporté Roland-Garros en simple messieurs, en 1983 ?",
+    options: ["Henri Leconte", "Yannick Noah", "Guy Forget", "Cédric Pioline"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Noah avait battu le tenant du titre Mats Wilander en finale, avant d'entamer une carrière de chanteur à succès !"
+  },
+  {
+    id: "spo_311",
+    categoryId: "sports",
+    question: "Combien de titres du Grand Chelem la Belge Justine Henin a-t-elle remportés ?",
+    options: ["7", "5", "9", "4"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Quatre Roland-Garros, deux US Open et un Open d'Australie : il ne lui a manqué que Wimbledon, où elle fut deux fois finaliste !"
+  },
+  {
+    id: "spo_312",
+    categoryId: "sports",
+    question: "Quel est le plus ancien tournoi de tennis du monde, créé en 1877 ?",
+    options: ["Roland-Garros", "L'US Open", "L'Open d'Australie", "Wimbledon"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le premier Wimbledon a réuni 22 joueurs et le vainqueur a reçu... 12 guinées et un trophée en argent !"
+  },
+  {
+    id: "spo_313",
+    categoryId: "sports",
+    question: "Quels deux tournois du Grand Chelem Amélie Mauresmo a-t-elle remportés en 2006 ?",
+    options: ["Roland-Garros et l'US Open", "L'US Open et Wimbledon", "L'Open d'Australie et Wimbledon", "Roland-Garros et l'Open d'Australie"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Mauresmo est ensuite devenue la première femme directrice du tournoi de Roland-Garros en 2021 !"
+  },
+  {
+    id: "spo_314",
+    categoryId: "sports",
+    question: "Qu'est-ce que la Coupe Davis ?",
+    options: ["La compétition par équipes nationales masculines de tennis", "Le championnat du monde individuel de tennis", "Le tournoi des jeunes espoirs", "Le Masters de fin d'année"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Créée en 1900, elle a pour équivalent féminin la Billie Jean King Cup, ex-Fed Cup !"
+  },
+  {
+    id: "spo_315",
+    categoryId: "sports",
+    question: "Quelle joueuse détient le record absolu de titres du Grand Chelem en simple, avec 24 trophées ?",
+    options: ["Serena Williams", "Margaret Court", "Steffi Graf", "Martina Navratilova"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "L'Australienne Margaret Court devance d'un seul titre Serena Williams, restée bloquée à 23 !"
+  },
+  {
+    id: "spo_316",
+    categoryId: "sports",
+    question: "Combien de titres consécutifs Björn Borg a-t-il remportés à Wimbledon entre 1976 et 1980 ?",
+    options: ["3", "4", "5", "6"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "L'impassible Suédois a pris sa retraite à seulement 26 ans, déjà lassé de la compétition !"
+  },
+  {
+    id: "spo_317",
+    categoryId: "sports",
+    question: "Qu'avait de remarquable la victoire de Kim Clijsters à l'US Open 2009 ?",
+    options: ["Elle a gagné sans perdre un set ni un service", "Elle jouait avec une fracture du poignet", "C'était son tout premier tournoi professionnel", "Elle revenait de retraite et était devenue maman"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Invitée par les organisateurs, la Belge est devenue la première maman à gagner un Grand Chelem depuis 1980 !"
+  },
+  {
+    id: "spo_318",
+    categoryId: "sports",
+    question: "Dans quel sanctuaire de la Grèce antique se déroulaient les Jeux Olympiques antiques ?",
+    options: ["Delphes", "Olympie", "Athènes", "Sparte"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Pendant les Jeux antiques, une trêve sacrée suspendait les guerres entre cités grecques !"
+  },
+  {
+    id: "spo_319",
+    categoryId: "sports",
+    question: "Quelle nouveauté majeure ont apportée les Jeux Olympiques de Paris 1900 ?",
+    options: ["La première participation des femmes", "La première flamme olympique", "Les premières épreuves en salle", "Le premier village olympique"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "La Britannique Charlotte Cooper y est devenue la première championne olympique de l'histoire, en tennis !"
+  },
+  {
+    id: "spo_320",
+    categoryId: "sports",
+    question: "Quel pays a mené le boycott des Jeux Olympiques de Moscou en 1980 ?",
+    options: ["La Chine", "La France", "Les États-Unis", "Le Royaume-Uni"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "En représailles, l'URSS et ses alliés ont boycotté les Jeux de Los Angeles quatre ans plus tard !"
+  },
+  {
+    id: "spo_321",
+    categoryId: "sports",
+    question: "Quelle particularité a marqué la victoire d'Abebe Bikila au marathon des JO de Rome en 1960 ?",
+    options: ["Il s'est trompé de parcours", "Il avait 45 ans", "Il a fini en marchant", "Il a couru pieds nus"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "L'Éthiopien, premier champion olympique d'Afrique noire, a récidivé en 1964... avec des chaussures cette fois !"
+  },
+  {
+    id: "spo_322",
+    categoryId: "sports",
+    question: "Quelle ville belge a accueilli les Jeux Olympiques de 1920 ?",
+    options: ["Anvers", "Bruxelles", "Liège", "Gand"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "C'est à Anvers que le drapeau aux cinq anneaux et le serment olympique sont apparus pour la première fois !"
+  },
+  {
+    id: "spo_323",
+    categoryId: "sports",
+    question: "Combien de médailles olympiques, tous métaux confondus, Michael Phelps a-t-il remportées ?",
+    options: ["23", "31", "28", "25"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Avec 28 médailles dont 23 en or, Phelps devancerait la plupart des nations au classement historique des médailles !"
+  },
+  {
+    id: "spo_324",
+    categoryId: "sports",
+    question: "Par quel événement tragique les Jeux Olympiques de Munich 1972 ont-ils été marqués ?",
+    options: ["Un incendie du stade", "Une prise d'otages contre la délégation israélienne", "L'effondrement d'une tribune", "Une épidémie dans le village olympique"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Onze membres de la délégation israélienne ont perdu la vie ; les Jeux ont repris après une journée de deuil !"
+  },
+  {
+    id: "spo_325",
+    categoryId: "sports",
+    question: "Avant Paris en 2024, quelle ville avait déjà organisé trois fois les Jeux Olympiques d'été ?",
+    options: ["Athènes", "Los Angeles", "Tokyo", "Londres"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Londres a accueilli les Jeux en 1908, 1948 et 2012 ; Paris l'a rejointe au club des triples hôtes en 2024 !"
+  },
+  {
+    id: "spo_326",
+    categoryId: "sports",
+    question: "Pourquoi les sprinteurs Tommie Smith et John Carlos sont-ils entrés dans l'histoire aux JO de Mexico 1968 ?",
+    options: ["Leur poing levé sur le podium contre le racisme", "Leur record du monde en finale", "Leur refus de courir en finale", "Leur disqualification pour dopage"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Leur geste, gant noir levé pendant l'hymne américain, leur a valu l'exclusion immédiate des Jeux !"
+  },
+  {
+    id: "spo_327",
+    categoryId: "sports",
+    question: "Quel triplé exceptionnel Emil Zátopek a-t-il réalisé aux JO d'Helsinki en 1952 ?",
+    options: ["100 m, 200 m et 400 m", "800 m, 1500 m et 5000 m", "5000 m, 10 000 m et marathon", "Trois titres en natation"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "La « Locomotive tchèque » a gagné le marathon... qu'il courait pour la première fois de sa vie !"
+  },
+  {
+    id: "spo_328",
+    categoryId: "sports",
+    question: "Dans quelle ville se sont tenus les premiers Jeux paralympiques, en 1960 ?",
+    options: ["Tokyo", "Rome", "Londres", "Mexico"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Ils sont nés des Jeux de Stoke Mandeville, créés en Angleterre pour des vétérans blessés de la Seconde Guerre mondiale !"
+  },
+  {
+    id: "spo_329",
+    categoryId: "sports",
+    question: "Dans quelle ville siège le Comité international olympique (CIO) ?",
+    options: ["Genève", "Paris", "Athènes", "Lausanne"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Lausanne est surnommée la « capitale olympique » et abrite aussi le Musée olympique au bord du lac Léman !"
+  },
+  {
+    id: "spo_330",
+    categoryId: "sports",
+    question: "Quel est le nom officiel du trophée remis au vainqueur de la Coupe du monde de rugby ?",
+    options: ["Le Bouclier de Brennus", "La Calcutta Cup", "La Coupe William-Webb-Ellis", "Le Trophée des Nations"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "William Webb Ellis est cet étudiant qui, selon la légende, inventa le rugby en prenant le ballon à la main en 1823 !"
+  },
+  {
+    id: "spo_331",
+    categoryId: "sports",
+    question: "Quel pays est devenu en 2023 le premier quadruple champion du monde de rugby ?",
+    options: ["L'Afrique du Sud", "La Nouvelle-Zélande", "L'Australie", "L'Angleterre"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Les Springboks ont gagné leurs trois dernières finales (2019 et 2023) sans jamais perdre une finale de Coupe du monde !"
+  },
+  {
+    id: "spo_332",
+    categoryId: "sports",
+    question: "Comment l'Angleterre a-t-elle remporté la finale de la Coupe du monde de rugby 2003 ?",
+    options: ["Sur un essai à la dernière seconde", "Grâce à un drop de Jonny Wilkinson en prolongation", "Aux tirs au but", "Sur une pénalité de 60 mètres"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le drop du pied droit de Wilkinson — un gaucher du pied ! — a fait chavirer l'Angleterre face à l'Australie !"
+  },
+  {
+    id: "spo_333",
+    categoryId: "sports",
+    question: "Au rugby, combien de points vaut un drop ?",
+    options: ["5 points", "2 points", "4 points", "3 points"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le drop se frappe après un rebond au sol, en plein jeu : c'est l'arme fatale des fins de match serrées !"
+  },
+  {
+    id: "spo_334",
+    categoryId: "sports",
+    question: "Quel pays a rejoint le Tournoi des Cinq Nations en 2000 pour en faire les Six Nations ?",
+    options: ["L'Italie", "L'Argentine", "La Roumanie", "La Géorgie"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "L'Italie a marqué son arrivée en battant l'Écosse, tenante du titre, dès son premier match !"
+  },
+  {
+    id: "spo_335",
+    categoryId: "sports",
+    question: "À quel poste évoluait la légende néo-zélandaise Jonah Lomu ?",
+    options: ["Pilier", "Demi d'ouverture", "Ailier", "Deuxième ligne"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Avec ses 119 kg lancés à pleine vitesse, Lomu a révolutionné son poste et marqué 15 essais en Coupe du monde !"
+  },
+  {
+    id: "spo_336",
+    categoryId: "sports",
+    question: "À quel capitaine Nelson Mandela a-t-il remis le trophée de la Coupe du monde de rugby 1995 ?",
+    options: ["Joost van der Westhuizen", "François Pienaar", "Gary Teichmann", "Percy Montgomery"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Mandela portait le maillot des Springboks, symbole de réconciliation immortalisé par le film « Invictus » !"
+  },
+  {
+    id: "spo_337",
+    categoryId: "sports",
+    question: "Combien de joueurs de chaque équipe participent à une mêlée fermée au rugby à XV ?",
+    options: ["6", "5", "7", "8"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Les huit « avants » de chaque équipe s'affrontent dans un choc qui peut dépasser une tonne de pression !"
+  },
+  {
+    id: "spo_338",
+    categoryId: "sports",
+    question: "En quelle année Wilt Chamberlain a-t-il inscrit 100 points en un seul match NBA ?",
+    options: ["1975", "1962", "1958", "1969"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Aucune caméra n'a filmé ce match légendaire à Hershey : il n'en reste qu'une photo et la feuille de match !"
+  },
+  {
+    id: "spo_339",
+    categoryId: "sports",
+    question: "Quel joueur a battu en 2023 le record de points en carrière NBA détenu par Kareem Abdul-Jabbar ?",
+    options: ["LeBron James", "Kevin Durant", "Stephen Curry", "James Harden"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le record de Kareem (38 387 points) avait tenu presque 39 ans avant que LeBron ne le dépasse !"
+  },
+  {
+    id: "spo_340",
+    categoryId: "sports",
+    question: "Avec les Boston Celtics, quelle franchise partageait le record de 17 titres NBA avant 2024 ?",
+    options: ["Les Chicago Bulls", "Les Golden State Warriors", "Les Los Angeles Lakers", "Les San Antonio Spurs"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "La rivalité Celtics-Lakers, incarnée par Larry Bird et Magic Johnson, a fait exploser la popularité de la NBA dans les années 1980 !"
+  },
 ];

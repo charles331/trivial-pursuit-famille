@@ -2431,4 +2431,634 @@ export const CINEMA_QUESTIONS: Question[] = [
     difficulty: "ado",
     explanation: "Les Molières récompensent le théâtre et les Victoires la musique."
   },
+  {
+    id: "cin_271",
+    categoryId: "cinema",
+    question: "En quelle année les frères Lumière ont-ils organisé la première projection publique payante de cinéma ?",
+    options: ["1885", "1905", "1895", "1915"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "La séance eut lieu le 28 décembre 1895 au Salon indien du Grand Café, à Paris."
+  },
+  {
+    id: "cin_272",
+    categoryId: "cinema",
+    question: "Dans quelle gare arrive le célèbre train filmé par les frères Lumière ?",
+    options: ["La Ciotat", "Lyon-Perrache", "Marseille-Saint-Charles", "Paris-Gare de Lyon"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "La légende raconte que des spectateurs auraient reculé de peur en voyant le train arriver."
+  },
+  {
+    id: "cin_273",
+    categoryId: "cinema",
+    question: "Quel film de Georges Méliès montre une fusée plantée dans l'œil de la Lune ?",
+    options: ["L'Homme à la tête en caoutchouc", "Le Royaume des fées", "À la conquête du pôle", "Le Voyage dans la Lune"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Réalisé en 1902, ce film est considéré comme l'ancêtre du cinéma de science-fiction."
+  },
+  {
+    id: "cin_274",
+    categoryId: "cinema",
+    question: "Quel film de 1927 est considéré comme le premier film parlant ?",
+    options: ["Metropolis", "Le Chanteur de jazz", "Les Lumières de la ville", "L'Aurore"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "On y entend la phrase prophétique : « Vous n'avez encore rien entendu ! »"
+  },
+  {
+    id: "cin_275",
+    categoryId: "cinema",
+    question: "Quel est le nom du célèbre vagabond incarné par Charlie Chaplin ?",
+    options: ["Bébert", "Max", "Charlot", "Coco"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Avec sa canne, son chapeau melon et sa démarche en canard, Charlot est né en 1914."
+  },
+  {
+    id: "cin_276",
+    categoryId: "cinema",
+    question: "Dans quel film Chaplin fait-il réellement entendre sa voix pour la première fois dans un discours ?",
+    options: ["Le Dictateur", "Les Temps modernes", "La Ruée vers l'or", "Le Kid"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le discours final du Dictateur (1940) est un vibrant plaidoyer contre le fascisme."
+  },
+  {
+    id: "cin_277",
+    categoryId: "cinema",
+    question: "Qui a réalisé et interprété Citizen Kane en 1941 ?",
+    options: ["Alfred Hitchcock", "John Ford", "Howard Hawks", "Orson Welles"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Orson Welles n'avait que 25 ans quand il a réalisé ce film souvent élu meilleur film de l'histoire."
+  },
+  {
+    id: "cin_278",
+    categoryId: "cinema",
+    question: "Dans Citizen Kane, à quoi renvoie le mystérieux mot « Rosebud » ?",
+    options: ["À sa première fiancée", "À une luge de son enfance", "À son cheval de course", "À sa roseraie"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Toute l'enquête du film repose sur ce dernier mot prononcé par Kane avant de mourir."
+  },
+  {
+    id: "cin_279",
+    categoryId: "cinema",
+    question: "Quel acteur incarne Rick dans Casablanca ?",
+    options: ["Cary Grant", "James Stewart", "Humphrey Bogart", "Gregory Peck"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Face à Ingrid Bergman, Bogart y prononce le fameux « Nous aurons toujours Paris »."
+  },
+  {
+    id: "cin_280",
+    categoryId: "cinema",
+    question: "Comment s'appelle l'héroïne d'Autant en emporte le vent ?",
+    options: ["Scarlett O'Hara", "Melanie Wilkes", "Blanche DuBois", "Daisy Buchanan"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Vivien Leigh fut choisie parmi 1 400 actrices auditionnées pour le rôle."
+  },
+  {
+    id: "cin_281",
+    categoryId: "cinema",
+    question: "Qui a réalisé Psychose, avec sa célèbre scène de la douche ?",
+    options: ["Stanley Kubrick", "Billy Wilder", "Fritz Lang", "Alfred Hitchcock"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Pour le sang dans la douche, filmée en noir et blanc, Hitchcock a utilisé du sirop de chocolat."
+  },
+  {
+    id: "cin_282",
+    categoryId: "cinema",
+    question: "Comment s'appelle le gérant du motel dans Psychose ?",
+    options: ["Jack Torrance", "Norman Bates", "Hannibal Lecter", "Patrick Bateman"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Norman Bates est inspiré d'un fait divers réel, comme le sera aussi Le Silence des agneaux."
+  },
+  {
+    id: "cin_283",
+    categoryId: "cinema",
+    question: "Quelle habitude Alfred Hitchcock avait-il dans presque tous ses films ?",
+    options: ["Filmer une gare", "Tuer le héros à la fin", "Faire une courte apparition à l'écran", "Commencer par un meurtre"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Ces caméos étaient si attendus qu'il les plaçait en début de film pour ne pas distraire le public."
+  },
+  {
+    id: "cin_284",
+    categoryId: "cinema",
+    question: "Dans La Mort aux trousses, par quoi Cary Grant est-il poursuivi en plein champ ?",
+    options: ["Un avion sulfateur", "Un camion fou", "Une moissonneuse", "Un hélicoptère noir"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Cette scène est l'une des plus imitées et parodiées de l'histoire du cinéma."
+  },
+  {
+    id: "cin_285",
+    categoryId: "cinema",
+    question: "Dans Fenêtre sur cour, pourquoi le héros passe-t-il son temps à observer ses voisins ?",
+    options: ["Il est détective", "Il est journaliste", "Il est peintre", "Il est immobilisé avec une jambe cassée"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "James Stewart y joue un photographe cloué dans un fauteuil roulant qui croit voir un meurtre."
+  },
+  {
+    id: "cin_286",
+    categoryId: "cinema",
+    question: "Qui a réalisé 2001 : l'Odyssée de l'espace ?",
+    options: ["Ridley Scott", "Stanley Kubrick", "Andreï Tarkovski", "Robert Wise"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "L'ordinateur HAL 9000 est resté l'une des intelligences artificielles les plus célèbres du cinéma."
+  },
+  {
+    id: "cin_287",
+    categoryId: "cinema",
+    question: "Quel acteur devient fou dans l'hôtel de Shining ?",
+    options: ["Robert De Niro", "Al Pacino", "Jack Nicholson", "Dustin Hoffman"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "La scène de la porte défoncée à la hache a demandé des dizaines de prises et de portes."
+  },
+  {
+    id: "cin_288",
+    categoryId: "cinema",
+    question: "Comment s'appelle l'hôtel isolé du film Shining ?",
+    options: ["L'Overlook", "Le Bates Hotel", "Le Grand Budapest", "Le Timberline"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le film est adapté d'un roman de Stephen King, qui n'a jamais aimé la version de Kubrick."
+  },
+  {
+    id: "cin_289",
+    categoryId: "cinema",
+    question: "Qui a réalisé Le Parrain en 1972 ?",
+    options: ["Martin Scorsese", "Brian De Palma", "Sergio Leone", "Francis Ford Coppola"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le film est adapté du roman de Mario Puzo, qui a coécrit le scénario avec Coppola."
+  },
+  {
+    id: "cin_290",
+    categoryId: "cinema",
+    question: "Quel acteur incarne Vito Corleone dans Le Parrain ?",
+    options: ["Al Pacino", "Marlon Brando", "Robert Duvall", "James Caan"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Pour sa voix rauque, Brando s'était mis du coton dans les joues lors des essais."
+  },
+  {
+    id: "cin_291",
+    categoryId: "cinema",
+    question: "Qu'a fait Marlon Brando de son Oscar pour Le Parrain ?",
+    options: ["Il l'a vendu aux enchères", "Il l'a offert à Coppola", "Il l'a refusé", "Il l'a cassé sur scène"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Il envoya une militante amérindienne le refuser en direct, pour dénoncer le traitement des Amérindiens."
+  },
+  {
+    id: "cin_292",
+    categoryId: "cinema",
+    question: "Qui a réalisé Pulp Fiction ?",
+    options: ["Quentin Tarantino", "David Fincher", "Joel Coen", "Oliver Stone"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Avant de devenir cinéaste, Tarantino était employé d'un vidéoclub en Californie."
+  },
+  {
+    id: "cin_293",
+    categoryId: "cinema",
+    question: "Quelle récompense Pulp Fiction a-t-il remportée en 1994 ?",
+    options: ["L'Oscar du meilleur film", "Le Lion d'or", "Le Grand Prix de Cannes", "La Palme d'or"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "La scène de danse entre John Travolta et Uma Thurman a relancé la carrière de Travolta."
+  },
+  {
+    id: "cin_294",
+    categoryId: "cinema",
+    question: "Quel acteur incarne Hannibal Lecter dans Le Silence des agneaux ?",
+    options: ["Gary Oldman", "Anthony Hopkins", "Ben Kingsley", "Jeremy Irons"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Hopkins a gagné l'Oscar avec seulement environ 16 minutes de présence à l'écran."
+  },
+  {
+    id: "cin_295",
+    categoryId: "cinema",
+    question: "Quelle actrice joue l'agente Clarice Starling dans Le Silence des agneaux ?",
+    options: ["Sigourney Weaver", "Meg Ryan", "Jodie Foster", "Michelle Pfeiffer"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le film a raflé les cinq Oscars majeurs : film, réalisateur, acteur, actrice et scénario."
+  },
+  {
+    id: "cin_296",
+    categoryId: "cinema",
+    question: "Quelle est la particularité visuelle de La Liste de Schindler ?",
+    options: ["Il est presque entièrement en noir et blanc", "Il est en plan-séquence unique", "Il est muet", "Il est en images de synthèse"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Seuls quelques éléments sont en couleur, dont le manteau rouge d'une petite fille."
+  },
+  {
+    id: "cin_297",
+    categoryId: "cinema",
+    question: "Comment s'appelle le général devenu gladiateur dans Gladiator ?",
+    options: ["Commode", "Spartacus", "Proximo", "Maximus"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Sa réplique culte dans l'arène : « Êtes-vous divertis ? »"
+  },
+  {
+    id: "cin_298",
+    categoryId: "cinema",
+    question: "Quel acteur incarne Maximus dans Gladiator ?",
+    options: ["Mel Gibson", "Russell Crowe", "Gerard Butler", "Joaquin Phoenix"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Ce rôle a valu à Russell Crowe l'Oscar du meilleur acteur en 2001."
+  },
+  {
+    id: "cin_299",
+    categoryId: "cinema",
+    question: "Qui a réalisé Inception et Interstellar ?",
+    options: ["Denis Villeneuve", "David Fincher", "Christopher Nolan", "Ridley Scott"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Nolan privilégie les effets réels : pour Inception, un couloir tournant a vraiment été construit."
+  },
+  {
+    id: "cin_300",
+    categoryId: "cinema",
+    question: "Quel objet sert de totem au héros d'Inception pour distinguer rêve et réalité ?",
+    options: ["Une toupie", "Un dé pipé", "Une montre à gousset", "Une pièce de monnaie"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le plan final sur la toupie qui vacille laisse volontairement le spectateur dans le doute."
+  },
+  {
+    id: "cin_301",
+    categoryId: "cinema",
+    question: "De quel pays vient le film Parasite, Palme d'or 2019 ?",
+    options: ["Du Japon", "De Chine", "De Thaïlande", "De Corée du Sud"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Son réalisateur, Bong Joon-ho, avait déjà signé Memories of Murder et Snowpiercer."
+  },
+  {
+    id: "cin_302",
+    categoryId: "cinema",
+    question: "Quel exploit historique le film Parasite a-t-il réalisé aux Oscars 2020 ?",
+    options: ["Gagner 12 Oscars", "Premier film non anglophone sacré meilleur film", "Premier film refusé puis primé", "Premier film d'animation primé"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Parasite a aussi réussi le doublé Palme d'or et Oscar du meilleur film, une rareté."
+  },
+  {
+    id: "cin_303",
+    categoryId: "cinema",
+    question: "Quel film détient, à égalité avec Ben-Hur et Titanic, le record de 11 Oscars ?",
+    options: ["Autant en emporte le vent", "West Side Story", "Le Seigneur des Anneaux : Le Retour du roi", "Gandhi"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le Retour du roi a gagné dans les 11 catégories où il était nommé : un sans-faute."
+  },
+  {
+    id: "cin_304",
+    categoryId: "cinema",
+    question: "Quelle actrice détient le record de quatre Oscars de la meilleure actrice ?",
+    options: ["Katharine Hepburn", "Meryl Streep", "Bette Davis", "Ingrid Bergman"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Katharine Hepburn n'est jamais venue en personne chercher ses statuettes."
+  },
+  {
+    id: "cin_305",
+    categoryId: "cinema",
+    question: "Pour quel film Leonardo DiCaprio a-t-il enfin remporté son premier Oscar ?",
+    options: ["Le Loup de Wall Street", "Inception", "Les Infiltrés", "The Revenant"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "L'attente fut si longue que son absence d'Oscar était devenue une blague sur Internet."
+  },
+  {
+    id: "cin_306",
+    categoryId: "cinema",
+    question: "Pour son rôle dans quel film Marion Cotillard a-t-elle gagné l'Oscar de la meilleure actrice ?",
+    options: ["Inception", "La Môme", "De rouille et d'os", "Deux jours, une nuit"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Elle y incarne Édith Piaf, un des rares Oscars gagnés pour un rôle en langue française."
+  },
+  {
+    id: "cin_307",
+    categoryId: "cinema",
+    question: "Quelle est la particularité du film The Artist, Oscar du meilleur film en 2012 ?",
+    options: ["Il est tourné en une seule prise", "Il n'a aucun acteur", "Il est muet et en noir et blanc", "Il est entièrement improvisé"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le chien Uggie, autre star du film, a reçu un prix spécial, la Palm Dog."
+  },
+  {
+    id: "cin_308",
+    categoryId: "cinema",
+    question: "Quel exploit Jean Dujardin a-t-il réalisé grâce à The Artist ?",
+    options: ["Premier acteur français Oscar du meilleur acteur", "Premier acteur à deux Palmes", "Plus jeune lauréat d'un César", "Premier acteur muet primé à Venise"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Dujardin avait aussi reçu le prix d'interprétation à Cannes pour ce même rôle."
+  },
+  {
+    id: "cin_309",
+    categoryId: "cinema",
+    question: "D'où vient le nom de la récompense française, le César ?",
+    options: ["De Jules César", "Du personnage de Pagnol", "D'un producteur célèbre", "Du sculpteur César, créateur du trophée"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le sculpteur César Baldaccini, célèbre pour ses compressions, a créé la statuette en 1976."
+  },
+  {
+    id: "cin_310",
+    categoryId: "cinema",
+    question: "À quel mois de l'année se tient traditionnellement le Festival de Cannes ?",
+    options: ["Juillet", "Mai", "Septembre", "Mars"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Pendant deux semaines, les stars montent les 24 marches du Palais des festivals."
+  },
+  {
+    id: "cin_311",
+    categoryId: "cinema",
+    question: "Quelle réalisatrice fut la première femme à remporter la Palme d'or, avec La Leçon de piano ?",
+    options: ["Sofia Coppola", "Agnès Varda", "Jane Campion", "Kathryn Bigelow"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Il a fallu attendre 2021 et Julia Ducournau pour qu'une deuxième femme gagne la Palme."
+  },
+  {
+    id: "cin_312",
+    categoryId: "cinema",
+    question: "Quelle réalisatrice française a remporté la Palme d'or 2023 avec Anatomie d'une chute ?",
+    options: ["Justine Triet", "Céline Sciamma", "Julia Ducournau", "Alice Diop"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le film a ensuite gagné l'Oscar du meilleur scénario original en 2024."
+  },
+  {
+    id: "cin_313",
+    categoryId: "cinema",
+    question: "Combien de Palmes d'or les frères Dardenne ont-ils remportées ?",
+    options: ["Une", "Trois", "Aucune", "Deux"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Ils ont gagné avec Rosetta en 1999 puis L'Enfant en 2005, un doublé très rare."
+  },
+  {
+    id: "cin_314",
+    categoryId: "cinema",
+    question: "De quel pays viennent les frères Jean-Pierre et Luc Dardenne ?",
+    options: ["De Suisse", "De Belgique", "Du Luxembourg", "Du Canada"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "La plupart de leurs films sont tournés dans la région de Liège, notamment à Seraing."
+  },
+  {
+    id: "cin_315",
+    categoryId: "cinema",
+    question: "Quelle actrice belge a reçu le prix d'interprétation à Cannes pour Rosetta ?",
+    options: ["Cécile de France", "Virginie Efira", "Émilie Dequenne", "Déborah François"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Émilie Dequenne n'avait que 17 ans et c'était son tout premier film."
+  },
+  {
+    id: "cin_316",
+    categoryId: "cinema",
+    question: "Quel acteur belge s'est révélé dans le faux documentaire C'est arrivé près de chez vous ?",
+    options: ["Benoît Poelvoorde", "François Damiens", "Bouli Lanners", "Patrick Ridremont"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Ce film belge en noir et blanc de 1992 est devenu culte malgré son tout petit budget."
+  },
+  {
+    id: "cin_317",
+    categoryId: "cinema",
+    question: "Quel est le point de départ du film belge Le Tout Nouveau Testament de Jaco Van Dormael ?",
+    options: ["Un ange déchu à Liège", "Un miracle à Anvers", "Un prophète à Namur", "Dieu existe et il habite à Bruxelles"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Dans le film, Dieu est un personnage odieux joué par Benoît Poelvoorde."
+  },
+  {
+    id: "cin_318",
+    categoryId: "cinema",
+    question: "Quel duo du film belge Le Huitième Jour a reçu un prix d'interprétation partagé à Cannes en 1996 ?",
+    options: ["Poelvoorde et Damiens", "Daniel Auteuil et Pascal Duquenne", "Reno et Clavier", "Lanners et Gourmet"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Pascal Duquenne, comédien porteur de trisomie 21, reste un cas unique au palmarès cannois."
+  },
+  {
+    id: "cin_319",
+    categoryId: "cinema",
+    question: "Dans quelle ville est née l'actrice Audrey Hepburn ?",
+    options: ["Londres", "Amsterdam", "Bruxelles", "Genève"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "La star de Vacances romaines et Diamants sur canapé est née à Ixelles en 1929."
+  },
+  {
+    id: "cin_320",
+    categoryId: "cinema",
+    question: "Quelle est la nationalité du détective Hercule Poirot, souvent porté à l'écran ?",
+    options: ["Belge", "Française", "Suisse", "Anglaise"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Rien n'agace plus Poirot que d'être pris pour un Français : il est fier d'être belge."
+  },
+  {
+    id: "cin_321",
+    categoryId: "cinema",
+    question: "Quel album d'Hergé Steven Spielberg a-t-il adapté au cinéma en 2011 ?",
+    options: ["Objectif Lune", "Le Trésor de Rackham le Rouge", "Les Bijoux de la Castafiore", "Le Secret de La Licorne"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le film utilise la capture de mouvement, avec Peter Jackson à la production."
+  },
+  {
+    id: "cin_322",
+    categoryId: "cinema",
+    question: "Quel duo d'acteurs porte le film La Grande Vadrouille ?",
+    options: ["De Funès et Coluche", "Bourvil et Louis de Funès", "Fernandel et Gabin", "Belmondo et Delon"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le duo avait déjà triomphé l'année précédente dans Le Corniaud."
+  },
+  {
+    id: "cin_323",
+    categoryId: "cinema",
+    question: "Pendant quelle période historique se déroule La Grande Vadrouille ?",
+    options: ["La Première Guerre mondiale", "La guerre d'Algérie", "L'Occupation allemande", "La Révolution française"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Deux Français ordinaires y aident des aviateurs anglais abattus au-dessus de Paris."
+  },
+  {
+    id: "cin_324",
+    categoryId: "cinema",
+    question: "Qui a réalisé Le Corniaud et La Grande Vadrouille ?",
+    options: ["Gérard Oury", "Claude Zidi", "Georges Lautner", "Yves Robert"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "La 2CV qui se désosse au début du Corniaud était truquée pour s'effondrer d'un coup."
+  },
+  {
+    id: "cin_325",
+    categoryId: "cinema",
+    question: "Comment s'appelle le gendarme joué par Louis de Funès à Saint-Tropez ?",
+    options: ["Gerber", "Fougasse", "Merlot", "Cruchot"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le Gendarme de Saint-Tropez fut le plus gros succès français de l'année 1964."
+  },
+  {
+    id: "cin_326",
+    categoryId: "cinema",
+    question: "Dans quel film Louis de Funès exécute-t-il une célèbre danse déguisé en rabbin ?",
+    options: ["Hibernatus", "Les Aventures de Rabbi Jacob", "La Folie des grandeurs", "Oscar"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "La scène de danse hassidique a demandé plusieurs jours de répétition à l'acteur."
+  },
+  {
+    id: "cin_327",
+    categoryId: "cinema",
+    question: "Quel acteur joue à la fois Fantômas et le journaliste Fandor dans la trilogie des années 60 ?",
+    options: ["Louis de Funès", "Paul Meurisse", "Jean Marais", "Robert Hossein"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Face à lui, Louis de Funès incarne le commissaire Juve, toujours ridiculisé."
+  },
+  {
+    id: "cin_328",
+    categoryId: "cinema",
+    question: "Dans La Soupe aux choux, qu'est-ce qui débarque dans le potager des deux paysans ?",
+    options: ["Un extraterrestre", "Un trésor romain", "Un ours échappé", "Un inspecteur des impôts"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "L'extraterrestre, surnommé la Denrée, adore la soupe aux choux du Glaude."
+  },
+  {
+    id: "cin_329",
+    categoryId: "cinema",
+    question: "Qui a écrit les dialogues cultes des Tontons flingueurs ?",
+    options: ["Henri Jeanson", "Jacques Prévert", "Francis Veber", "Michel Audiard"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Audiard a signé les dialogues de plus d'une centaine de films français."
+  },
+  {
+    id: "cin_330",
+    categoryId: "cinema",
+    question: "De quel film vient la réplique « Les cons, ça ose tout, c'est même à ça qu'on les reconnaît » ?",
+    options: ["Le Corniaud", "Les Tontons flingueurs", "Un singe en hiver", "Le Cave se rebiffe"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "C'est Lino Ventura, alias Fernand Naudin, qui prononce cette phrase culte de 1963."
+  },
+  {
+    id: "cin_331",
+    categoryId: "cinema",
+    question: "Quel acteur dit « T'as d'beaux yeux, tu sais » dans Le Quai des brumes ?",
+    options: ["Michel Simon", "Pierre Brasseur", "Jean Gabin", "Jules Berry"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Il adresse cette réplique à Michèle Morgan, dans le film de Marcel Carné de 1938."
+  },
+  {
+    id: "cin_332",
+    categoryId: "cinema",
+    question: "Qui a réalisé La Grande Illusion en 1937 ?",
+    options: ["Jean Renoir", "Marcel Carné", "Julien Duvivier", "René Clair"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Ce film pacifiste fut interdit par les nazis, qui en confisquèrent les copies."
+  },
+  {
+    id: "cin_333",
+    categoryId: "cinema",
+    question: "De quel célèbre artiste le cinéaste Jean Renoir est-il le fils ?",
+    options: ["Du sculpteur Rodin", "De l'écrivain Zola", "Du compositeur Ravel", "Du peintre Auguste Renoir"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Enfant, Jean Renoir a servi de modèle à son père pour plusieurs tableaux."
+  },
+  {
+    id: "cin_334",
+    categoryId: "cinema",
+    question: "Quels sont les trois films de la trilogie marseillaise de Marcel Pagnol ?",
+    options: ["Marius, Manon, Ugolin", "Marius, Fanny, César", "César, Panisse, Escartefigue", "Fanny, Angèle, Naïs"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "La fameuse partie de cartes de Marius, avec Raimu, est un sommet du cinéma français."
+  },
+  {
+    id: "cin_335",
+    categoryId: "cinema",
+    question: "Qui a réalisé Jean de Florette et Manon des Sources en 1986 ?",
+    options: ["Yves Robert", "Bertrand Tavernier", "Claude Berri", "Claude Sautet"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Ce diptyque adapté de Pagnol fut à l'époque le tournage le plus cher du cinéma français."
+  },
+  {
+    id: "cin_336",
+    categoryId: "cinema",
+    question: "Quel acteur incarne le Papet dans Jean de Florette ?",
+    options: ["Yves Montand", "Gérard Depardieu", "Daniel Auteuil", "Michel Galabru"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Face à lui, Daniel Auteuil joue Ugolin, rôle qui lui a valu le César du meilleur acteur."
+  },
+  {
+    id: "cin_337",
+    categoryId: "cinema",
+    question: "Quel acteur incarne Cyrano de Bergerac dans le film de 1990 ?",
+    options: ["Jean-Paul Belmondo", "Jean Rochefort", "Philippe Noiret", "Gérard Depardieu"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Ce rôle a valu à Depardieu le prix d'interprétation à Cannes et le César du meilleur acteur."
+  },
+  {
+    id: "cin_338",
+    categoryId: "cinema",
+    question: "Quelle est la particularité du film Les Parapluies de Cherbourg ?",
+    options: ["Il est sans musique", "Il est entièrement chanté", "Il est muet", "Il est en noir et blanc"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Tous les dialogues sont chantés sur la musique de Michel Legrand, et le film a eu la Palme d'or."
+  },
+  {
+    id: "cin_339",
+    categoryId: "cinema",
+    question: "Qui a réalisé Les Parapluies de Cherbourg et Les Demoiselles de Rochefort ?",
+    options: ["François Truffaut", "Claude Lelouch", "Jacques Demy", "Alain Resnais"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Jacques Demy était l'époux de la réalisatrice Agnès Varda."
+  },
+  {
+    id: "cin_340",
+    categoryId: "cinema",
+    question: "Quel réalisateur de la Nouvelle Vague a signé Les 400 Coups ?",
+    options: ["François Truffaut", "Jean-Luc Godard", "Claude Chabrol", "Éric Rohmer"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le jeune héros Antoine Doinel, joué par Jean-Pierre Léaud, reviendra dans quatre autres films."
+  },
 ];

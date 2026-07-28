@@ -2522,4 +2522,363 @@ export const ART_QUESTIONS: Question[] = [
     explanation: "Le saviez-vous ? Un panneau du retable, volé en 1934, n'a jamais été retrouvé : c'est l'un des grands mystères de l'art."
   },
   {
-    id: "art_281,".replace ? never mind
+    id: "art_281",
+    categoryId: "art",
+    question: "Dans quelle ville belge le peintre Pierre Paul Rubens avait-il son atelier, aujourd'hui transformé en musée ?",
+    options: ["Bruxelles", "Anvers", "Liège", "Malines"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La Maison Rubens d'Anvers fonctionnait comme une véritable entreprise, avec de nombreux assistants dont le jeune Van Dyck."
+  },
+  {
+    id: "art_282",
+    categoryId: "art",
+    question: "Quel peintre italien est le maître du clair-obscur, avec des scènes violemment éclairées sortant de l'ombre ?",
+    options: ["Botticelli", "Fra Angelico", "Titien", "Le Caravage"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le Caravage eut une vie aussi sombre que ses toiles : condamné pour meurtre, il mourut en fuite à 38 ans."
+  },
+  {
+    id: "art_283",
+    categoryId: "art",
+    question: "Quel peintre russe a exposé en 1915 son radical Carré noir sur fond blanc ?",
+    options: ["Kazimir Malevitch", "Marc Chagall", "Vassily Kandinsky", "Alexandre Rodtchenko"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Malevitch appela son mouvement le suprématisme et accrocha son carré noir en haut d'un angle, comme une icône religieuse."
+  },
+  {
+    id: "art_284",
+    categoryId: "art",
+    question: "Quel peintre néerlandais est célèbre pour ses compositions à lignes noires et rectangles rouges, jaunes et bleus ?",
+    options: ["Van Doesburg", "Escher", "Piet Mondrian", "Karel Appel"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le style épuré de Mondrian a inspiré la mode, dont une célèbre robe d'Yves Saint Laurent en 1965."
+  },
+  {
+    id: "art_285",
+    categoryId: "art",
+    question: "Quel peintre d'origine russe est considéré comme l'un des pères de l'art abstrait ?",
+    options: ["Klimt", "Vassily Kandinsky", "Miró", "Modigliani"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Kandinsky, qui associait couleurs et sons, aurait eu la révélation de l'abstraction devant un de ses tableaux posé à l'envers."
+  },
+  {
+    id: "art_286",
+    categoryId: "art",
+    question: "Quel peintre américain projetait la peinture sur ses toiles posées au sol, technique dite du dripping ?",
+    options: ["Mark Rothko", "Roy Lichtenstein", "Willem de Kooning", "Jackson Pollock"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Surnommé « Jack the Dripper », Pollock dansait littéralement autour de ses toiles en faisant gicler la peinture."
+  },
+  {
+    id: "art_287",
+    categoryId: "art",
+    question: "Quel artiste français a fait breveter un bleu profond qui porte son nom ?",
+    options: ["Yves Klein", "Jean Dubuffet", "Pierre Soulages", "Fernand Léger"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? L'International Klein Blue (IKB) recouvrait toiles, éponges et même des corps de modèles utilisés comme pinceaux vivants."
+  },
+  {
+    id: "art_288",
+    categoryId: "art",
+    question: "Quel objet Marcel Duchamp a-t-il exposé en 1917 sous le titre Fontaine, inventant le ready-made ?",
+    options: ["Une roue de vélo", "Un porte-bouteilles", "Un urinoir", "Une pelle à neige"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Signé du pseudonyme « R. Mutt », cet urinoir a été élu œuvre la plus influente du XXe siècle par des experts en 2004."
+  },
+  {
+    id: "art_289",
+    categoryId: "art",
+    question: "Quelle artiste franco-américaine est célèbre pour ses Nanas, sculptures de femmes rondes et colorées ?",
+    options: ["Louise Bourgeois", "Niki de Saint Phalle", "Sophie Taeuber-Arp", "Germaine Richier"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Avec son mari Jean Tinguely, elle a aussi créé la fontaine Stravinsky, près du Centre Pompidou à Paris."
+  },
+  {
+    id: "art_290",
+    categoryId: "art",
+    question: "Quel sculpteur français est connu pour ses compressions de voitures et d'objets métalliques ?",
+    options: ["Arman", "Rodin", "Jean Tinguely", "César"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? César a aussi créé le trophée du cinéma français qui porte son nom, remis chaque année aux Césars."
+  },
+  {
+    id: "art_291",
+    categoryId: "art",
+    question: "Quel sculpteur suisse est célèbre pour ses silhouettes humaines filiformes, comme L'Homme qui marche ?",
+    options: ["Alberto Giacometti", "Constantin Brancusi", "Henry Moore", "Jean Arp"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? L'Homme qui marche I a été vendu plus de 100 millions de dollars en 2010, un record pour une sculpture."
+  },
+  {
+    id: "art_292",
+    categoryId: "art",
+    question: "Quelle sculptrice, sœur d'un célèbre écrivain, fut l'élève et la compagne d'Auguste Rodin ?",
+    options: ["Berthe Morisot", "Suzanne Valadon", "Camille Claudel", "Rosa Bonheur"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Camille Claudel, sœur du poète Paul Claudel, passa les trente dernières années de sa vie internée en asile."
+  },
+  {
+    id: "art_293",
+    categoryId: "art",
+    question: "Dans quelle ville se trouve la statue de la Petite Sirène, hommage à Andersen ?",
+    options: ["Oslo", "Copenhague", "Stockholm", "Helsinki"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Cette petite statue de bronze, installée en 1913, a été plusieurs fois décapitée par des vandales."
+  },
+  {
+    id: "art_294",
+    categoryId: "art",
+    question: "Quel architecte a conçu le musée Guggenheim de Bilbao et ses courbes de titane ?",
+    options: ["Zaha Hadid", "Norman Foster", "Renzo Piano", "Frank Gehry"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le succès du musée a fait renaître toute la ville, un phénomène surnommé « l'effet Bilbao »."
+  },
+  {
+    id: "art_295",
+    categoryId: "art",
+    question: "Quel architecte a conçu la Cité radieuse de Marseille, immeuble emblématique du mouvement moderne ?",
+    options: ["Le Corbusier", "Jean Nouvel", "Auguste Perret", "Oscar Niemeyer"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Les Marseillais surnomment cet immeuble « la maison du fada » ; il est classé au patrimoine mondial de l'UNESCO."
+  },
+  {
+    id: "art_296",
+    categoryId: "art",
+    question: "Quel préfet a percé les grands boulevards qui ont transformé Paris sous Napoléon III ?",
+    options: ["Le préfet Poubelle", "Le baron de Rothschild", "Le baron Haussmann", "Le duc de Morny"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Les immeubles « haussmanniens », avec leurs façades en pierre de taille et leurs balcons filants, définissent encore l'image de Paris."
+  },
+  {
+    id: "art_297",
+    categoryId: "art",
+    question: "Quel architecte belge est l'un des pères de l'Art nouveau, avec ses hôtels particuliers bruxellois ?",
+    options: ["Hector Guimard", "Victor Horta", "Antoine Pompe", "Henry van de Velde"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Quatre maisons de Victor Horta à Bruxelles sont classées au patrimoine mondial de l'UNESCO."
+  },
+  {
+    id: "art_298",
+    categoryId: "art",
+    question: "Quel style architectural, aux voûtes épaisses et petites fenêtres, précède le gothique en Europe ?",
+    options: ["Le style baroque", "Le style byzantin", "Le style rococo", "Le style roman"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? L'art roman se reconnaît à ses arcs en plein cintre, alors que le gothique adopte l'arc brisé."
+  },
+  {
+    id: "art_299",
+    categoryId: "art",
+    question: "Quel château de la Loire possède un célèbre escalier à double révolution, peut-être inspiré par Léonard de Vinci ?",
+    options: ["Chambord", "Chenonceau", "Amboise", "Azay-le-Rideau"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Deux personnes peuvent monter et descendre cet escalier en même temps sans jamais se croiser."
+  },
+  {
+    id: "art_300",
+    categoryId: "art",
+    question: "Quel architecte a conçu la pyramide de verre du Louvre, inaugurée en 1989 ?",
+    options: ["Jean Nouvel", "Ricardo Bofill", "Ieoh Ming Pei", "Christian de Portzamparc"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Très critiquée à sa construction, la pyramide de l'Américain d'origine chinoise I. M. Pei est devenue un symbole de Paris."
+  },
+  {
+    id: "art_301",
+    categoryId: "art",
+    question: "Quel gâteau trempé dans le thé déclenche le flot des souvenirs du narrateur chez Marcel Proust ?",
+    options: ["Un financier", "Une madeleine", "Un macaron", "Une gaufre"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La « madeleine de Proust » est devenue une expression courante pour désigner un souvenir ravivé par une sensation."
+  },
+  {
+    id: "art_302",
+    categoryId: "art",
+    question: "Quel roman de Gustave Flaubert valut à son auteur un procès pour atteinte aux bonnes mœurs en 1857 ?",
+    options: ["Salammbô", "L'Éducation sentimentale", "Bouvard et Pécuchet", "Madame Bovary"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Flaubert fut acquitté, et le scandale assura le succès immédiat du roman."
+  },
+  {
+    id: "art_303",
+    categoryId: "art",
+    question: "Comment s'appelle le héros ambitieux du Rouge et le Noir de Stendhal ?",
+    options: ["Julien Sorel", "Fabrice del Dongo", "Eugène de Rastignac", "Frédéric Moreau"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Stendhal s'est inspiré d'un fait divers réel, l'affaire Berthet, jugée en 1827."
+  },
+  {
+    id: "art_304",
+    categoryId: "art",
+    question: "Sous quel titre Honoré de Balzac a-t-il réuni l'ensemble de ses romans ?",
+    options: ["Les Rougon-Macquart", "Le Cycle de la vie", "La Comédie humaine", "Les Illusions perdues"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La Comédie humaine compte plus de 90 œuvres et environ 2 500 personnages, dont certains reviennent de roman en roman."
+  },
+  {
+    id: "art_305",
+    categoryId: "art",
+    question: "Dans quel journal Émile Zola a-t-il publié son célèbre « J'accuse... ! » en 1898 ?",
+    options: ["Le Figaro", "L'Aurore", "Le Temps", "La Croix"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Cette lettre ouverte au président de la République défendait le capitaine Dreyfus, injustement condamné pour trahison."
+  },
+  {
+    id: "art_306",
+    categoryId: "art",
+    question: "Comment s'appelle le narrateur de L'Étranger d'Albert Camus ?",
+    options: ["Rieux", "Tarrou", "Clamence", "Meursault"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le roman s'ouvre sur l'une des phrases les plus célèbres de la littérature : « Aujourd'hui, maman est morte. »"
+  },
+  {
+    id: "art_307",
+    categoryId: "art",
+    question: "Quel écrivain et philosophe français a refusé le prix Nobel de littérature en 1964 ?",
+    options: ["Jean-Paul Sartre", "Albert Camus", "André Malraux", "Raymond Aron"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Sartre refusait toutes les distinctions officielles, estimant qu'un écrivain ne doit pas se laisser « transformer en institution »."
+  },
+  {
+    id: "art_308",
+    categoryId: "art",
+    question: "Qui a écrit Voyage au bout de la nuit, roman au style parlé qui bouleversa la littérature en 1932 ?",
+    options: ["André Gide", "Jean Giono", "Louis-Ferdinand Céline", "François Mauriac"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le roman manqua le Goncourt de peu et reçut le prix Renaudot, provoquant un scandale littéraire."
+  },
+  {
+    id: "art_309",
+    categoryId: "art",
+    question: "Qui a écrit L'Écume des jours, où un nénuphar pousse dans le poumon de Chloé ?",
+    options: ["Raymond Queneau", "Boris Vian", "Jacques Prévert", "Albert Cohen"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Boris Vian était aussi trompettiste de jazz, chanteur et ingénieur diplômé de Centrale."
+  },
+  {
+    id: "art_310",
+    categoryId: "art",
+    question: "Quelle est la particularité du roman La Disparition de Georges Perec ?",
+    options: ["Il n'a pas de ponctuation", "Il se lit dans les deux sens", "Il n'a qu'une seule phrase", "Il ne contient aucune lettre e"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Perec a ensuite écrit Les Revenentes, où le e est cette fois la seule voyelle utilisée !"
+  },
+  {
+    id: "art_311",
+    categoryId: "art",
+    question: "Qui a écrit Zazie dans le métro, roman jubilatoire sur une gamine lâchée dans Paris ?",
+    options: ["Raymond Queneau", "Marcel Aymé", "Georges Perec", "René Fallet"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Queneau a cofondé l'OuLiPo, un atelier d'écriture fondé sur les contraintes et les jeux de langage."
+  },
+  {
+    id: "art_312",
+    categoryId: "art",
+    question: "Qui a écrit En attendant Godot, pièce où deux vagabonds attendent un homme qui ne vient jamais ?",
+    options: ["Eugène Ionesco", "Jean Genet", "Samuel Beckett", "Arthur Adamov"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Beckett, Irlandais installé à Paris, écrivait directement en français et reçut le prix Nobel en 1969."
+  },
+  {
+    id: "art_313",
+    categoryId: "art",
+    question: "Quelle pièce d'Eugène Ionesco, emblème du théâtre de l'absurde, est jouée sans interruption à Paris depuis 1957 ?",
+    options: ["Rhinocéros", "La Cantatrice chauve", "Les Chaises", "Le Roi se meurt"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Elle est représentée chaque soir au théâtre de la Huchette, un record mondial de longévité."
+  },
+  {
+    id: "art_314",
+    categoryId: "art",
+    question: "Quel dramaturge classique a écrit les tragédies Phèdre, Andromaque et Britannicus ?",
+    options: ["Corneille", "Molière", "Marivaux", "Jean Racine"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Racine et Corneille étaient de grands rivaux, chacun défendant sa vision de la tragédie."
+  },
+  {
+    id: "art_315",
+    categoryId: "art",
+    question: "Qui a écrit Le Mariage de Figaro, comédie si audacieuse que Louis XVI voulut l'interdire ?",
+    options: ["Beaumarchais", "Marivaux", "Diderot", "Voltaire"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La pièce inspira l'opéra de Mozart Les Noces de Figaro, créé seulement deux ans plus tard."
+  },
+  {
+    id: "art_316",
+    categoryId: "art",
+    question: "Quel conte philosophique de Voltaire se termine par « Il faut cultiver notre jardin » ?",
+    options: ["Zadig", "Micromégas", "Candide", "L'Ingénu"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Candide y voyage de désastre en désastre en compagnie de Pangloss, qui répète que « tout est pour le mieux dans le meilleur des mondes »."
+  },
+  {
+    id: "art_317",
+    categoryId: "art",
+    question: "Quel écrivain de la Renaissance a créé les géants Gargantua et Pantagruel ?",
+    options: ["Montaigne", "François Rabelais", "Clément Marot", "Ronsard"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Rabelais était aussi médecin, et son adjectif « gargantuesque » désigne toujours un appétit démesuré."
+  },
+  {
+    id: "art_318",
+    categoryId: "art",
+    question: "Quel écrivain du XVIe siècle a inventé un genre nouveau avec ses Essais ?",
+    options: ["Du Bellay", "La Boétie", "Calvin", "Michel de Montaigne"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Montaigne écrivait retiré dans sa tour, dont les poutres étaient gravées de citations grecques et latines."
+  },
+  {
+    id: "art_319",
+    categoryId: "art",
+    question: "Quel poète de la Pléiade a écrit « Mignonne, allons voir si la rose... » ?",
+    options: ["Pierre de Ronsard", "Joachim du Bellay", "Louise Labé", "Agrippa d'Aubigné"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Ce poème invite Cassandre à profiter de sa jeunesse, comme la rose qui fane en un jour."
+  },
+  {
+    id: "art_320",
+    categoryId: "art",
+    question: "Quel poète a écrit le sonnet « Heureux qui, comme Ulysse, a fait un beau voyage » ?",
+    options: ["Ronsard", "Malherbe", "Joachim du Bellay", "Maurice Scève"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Du Bellay l'écrivit à Rome, où il s'ennuyait de son Anjou natal et de son « petit Liré »."
+  },
+];

@@ -1215,5 +1215,1220 @@ export const SCIENCES_QUESTIONS: Question[] = [
     correctAnswerIndex: 0,
     difficulty: "enfant",
     explanation: "Le saviez-vous ? Une fourmi peut soulever un objet plusieurs dizaines de fois plus lourd que son propre corps."
+  },
+  {
+    id: "sci_136",
+    categoryId: "sciences",
+    question: "Quel est le symbole chimique de l'oxygène ?",
+    options: ["Ox", "O", "Og", "Oy"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Dans l'air que nous respirons, l'oxygène se présente sous forme de molécules O2, soit deux atomes reliés."
+  },
+  {
+    id: "sci_137",
+    categoryId: "sciences",
+    question: "Quel est le symbole chimique de l'or ?",
+    options: ["Or", "Go", "Au", "Ag"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le symbole Au vient du latin aurum, qui signifie or."
+  },
+  {
+    id: "sci_138",
+    categoryId: "sciences",
+    question: "Quelle est la formule chimique de l'eau ?",
+    options: ["CO2", "O2", "NaCl", "H2O"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Chaque molécule d'eau est faite de deux atomes d'hydrogène et d'un atome d'oxygène."
+  },
+  {
+    id: "sci_139",
+    categoryId: "sciences",
+    question: "Quel gaz les plantes absorbent-elles pour faire la photosynthèse ?",
+    options: ["Le dioxyde de carbone", "L'oxygène", "L'azote", "L'hélium"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? En échange, les plantes rejettent de l'oxygène, ce qui nous permet de respirer."
+  },
+  {
+    id: "sci_140",
+    categoryId: "sciences",
+    question: "Combien d'os compte le squelette d'un adulte ?",
+    options: ["150", "206", "300", "112"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Un bébé naît avec environ 300 os, dont certains fusionnent en grandissant."
+  },
+  {
+    id: "sci_141",
+    categoryId: "sciences",
+    question: "Quel est l'os le plus long du corps humain ?",
+    options: ["Le tibia", "L'humérus", "La clavicule", "Le fémur"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le fémur, l'os de la cuisse, peut supporter plusieurs fois le poids du corps."
+  },
+  {
+    id: "sci_142",
+    categoryId: "sciences",
+    question: "Quelle est l'étoile la plus proche de la Terre ?",
+    options: ["Le Soleil", "Proxima du Centaure", "L'étoile Polaire", "Sirius"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Sa lumière met environ 8 minutes pour nous parvenir."
+  },
+  {
+    id: "sci_143",
+    categoryId: "sciences",
+    question: "Quelle planète est la plus proche du Soleil ?",
+    options: ["Vénus", "Mercure", "Mars", "La Terre"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Malgré sa proximité au Soleil, Mercure n'est pas la planète la plus chaude, c'est Vénus."
+  },
+  {
+    id: "sci_144",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on la trace lumineuse d'une roche qui brûle en entrant dans l'atmosphère ?",
+    options: ["Une comète", "Une planète", "Une étoile filante", "Un satellite"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? La plupart de ces météores sont plus petits qu'un grain de sable."
+  },
+  {
+    id: "sci_145",
+    categoryId: "sciences",
+    question: "Quelle galaxie contient notre système solaire ?",
+    options: ["Andromède", "Le Grand Nuage de Magellan", "La galaxie du Tourbillon", "La Voie lactée"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? La Voie lactée contient plus de 100 milliards d'étoiles."
+  },
+  {
+    id: "sci_146",
+    categoryId: "sciences",
+    question: "Qui a formulé la théorie de la gravitation universelle en voyant, dit la légende, tomber une pomme ?",
+    options: ["Isaac Newton", "Albert Einstein", "Galilée", "Nicolas Copernic"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Newton a aussi inventé une branche des mathématiques, le calcul différentiel."
+  },
+  {
+    id: "sci_147",
+    categoryId: "sciences",
+    question: "Quel scientifique a développé la théorie de la relativité ?",
+    options: ["Charles Darwin", "Albert Einstein", "Louis Pasteur", "Marie Curie"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Sa célèbre équation E=mc² relie l'énergie et la masse."
+  },
+  {
+    id: "sci_148",
+    categoryId: "sciences",
+    question: "Quelle scientifique a reçu deux prix Nobel, en physique puis en chimie ?",
+    options: ["Rosalind Franklin", "Ada Lovelace", "Marie Curie", "Jane Goodall"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Marie Curie a découvert deux éléments, le polonium et le radium."
+  },
+  {
+    id: "sci_149",
+    categoryId: "sciences",
+    question: "Qui a proposé la théorie de l'évolution des espèces par sélection naturelle ?",
+    options: ["Gregor Mendel", "Louis Pasteur", "Carl von Linné", "Charles Darwin"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Darwin a beaucoup observé les pinsons des îles Galápagos pour bâtir sa théorie."
+  },
+  {
+    id: "sci_150",
+    categoryId: "sciences",
+    question: "Quel savant français a mis au point le vaccin contre la rage ?",
+    options: ["Louis Pasteur", "Antoine Lavoisier", "Claude Bernard", "Blaise Pascal"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Pasteur a aussi inventé la pasteurisation, qui conserve le lait plus longtemps."
+  },
+  {
+    id: "sci_151",
+    categoryId: "sciences",
+    question: "Quel gaz est le principal responsable du réchauffement climatique ?",
+    options: ["L'oxygène", "Le dioxyde de carbone", "L'argon", "L'hélium"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le CO2 est libéré surtout par la combustion du charbon, du pétrole et du gaz."
+  },
+  {
+    id: "sci_152",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on la couche de gaz qui nous protège des rayons ultraviolets du Soleil ?",
+    options: ["La stratosphère", "La biosphère", "La couche d'ozone", "La magnétosphère"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Un trou dans cette couche a été repéré au-dessus de l'Antarctique dans les années 1980."
+  },
+  {
+    id: "sci_153",
+    categoryId: "sciences",
+    question: "Quelle énergie provient du vent ?",
+    options: ["L'énergie solaire", "L'énergie nucléaire", "L'énergie géothermique", "L'énergie éolienne"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Les grandes éoliennes modernes ont des pales qui peuvent dépasser 80 mètres de long."
+  },
+  {
+    id: "sci_154",
+    categoryId: "sciences",
+    question: "Quel dinosaure herbivore portait des plaques osseuses sur le dos et des pointes sur la queue ?",
+    options: ["Le Stégosaure", "Le Tyrannosaure", "Le Vélociraptor", "Le Ptéranodon"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Malgré sa grande taille, le Stégosaure avait un cerveau à peine plus gros qu'une noix."
+  },
+  {
+    id: "sci_155",
+    categoryId: "sciences",
+    question: "À quelle grande ère géologique appartiennent le T-Rex et le Diplodocus ?",
+    options: ["La Préhistoire humaine", "Le Mésozoïque", "L'Antiquité", "L'ère glaciaire récente"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Les dinosaures ont disparu il y a environ 66 millions d'années."
+  },
+  {
+    id: "sci_156",
+    categoryId: "sciences",
+    question: "Quel événement aurait provoqué la disparition des dinosaures ?",
+    options: ["Une grande sécheresse", "Une épidémie", "La chute d'un astéroïde", "Un âge de glace soudain"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le cratère de cet impact, Chicxulub, se trouve au Mexique."
+  },
+  {
+    id: "sci_157",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on les restes d'animaux ou de plantes conservés dans la roche depuis des millions d'années ?",
+    options: ["Des minerais", "Des cristaux", "Des sédiments", "Des fossiles"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Les fossiles se forment quand un organisme est enfoui rapidement, à l'abri de l'air."
+  },
+  {
+    id: "sci_158",
+    categoryId: "sciences",
+    question: "Quel est le plus grand organe du corps humain ?",
+    options: ["La peau", "Le foie", "Les poumons", "Le cerveau"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Chez un adulte, la peau déroulée couvrirait près de 2 mètres carrés."
+  },
+  {
+    id: "sci_159",
+    categoryId: "sciences",
+    question: "Quel organe filtre le sang et produit l'urine ?",
+    options: ["Le foie", "Les reins", "La rate", "Le pancréas"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Nos deux reins filtrent l'équivalent d'environ 180 litres de sang par jour."
+  },
+  {
+    id: "sci_160",
+    categoryId: "sciences",
+    question: "Où se déroule l'absorption de la plupart des nutriments de la digestion ?",
+    options: ["Dans l'estomac", "Dans l'œsophage", "Dans l'intestin grêle", "Dans la bouche"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? L'intestin grêle mesure environ 6 mètres de long chez l'adulte."
+  },
+  {
+    id: "sci_161",
+    categoryId: "sciences",
+    question: "Comment s'appellent les cellules du sang qui transportent l'oxygène ?",
+    options: ["Les plaquettes", "Les globules blancs", "Les neurones", "Les globules rouges"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? C'est le fer contenu dans ces cellules qui donne au sang sa couleur rouge."
+  },
+  {
+    id: "sci_162",
+    categoryId: "sciences",
+    question: "Quelle unité mesure la puissance électrique ?",
+    options: ["Le watt", "Le litre", "Le newton", "Le joule"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Cette unité doit son nom à l'ingénieur écossais James Watt."
+  },
+  {
+    id: "sci_163",
+    categoryId: "sciences",
+    question: "Quel appareil transforme la lumière du soleil en électricité ?",
+    options: ["L'éolienne", "Le panneau solaire", "Le barrage", "La turbine à vapeur"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Les panneaux solaires utilisent l'effet photovoltaïque, découvert dès le 19e siècle."
+  },
+  {
+    id: "sci_164",
+    categoryId: "sciences",
+    question: "À quelle vitesse voyage la lumière dans le vide ?",
+    options: ["300 km/h", "3 000 km/s", "Environ 300 000 km/s", "1 000 km/s"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Rien de connu ne peut aller plus vite que la lumière."
+  },
+  {
+    id: "sci_165",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on le passage de l'eau liquide à l'état gazeux ?",
+    options: ["La condensation", "La fusion", "La solidification", "L'évaporation"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? L'évaporation de l'eau des océans est le point de départ du cycle de l'eau."
+  },
+  {
+    id: "sci_166",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on le passage de la vapeur d'eau à l'état liquide ?",
+    options: ["La condensation", "L'évaporation", "La sublimation", "La fusion"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? C'est la condensation qui forme la buée sur une vitre froide."
+  },
+  {
+    id: "sci_167",
+    categoryId: "sciences",
+    question: "Quel métal est liquide à température ambiante ?",
+    options: ["Le plomb", "Le mercure", "Le fer", "Le zinc"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le mercure était autrefois utilisé dans les thermomètres, mais il est toxique."
+  },
+  {
+    id: "sci_168",
+    categoryId: "sciences",
+    question: "Quel est le gaz le plus abondant dans l'air que nous respirons ?",
+    options: ["L'oxygène", "Le dioxyde de carbone", "L'azote", "L'hydrogène"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? L'azote représente environ 78 % de l'air, l'oxygène seulement 21 %."
+  },
+  {
+    id: "sci_169",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on la roche en fusion à l'intérieur de la Terre ?",
+    options: ["La lave", "Le basalte", "Le granit", "Le magma"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? On l'appelle magma sous la terre, et lave une fois qu'elle sort du volcan."
+  },
+  {
+    id: "sci_170",
+    categoryId: "sciences",
+    question: "Quel instrument enregistre les vibrations des séismes ?",
+    options: ["Le sismographe", "Le baromètre", "L'anémomètre", "Le podomètre"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? L'échelle de Richter sert à comparer la puissance des tremblements de terre."
+  },
+  {
+    id: "sci_171",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on les grandes plaques qui composent la surface de la Terre ?",
+    options: ["Les continents", "Les plaques tectoniques", "Les massifs", "Les couches sédimentaires"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Leurs déplacements très lents provoquent les séismes et forment les montagnes."
+  },
+  {
+    id: "sci_172",
+    categoryId: "sciences",
+    question: "Quelle est la partie la plus chaude de la Terre, en son centre ?",
+    options: ["La croûte", "Le manteau", "Le noyau", "La lithosphère"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? La température du noyau interne dépasse celle de la surface du Soleil."
+  },
+  {
+    id: "sci_173",
+    categoryId: "sciences",
+    question: "Quel océan est le plus grand du monde ?",
+    options: ["L'océan Atlantique", "L'océan Indien", "L'océan Arctique", "L'océan Pacifique"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le Pacifique couvre à lui seul environ un tiers de la surface du globe."
+  },
+  {
+    id: "sci_174",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on un animal à sang froid comme le serpent ou le lézard ?",
+    options: ["Un reptile", "Un amphibien", "Un mammifère", "Un mollusque"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Les reptiles se chauffent au soleil car leur corps ne produit pas assez de chaleur."
+  },
+  {
+    id: "sci_175",
+    categoryId: "sciences",
+    question: "À quelle classe d'animaux appartient la grenouille ?",
+    options: ["Les reptiles", "Les amphibiens", "Les poissons", "Les insectes"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Les amphibiens vivent une partie de leur vie dans l'eau et l'autre sur terre."
+  },
+  {
+    id: "sci_176",
+    categoryId: "sciences",
+    question: "Quel est le plus petit oiseau du monde ?",
+    options: ["Le rouge-gorge", "Le moineau", "Le colibri", "Le troglodyte"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le colibri peut battre des ailes jusqu'à 80 fois par seconde et voler en arrière."
+  },
+  {
+    id: "sci_177",
+    categoryId: "sciences",
+    question: "Quel animal possède le plus gros cerveau du monde ?",
+    options: ["L'être humain", "L'éléphant", "Le dauphin", "Le cachalot"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le cerveau du cachalot peut peser près de 8 kilos, contre 1,4 kilo pour l'homme."
+  },
+  {
+    id: "sci_178",
+    categoryId: "sciences",
+    question: "Quel est l'unique mammifère capable de voler activement ?",
+    options: ["La chauve-souris", "L'écureuil volant", "Le colibri", "La chouette"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? L'écureuil volant, lui, ne fait que planer, il ne vole pas vraiment."
+  },
+  {
+    id: "sci_179",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on l'étude scientifique des insectes ?",
+    options: ["L'ornithologie", "L'entomologie", "La botanique", "La géologie"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Les insectes sont les animaux les plus nombreux sur Terre, avec des millions d'espèces."
+  },
+  {
+    id: "sci_180",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on l'étude scientifique des oiseaux ?",
+    options: ["L'entomologie", "L'astronomie", "L'ornithologie", "La zoologie marine"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Certains oiseaux migrateurs parcourent chaque année plus de 10 000 kilomètres."
+  },
+  {
+    id: "sci_181",
+    categoryId: "sciences",
+    question: "Quel scientifique italien a amélioré la lunette astronomique et défendu l'idée que la Terre tourne autour du Soleil ?",
+    options: ["Léonard de Vinci", "Copernic", "Kepler", "Galilée"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Galilée a découvert quatre lunes de Jupiter, appelées aujourd'hui les satellites galiléens."
+  },
+  {
+    id: "sci_182",
+    categoryId: "sciences",
+    question: "Qui a mis au point l'ampoule électrique à incandescence commercialisable ?",
+    options: ["Thomas Edison", "Alexander Graham Bell", "Nikola Tesla", "Benjamin Franklin"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Edison a déposé plus de 1 000 brevets au cours de sa vie."
+  },
+  {
+    id: "sci_183",
+    categoryId: "sciences",
+    question: "Qui a inventé le téléphone ?",
+    options: ["Thomas Edison", "Alexander Graham Bell", "Guglielmo Marconi", "Samuel Morse"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le premier appel téléphonique aurait été adressé à son assistant Watson."
+  },
+  {
+    id: "sci_184",
+    categoryId: "sciences",
+    question: "Quel élément chimique a pour symbole Fe ?",
+    options: ["Le fluor", "Le francium", "Le fer", "Le phosphore"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le symbole Fe vient du latin ferrum, qui signifie fer."
+  },
+  {
+    id: "sci_185",
+    categoryId: "sciences",
+    question: "Quel élément chimique a pour symbole Na ?",
+    options: ["L'azote", "Le nickel", "Le néon", "Le sodium"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le sel de cuisine est du chlorure de sodium, de formule NaCl."
+  },
+  {
+    id: "sci_186",
+    categoryId: "sciences",
+    question: "Quel est l'élément chimique le plus léger et le plus abondant de l'univers ?",
+    options: ["L'hydrogène", "L'hélium", "L'oxygène", "Le carbone"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Les étoiles, dont le Soleil, sont surtout faites d'hydrogène."
+  },
+  {
+    id: "sci_187",
+    categoryId: "sciences",
+    question: "Quel gaz plus léger que l'air est utilisé pour gonfler les ballons qui s'envolent ?",
+    options: ["L'azote", "L'hélium", "Le méthane", "Le dioxyde de carbone"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? L'hélium est un gaz noble qui ne prend pas feu, contrairement à l'hydrogène."
+  },
+  {
+    id: "sci_188",
+    categoryId: "sciences",
+    question: "Comment s'appelle le tableau qui classe tous les éléments chimiques ?",
+    options: ["Le tableau périodique", "Le tableau de Pythagore", "Le tableau de Newton", "Le tableau de Darwin"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Mendeleïev, son créateur, avait laissé des cases vides pour des éléments encore inconnus."
+  },
+  {
+    id: "sci_189",
+    categoryId: "sciences",
+    question: "Quelle est la plus petite unité vivante du corps ?",
+    options: ["L'atome", "L'organe", "La cellule", "La molécule"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le corps humain est constitué de dizaines de milliers de milliards de cellules."
+  },
+  {
+    id: "sci_190",
+    categoryId: "sciences",
+    question: "Où se trouve l'information génétique dans nos cellules ?",
+    options: ["Dans la membrane", "Dans le cytoplasme", "Dans les mitochondries", "Dans l'ADN"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? L'ADN a la forme d'une double hélice, décrite en 1953."
+  },
+  {
+    id: "sci_191",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on les cellules nerveuses du cerveau ?",
+    options: ["Les neurones", "Les globules", "Les gamètes", "Les plaquettes"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le cerveau humain contient environ 86 milliards de neurones."
+  },
+  {
+    id: "sci_192",
+    categoryId: "sciences",
+    question: "Quelle est la valeur approximative du nombre pi ?",
+    options: ["2,72", "3,14", "1,41", "6,28"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Pi a un nombre infini de décimales qui ne se répètent jamais."
+  },
+  {
+    id: "sci_193",
+    categoryId: "sciences",
+    question: "Combien font 12 multiplié par 12 ?",
+    options: ["124", "134", "144", "156"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? 144 est aussi appelé une grosse, une ancienne unité de comptage."
+  },
+  {
+    id: "sci_194",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on un nombre entier qui n'est divisible que par 1 et par lui-même ?",
+    options: ["Un nombre pair", "Un nombre carré", "Un nombre décimal", "Un nombre premier"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? 2 est le seul nombre premier qui soit pair."
+  },
+  {
+    id: "sci_195",
+    categoryId: "sciences",
+    question: "Quel théorème relie les côtés d'un triangle rectangle ?",
+    options: ["Le théorème de Pythagore", "Le théorème de Thalès", "Le théorème de Fermat", "Le théorème de Newton"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Il énonce que le carré de l'hypoténuse égale la somme des carrés des deux autres côtés."
+  },
+  {
+    id: "sci_196",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on un polygone à cinq côtés ?",
+    options: ["Un hexagone", "Un pentagone", "Un octogone", "Un heptagone"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le préfixe penta vient du grec et signifie cinq."
+  },
+  {
+    id: "sci_197",
+    categoryId: "sciences",
+    question: "Combien de degrés mesurent au total les angles d'un triangle ?",
+    options: ["90 degrés", "360 degrés", "180 degrés", "270 degrés"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Cette règle est vraie pour tous les triangles, quelle que soit leur forme."
+  },
+  {
+    id: "sci_198",
+    categoryId: "sciences",
+    question: "Quel savant grec aurait crié Eurêka en découvrant sa fameuse poussée dans son bain ?",
+    options: ["Pythagore", "Aristote", "Euclide", "Archimède"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? La poussée d'Archimède explique pourquoi les bateaux flottent."
+  },
+  {
+    id: "sci_199",
+    categoryId: "sciences",
+    question: "Quel appareil optique permet d'observer des objets minuscules invisibles à l'œil nu ?",
+    options: ["Le microscope", "Le télescope", "Les jumelles", "Le périscope"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? C'est grâce au microscope qu'on a découvert l'existence des microbes."
+  },
+  {
+    id: "sci_200",
+    categoryId: "sciences",
+    question: "Quel appareil sert à observer les astres lointains dans le ciel ?",
+    options: ["Le microscope", "Le télescope", "Le stéthoscope", "Le kaléidoscope"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le télescope spatial Hubble tourne autour de la Terre depuis 1990."
+  },
+  {
+    id: "sci_201",
+    categoryId: "sciences",
+    question: "Quel phénomène se produit quand la Lune passe devant le Soleil et le cache ?",
+    options: ["Une aurore boréale", "Une comète", "Une éclipse solaire", "Un arc-en-ciel"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Pendant une éclipse totale, le ciel s'assombrit en pleine journée."
+  },
+  {
+    id: "sci_202",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on les lumières colorées visibles dans le ciel des régions polaires ?",
+    options: ["Les nébuleuses", "Les comètes", "Les météores", "Les aurores polaires"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Elles sont provoquées par des particules du Soleil qui rencontrent l'atmosphère terrestre."
+  },
+  {
+    id: "sci_203",
+    categoryId: "sciences",
+    question: "Quel est le premier satellite artificiel lancé dans l'espace par l'homme ?",
+    options: ["Spoutnik 1", "Apollo 11", "Hubble", "Voyager 1"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Spoutnik 1 a été lancé par l'Union soviétique en 1957."
+  },
+  {
+    id: "sci_204",
+    categoryId: "sciences",
+    question: "Comment s'appelle l'astronaute français très populaire qui a séjourné dans la Station spatiale internationale ?",
+    options: ["Jean-Loup Chrétien", "Thomas Pesquet", "Michel Tognini", "Philippe Perrin"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Thomas Pesquet a partagé de nombreuses photos de la Terre prises depuis l'espace."
+  },
+  {
+    id: "sci_205",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on l'ensemble des êtres vivants et de leur milieu qui interagissent entre eux ?",
+    options: ["Une population", "Une espèce", "Un écosystème", "Une colonie"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Une forêt, un étang ou un récif de corail sont autant d'écosystèmes différents."
+  },
+  {
+    id: "sci_206",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on la disparition définitive du dernier représentant d'une espèce ?",
+    options: ["La migration", "La mutation", "L'hibernation", "L'extinction"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le dodo, un oiseau de l'île Maurice, s'est éteint au 17e siècle à cause des humains."
+  },
+  {
+    id: "sci_207",
+    categoryId: "sciences",
+    question: "Quel est le plus grand désert chaud du monde ?",
+    options: ["Le Sahara", "Le désert de Gobi", "Le désert d'Atacama", "Le Kalahari"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le Sahara est presque aussi grand que tout le continent européen."
+  },
+  {
+    id: "sci_208",
+    categoryId: "sciences",
+    question: "Quelle est la plus haute montagne du monde ?",
+    options: ["Le mont Blanc", "L'Everest", "Le Kilimandjaro", "le mont McKinley"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? L'Everest culmine à environ 8 849 mètres et grandit encore de quelques millimètres par an."
+  },
+  {
+    id: "sci_209",
+    categoryId: "sciences",
+    question: "Quel mammifère laineux, cousin de l'éléphant, vivait pendant la dernière période glaciaire ?",
+    options: ["Le tigre à dents de sabre", "Le rhinocéros", "Le mammouth", "Le paresseux géant"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Des mammouths entiers ont été retrouvés congelés dans la glace de Sibérie."
+  },
+  {
+    id: "sci_210",
+    categoryId: "sciences",
+    question: "Quel type d'énergie est produit par une centrale utilisant l'uranium ?",
+    options: ["L'énergie solaire", "L'énergie éolienne", "L'énergie hydraulique", "L'énergie nucléaire"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? En France, la majorité de l'électricité provient de centrales nucléaires."
+  },
+  {
+    id: "sci_211",
+    categoryId: "sciences",
+    question: "Quel gaz les êtres humains et les animaux rejettent-ils en respirant ?",
+    options: ["Du dioxyde de carbone", "De l'oxygène pur", "De l'hydrogène", "De l'azote"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Nous inspirons de l'oxygène et rejetons du dioxyde de carbone, l'inverse des plantes."
+  },
+  {
+    id: "sci_212",
+    categoryId: "sciences",
+    question: "Quelle unité mesure la quantité d'énergie ?",
+    options: ["Le mètre", "Le joule", "Le kelvin", "L'ampère"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le joule doit son nom au physicien britannique James Prescott Joule."
+  },
+  {
+    id: "sci_213",
+    categoryId: "sciences",
+    question: "Quel est le plus dur des minéraux naturels ?",
+    options: ["Le quartz", "Le marbre", "Le diamant", "Le granit"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le diamant est fait de carbone pur, le même élément que la mine d'un crayon."
+  },
+  {
+    id: "sci_214",
+    categoryId: "sciences",
+    question: "Quel appareil médical utilise les rayons X pour voir l'intérieur du corps ?",
+    options: ["L'échographe", "L'électrocardiogramme", "Le stéthoscope", "La radiographie"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Les rayons X ont été découverts par hasard par Wilhelm Röntgen en 1895."
+  },
+  {
+    id: "sci_215",
+    categoryId: "sciences",
+    question: "Quel savant a découvert la pénicilline, le premier antibiotique ?",
+    options: ["Alexander Fleming", "Louis Pasteur", "Robert Koch", "Edward Jenner"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Fleming a fait cette découverte par accident en 1928, grâce à une moisissure."
+  },
+  {
+    id: "sci_216",
+    categoryId: "sciences",
+    question: "Contre quels microbes les antibiotiques sont-ils efficaces ?",
+    options: ["Les virus", "Les bactéries", "Les champignons uniquement", "Les parasites uniquement"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Les antibiotiques n'agissent pas contre les virus, comme celui du rhume."
+  },
+  {
+    id: "sci_217",
+    categoryId: "sciences",
+    question: "Quel muscle bat sans arrêt tout au long de notre vie ?",
+    options: ["Le biceps", "Le mollet", "Le cœur", "Le diaphragme"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? En une vie, le cœur bat plus de 2 milliards de fois."
+  },
+  {
+    id: "sci_218",
+    categoryId: "sciences",
+    question: "Quelle est la vitesse approximative du son dans l'air ?",
+    options: ["3 000 mètres par seconde", "30 mètres par seconde", "300 000 km par seconde", "340 mètres par seconde"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Un avion qui dépasse cette vitesse crée un bang supersonique."
+  },
+  {
+    id: "sci_219",
+    categoryId: "sciences",
+    question: "Quel scientifique français a énoncé le principe de conservation de la matière ?",
+    options: ["Antoine Lavoisier", "Isaac Newton", "Charles Darwin", "Dmitri Mendeleïev"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Il résuma cette idée par la formule Rien ne se perd, rien ne se crée, tout se transforme."
+  },
+  {
+    id: "sci_220",
+    categoryId: "sciences",
+    question: "Pourquoi l'huile flotte-t-elle sur l'eau ?",
+    options: ["Parce qu'elle est plus chaude", "Parce qu'elle est moins dense", "Parce qu'elle est colorée", "Parce qu'elle est salée"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? L'huile et l'eau ne se mélangent pas car elles n'ont pas la même densité."
+  },
+  {
+    id: "sci_221",
+    categoryId: "sciences",
+    question: "Quel processus permet au Soleil de produire son énergie ?",
+    options: ["La combustion du charbon", "La fusion nucléaire", "La fission de l'uranium", "L'effet de serre"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le Soleil transforme l'hydrogène en hélium au cœur de sa fournaise."
+  },
+  {
+    id: "sci_222",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on un astre naturel qui tourne autour d'une planète ?",
+    options: ["Une comète", "Un satellite", "Une étoile", "Un astéroïde"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? La Lune est le satellite naturel de la Terre, tandis que Jupiter en compte des dizaines."
+  },
+  {
+    id: "sci_223",
+    categoryId: "sciences",
+    question: "Quelle planète tourne presque couchée sur le côté ?",
+    options: ["Neptune", "Saturne", "Uranus", "Mars"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Un choc géant dans le passé aurait fait basculer Uranus sur le côté."
+  },
+  {
+    id: "sci_224",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on la ligne imaginaire qui partage la Terre en hémisphère nord et sud ?",
+    options: ["Le méridien", "Le tropique", "Le pôle", "L'équateur"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? C'est à l'équateur que la surface de la Terre tourne le plus vite, environ 1 670 km/h."
+  },
+  {
+    id: "sci_225",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on la couche gazeuse qui entoure la Terre ?",
+    options: ["L'atmosphère", "L'hydrosphère", "La lithosphère", "La biosphère"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Sans atmosphère, il n'y aurait ni air à respirer, ni protection contre les météorites."
+  },
+  {
+    id: "sci_226",
+    categoryId: "sciences",
+    question: "Quel type de roche se forme par le refroidissement de la lave ?",
+    options: ["La craie", "La roche volcanique", "La roche sédimentaire", "Le marbre"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le basalte, roche volcanique sombre, forme le fond de la plupart des océans."
+  },
+  {
+    id: "sci_227",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on un scientifique qui étudie les fossiles et les dinosaures ?",
+    options: ["Un archéologue", "Un géologue", "Un paléontologue", "Un biologiste marin"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le mot dinosaure signifie terrible lézard en grec ancien."
+  },
+  {
+    id: "sci_228",
+    categoryId: "sciences",
+    question: "Quel dinosaure à collerette portait trois cornes sur la tête ?",
+    options: ["Le Vélociraptor", "L'Allosaure", "Le Spinosaure", "Le Tricératops"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? La grande collerette du Tricératops protégeait son cou et impressionnait ses rivaux."
+  },
+  {
+    id: "sci_229",
+    categoryId: "sciences",
+    question: "Combien de chromosomes compte une cellule humaine typique ?",
+    options: ["46", "23", "12", "64"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? On en reçoit 23 de sa mère et 23 de son père."
+  },
+  {
+    id: "sci_230",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on le phénomène par lequel une plante se tourne vers la lumière ?",
+    options: ["La photosynthèse", "Le phototropisme", "La germination", "La pollinisation"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? C'est ce même phénomène qui fait pencher les plantes d'appartement vers la fenêtre."
+  },
+  {
+    id: "sci_231",
+    categoryId: "sciences",
+    question: "Quel insecte est indispensable à la pollinisation de nombreuses fleurs et cultures ?",
+    options: ["Le moustique", "L'abeille", "Le cafard", "La mouche"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Sans les abeilles et autres pollinisateurs, de nombreux fruits et légumes disparaîtraient de nos assiettes."
+  },
+  {
+    id: "sci_232",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on la force qui s'oppose au mouvement quand deux surfaces frottent l'une contre l'autre ?",
+    options: ["La gravité", "Le frottement", "La pression", "L'inertie"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? C'est le frottement des allumettes qui produit assez de chaleur pour les enflammer."
+  },
+  {
+    id: "sci_233",
+    categoryId: "sciences",
+    question: "Quel est l'état de la matière où les particules sont les plus libres et éloignées ?",
+    options: ["Solide", "Liquide", "Gazeux", "Cristallin"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? C'est pourquoi un gaz occupe tout l'espace disponible dans son récipient."
+  },
+  {
+    id: "sci_234",
+    categoryId: "sciences",
+    question: "Quel scientifique a établi les lois de l'hérédité en étudiant des plants de petits pois ?",
+    options: ["Gregor Mendel", "Charles Darwin", "Louis Pasteur", "Alexander Fleming"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Mendel était un moine passionné de jardinage avant d'être reconnu comme le père de la génétique."
+  },
+  {
+    id: "sci_235",
+    categoryId: "sciences",
+    question: "Quelle planète géante possède une grande tache rouge qui est en réalité une tempête ?",
+    options: ["Saturne", "Jupiter", "Neptune", "Uranus"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Cette tempête tourbillonne depuis des siècles et pourrait engloutir la Terre entière."
+  },
+  {
+    id: "sci_236",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on l'unité de mesure des tremblements de terre selon leur magnitude ?",
+    options: ["Le degré Celsius", "Le décibel", "L'échelle de Richter", "Le pascal"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Chaque niveau de l'échelle correspond à un séisme environ dix fois plus fort."
+  },
+  {
+    id: "sci_237",
+    categoryId: "sciences",
+    question: "Quel scientifique polonais a proposé que le Soleil, et non la Terre, soit au centre du système ?",
+    options: ["Nicolas Copernic", "Isaac Newton", "Galilée", "Ptolémée"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Cette idée, dite héliocentrique, a bouleversé la façon de voir l'univers."
+  },
+  {
+    id: "sci_238",
+    categoryId: "sciences",
+    question: "Quel appareil transforme l'énergie du mouvement de l'eau en électricité dans un barrage ?",
+    options: ["Le panneau solaire", "La turbine", "La batterie", "Le condensateur"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? L'énergie produite par les barrages s'appelle l'énergie hydroélectrique."
+  },
+  {
+    id: "sci_239",
+    categoryId: "sciences",
+    question: "Quel organe du corps produit la bile pour aider à digérer les graisses ?",
+    options: ["Le foie", "Le cœur", "Les poumons", "La rate"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le foie est capable de se régénérer même après avoir perdu une partie de son volume."
+  },
+  {
+    id: "sci_240",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on l'ombre partielle que l'on voit lors d'une éclipse ?",
+    options: ["La couronne", "L'aura", "La pénombre", "Le halo"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? La zone d'ombre totale, elle, s'appelle l'ombre ou umbra."
+  },
+  {
+    id: "sci_241",
+    categoryId: "sciences",
+    question: "Quel gaz, présent dans l'atmosphère, est essentiel à la respiration mais dangereux en trop grande quantité pur ?",
+    options: ["L'azote", "L'hélium", "Le méthane", "L'oxygène"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Respirer de l'oxygène pur trop longtemps peut être toxique pour le corps."
+  },
+  {
+    id: "sci_242",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on le changement d'état d'un solide qui devient directement liquide ?",
+    options: ["La fusion", "L'évaporation", "La condensation", "La sublimation"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? La fusion de la glace se produit à 0 degré, tandis que celle du fer dépasse 1 500 degrés."
+  },
+  {
+    id: "sci_243",
+    categoryId: "sciences",
+    question: "Quelle science étudie le climat et les phénomènes atmosphériques comme la pluie et le vent ?",
+    options: ["La géologie", "La météorologie", "L'astronomie", "L'écologie"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Les météorologues utilisent des ballons-sondes qui montent très haut dans l'atmosphère."
+  },
+  {
+    id: "sci_244",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on un animal qui mange à la fois des plantes et de la viande ?",
+    options: ["Un herbivore", "Un carnivore", "Un omnivore", "Un insectivore"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? L'ours brun et l'être humain sont des omnivores."
+  },
+  {
+    id: "sci_245",
+    categoryId: "sciences",
+    question: "Quel savant a énoncé la célèbre loi selon laquelle un corps plongé dans un liquide subit une poussée vers le haut ?",
+    options: ["Newton", "Pascal", "Archimède", "Pythagore"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Cette poussée est égale au poids du liquide déplacé par l'objet."
+  },
+  {
+    id: "sci_246",
+    categoryId: "sciences",
+    question: "Quel scientifique britannique a proposé la théorie du Big Bang ? Non, qui a le plus popularisé l'étude des trous noirs au 20e siècle ?",
+    options: ["Stephen Hawking", "Isaac Newton", "Charles Darwin", "Michael Faraday"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Stephen Hawking a écrit Une brève histoire du temps, un livre de science vendu à des millions d'exemplaires."
+  },
+  {
+    id: "sci_247",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on la théorie décrivant la naissance de l'univers il y a environ 13,8 milliards d'années ?",
+    options: ["La relativité", "Le Big Bang", "L'évolution", "La sélection naturelle"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Depuis ce moment, l'univers n'a jamais cessé de s'étendre."
+  },
+  {
+    id: "sci_248",
+    categoryId: "sciences",
+    question: "Quel appareil mesure la pression de l'air pour aider à prévoir le temps ?",
+    options: ["Le thermomètre", "L'anémomètre", "Le baromètre", "L'hygromètre"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Une baisse de pression annonce souvent l'arrivée de la pluie."
+  },
+  {
+    id: "sci_249",
+    categoryId: "sciences",
+    question: "Quel élément chimique tous les êtres vivants ont-ils en commun comme base de leur matière ?",
+    options: ["L'or", "Le silicium", "Le fer", "Le carbone"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? On dit que la vie sur Terre est fondée sur le carbone."
+  },
+  {
+    id: "sci_250",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on l'animal qui se nourrit de cadavres d'autres animaux, comme le vautour ?",
+    options: ["Un charognard", "Un prédateur", "Un parasite", "Un herbivore"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Les charognards jouent un rôle de nettoyeurs très utile dans la nature."
+  },
+  {
+    id: "sci_251",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on l'ensemble des étapes de l'eau, de l'évaporation à la pluie ?",
+    options: ["La photosynthèse", "Le cycle de l'eau", "La marée", "L'érosion"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? L'eau que nous buvons aujourd'hui a peut-être déjà été bue par les dinosaures."
+  },
+  {
+    id: "sci_252",
+    categoryId: "sciences",
+    question: "Quelle partie de l'œil laisse entrer la lumière et change de taille selon la luminosité ?",
+    options: ["Le cristallin", "La rétine", "La pupille", "La cornée"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? La pupille se rétrécit à la lumière vive et s'élargit dans le noir."
+  },
+  {
+    id: "sci_253",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on la disparition des glaciers et de la banquise à cause du réchauffement ?",
+    options: ["L'évaporation", "La fonte des glaces", "La condensation", "L'inondation"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? La fonte des glaces contribue à la montée du niveau des mers."
+  },
+  {
+    id: "sci_254",
+    categoryId: "sciences",
+    question: "Quelle est l'unité de base de mesure de la longueur dans le système international ?",
+    options: ["Le mètre", "Le litre", "Le gramme", "La seconde"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le mètre a d'abord été défini à partir de la taille de la Terre."
+  },
+  {
+    id: "sci_255",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on les animaux qui n'ont pas de colonne vertébrale, comme les insectes et les vers ?",
+    options: ["Les vertébrés", "Les invertébrés", "Les mammifères", "Les primates"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Les invertébrés représentent la grande majorité des espèces animales de la planète."
+  },
+  {
+    id: "sci_256",
+    categoryId: "sciences",
+    question: "Quel phénomène naturel provoque les marées ?",
+    options: ["Le vent", "L'attraction de la Lune", "La rotation des continents", "La pluie"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le Soleil influence aussi les marées, mais moins que la Lune car il est bien plus loin."
+  },
+  {
+    id: "sci_257",
+    categoryId: "sciences",
+    question: "Quel gaz forme les bulles dans les boissons pétillantes ?",
+    options: ["L'oxygène", "L'hydrogène", "Le dioxyde de carbone", "L'azote"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Quand on ouvre une bouteille, la baisse de pression laisse le gaz s'échapper en bulles."
+  },
+  {
+    id: "sci_258",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on un scientifique qui étudie les astres et l'univers ?",
+    options: ["Un géologue", "Un astronome", "Un chimiste", "Un botaniste"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Il ne faut pas confondre l'astronomie, une science, avec l'astrologie, qui n'en est pas une."
+  },
+  {
+    id: "sci_259",
+    categoryId: "sciences",
+    question: "Quelle vitamine notre peau fabrique-t-elle grâce à la lumière du soleil ?",
+    options: ["La vitamine C", "La vitamine A", "La vitamine B12", "La vitamine D"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? La vitamine D est essentielle pour avoir des os solides."
+  },
+  {
+    id: "sci_260",
+    categoryId: "sciences",
+    question: "Quel scientifique et inventeur italien de la Renaissance a dessiné des machines volantes très en avance sur son temps ?",
+    options: ["Léonard de Vinci", "Galilée", "Michel-Ange", "Archimède"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Léonard de Vinci remplissait ses carnets de croquis d'hélicoptères et de parachutes."
+  },
+  {
+    id: "sci_261",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on la transformation d'une substance en une autre lors d'une réaction chimique ?",
+    options: ["Un mélange", "Une réaction chimique", "Une dissolution", "Une évaporation"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? La rouille qui se forme sur le fer est le résultat d'une réaction chimique avec l'oxygène."
+  },
+  {
+    id: "sci_262",
+    categoryId: "sciences",
+    question: "Quel est le plus grand mammifère terrestre vivant aujourd'hui ?",
+    options: ["Le rhinocéros", "L'hippopotame", "L'éléphant d'Afrique", "La girafe"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Un éléphant d'Afrique adulte peut peser jusqu'à 6 tonnes."
+  },
+  {
+    id: "sci_263",
+    categoryId: "sciences",
+    question: "Quelle grandeur mesure la quantité de matière contenue dans un objet ?",
+    options: ["Le poids", "La masse", "Le volume", "La densité"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Sur la Lune, notre masse reste identique, mais notre poids diminue car la gravité y est plus faible."
+  },
+  {
+    id: "sci_264",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on l'énergie stockée dans les aliments et libérée par notre corps ?",
+    options: ["Les calories", "Les watts", "Les volts", "Les décibels"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Notre corps brûle des calories même quand on dort, rien que pour rester en vie."
+  },
+  {
+    id: "sci_265",
+    categoryId: "sciences",
+    question: "Quel appareil permet de voir les organes du corps grâce aux ultrasons, sans danger ?",
+    options: ["La radiographie", "L'échographie", "Le scanner", "L'électrocardiogramme"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? C'est grâce à l'échographie qu'on peut observer un bébé avant sa naissance."
+  },
+  {
+    id: "sci_266",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on la couche superficielle et solide de la Terre sur laquelle nous marchons ?",
+    options: ["Le noyau", "Le manteau", "La croûte terrestre", "Le magma"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? La croûte terrestre est très fine comparée au reste de la planète, comme la peau d'une pomme."
+  },
+  {
+    id: "sci_267",
+    categoryId: "sciences",
+    question: "Quel élément chimique a pour symbole C ?",
+    options: ["Le calcium", "Le chlore", "Le cuivre", "Le carbone"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le diamant et le graphite du crayon sont tous deux faits de carbone pur."
+  },
+  {
+    id: "sci_268",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on un mélange homogène comme l'eau sucrée où l'on ne distingue plus le sucre ?",
+    options: ["Une solution", "Une émulsion", "Une suspension", "Un précipité"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? On peut récupérer le sucre d'une solution en faisant lentement évaporer l'eau."
+  },
+  {
+    id: "sci_269",
+    categoryId: "sciences",
+    question: "Quel scientifique a inventé le paratonnerre après ses expériences sur l'électricité et la foudre ?",
+    options: ["Thomas Edison", "Benjamin Franklin", "Nikola Tesla", "Alessandro Volta"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Franklin aurait mené une expérience risquée avec un cerf-volant lors d'un orage."
+  },
+  {
+    id: "sci_270",
+    categoryId: "sciences",
+    question: "Comment appelle-t-on la reproduction des plantes à fleurs grâce au transport du pollen ?",
+    options: ["La germination", "La pollinisation", "La photosynthèse", "La fécondation du sol"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le vent, les insectes et même certains oiseaux peuvent transporter le pollen d'une fleur à l'autre."
   }
 ];

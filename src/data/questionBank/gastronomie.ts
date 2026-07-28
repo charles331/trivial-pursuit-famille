@@ -2188,4 +2188,733 @@ export const GASTRONOMIE_QUESTIONS: Question[] = [
     difficulty: "ado",
     explanation: "Le saviez-vous ? L'Australie et la Nouvelle-Zélande se disputent encore l'invention de la pavlova, créée en l'honneur d'Anna Pavlova."
   },
+  {
+    id: "gas_244",
+    categoryId: "gastronomie",
+    question: "De quelle ville viendrait l'ancêtre du croissant, le kipferl ?",
+    options: ["Rome", "Madrid", "Vienne", "Londres"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? C'est pour cela que croissants et pains au chocolat s'appellent des « viennoiseries »."
+  },
+  {
+    id: "gas_245",
+    categoryId: "gastronomie",
+    question: "Quels sont les deux pays qui se disputent l'invention des frites ?",
+    options: ["L'Italie et l'Espagne", "L'Allemagne et la Suisse", "Les Pays-Bas et le Luxembourg", "La Belgique et la France"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Selon la légende belge, les habitants de la vallée de la Meuse frituraient des pommes de terre quand la rivière gelée les privait de petits poissons."
+  },
+  {
+    id: "gas_246",
+    categoryId: "gastronomie",
+    question: "Quelle est la base de la sauce andalouse, star des friteries belges ?",
+    options: ["La mayonnaise", "Le ketchup", "La crème fraîche", "Le yaourt"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Malgré son nom espagnol, la sauce andalouse est une invention belge à base de mayonnaise, tomate et poivrons."
+  },
+  {
+    id: "gas_247",
+    categoryId: "gastronomie",
+    question: "Que signifie cuire des pâtes « al dente » ?",
+    options: ["Très cuites et fondantes", "Encore légèrement fermes sous la dent", "Croquantes comme des chips", "Cuites dans du lait"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? « Al dente » signifie littéralement « à la dent » en italien."
+  },
+  {
+    id: "gas_248",
+    categoryId: "gastronomie",
+    question: "En l'honneur de qui la pizza margherita a-t-elle été baptisée en 1889 ?",
+    options: ["Une actrice de cinéma", "Une sainte patronne de Naples", "La reine Marguerite de Savoie", "La fille du pizzaiolo"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le pizzaiolo Raffaele Esposito aurait créé cette pizza aux couleurs du drapeau italien pour la visite royale à Naples."
+  },
+  {
+    id: "gas_249",
+    categoryId: "gastronomie",
+    question: "Que signifie le mot turc « döner » dans « döner kebab » ?",
+    options: ["Grillé au feu de bois", "Épicé", "Servi dans du pain", "Qui tourne"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? La viande du kebab cuit en tournant lentement sur une grande broche verticale."
+  },
+  {
+    id: "gas_250",
+    categoryId: "gastronomie",
+    question: "De quel pays le sirop d'érable est-il l'emblème gourmand ?",
+    options: ["Le Canada", "La Finlande", "La Russie", "L'Argentine"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Il faut environ 40 litres de sève d'érable pour produire un seul litre de sirop."
+  },
+  {
+    id: "gas_251",
+    categoryId: "gastronomie",
+    question: "De quel pays le chorizo est-il originaire ?",
+    options: ["Le Portugal", "L'Espagne", "Le Mexique", "L'Argentine"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? C'est le paprika, appelé pimentón, qui donne au chorizo sa couleur rouge caractéristique."
+  },
+  {
+    id: "gas_252",
+    categoryId: "gastronomie",
+    question: "Sur quoi poussent réellement les bananes ?",
+    options: ["Sur un arbre au tronc de bois dur", "Sur un buisson épineux", "Sur une plante herbacée géante", "Sur une liane grimpante"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le « tronc » du bananier n'est pas du bois mais un empilement de feuilles enroulées."
+  },
+  {
+    id: "gas_253",
+    categoryId: "gastronomie",
+    question: "Quel pays est le premier producteur mondial de cacao ?",
+    options: ["Le Brésil", "La Suisse", "La Belgique", "La Côte d'Ivoire"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? La Côte d'Ivoire et le Ghana produisent à eux deux plus de la moitié du cacao mondial."
+  },
+  {
+    id: "gas_254",
+    categoryId: "gastronomie",
+    question: "Quel pays est le premier producteur mondial de café ?",
+    options: ["Le Brésil", "L'Italie", "Le Maroc", "Le Japon"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le café serait né en Éthiopie, où un berger aurait remarqué l'effet des baies sur ses chèvres."
+  },
+  {
+    id: "gas_255",
+    categoryId: "gastronomie",
+    question: "Thé vert, thé noir et thé blanc proviennent...",
+    options: ["De trois arbres très différents", "De la même plante, le théier", "De fleurs séchées", "D'algues d'eau douce"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? C'est le traitement des feuilles du Camellia sinensis, notamment l'oxydation, qui fait la différence."
+  },
+  {
+    id: "gas_256",
+    categoryId: "gastronomie",
+    question: "Quel légume donne sa couleur rouge au bortsch, soupe emblématique d'Europe de l'Est ?",
+    options: ["La tomate", "Le poivron", "La betterave", "Le chou rouge"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? La culture du bortsch ukrainien est inscrite au patrimoine de l'UNESCO depuis 2022."
+  },
+  {
+    id: "gas_257",
+    categoryId: "gastronomie",
+    question: "De quel pays le pad thaï est-il le plat emblématique ?",
+    options: ["L'Indonésie", "La Malaisie", "Les Philippines", "La Thaïlande"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le pad thaï mêle nouilles de riz sautées, cacahuètes, citron vert et pousses de soja."
+  },
+  {
+    id: "gas_258",
+    categoryId: "gastronomie",
+    question: "De quel pays vient le phô, cette soupe parfumée de nouilles de riz et de bœuf ?",
+    options: ["Le Vietnam", "La Mongolie", "Le Népal", "La Corée du Sud"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Au Vietnam, le phô se mange surtout au petit-déjeuner."
+  },
+  {
+    id: "gas_259",
+    categoryId: "gastronomie",
+    question: "Qu'est-ce que le kimchi, incontournable de la table coréenne ?",
+    options: ["Un riz gluant sucré", "Du chou fermenté épicé", "Une brochette de porc", "Un alcool de riz"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Beaucoup de familles coréennes possèdent un réfrigérateur spécialement conçu pour le kimchi."
+  },
+  {
+    id: "gas_260",
+    categoryId: "gastronomie",
+    question: "À partir de quoi le tofu est-il fabriqué ?",
+    options: ["Du blé fermenté", "Du riz écrasé", "Du lait de soja caillé", "De la noix de coco pressée"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le tofu se fabrique un peu comme un fromage, mais avec du « lait » végétal de soja."
+  },
+  {
+    id: "gas_261",
+    categoryId: "gastronomie",
+    question: "De quelle région du monde le quinoa est-il originaire ?",
+    options: ["Des plaines de Sibérie", "Du bassin méditerranéen", "Des îles du Pacifique", "Des Andes, en Amérique du Sud"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Les Incas surnommaient le quinoa « la graine mère » et le cultivaient déjà il y a 5 000 ans."
+  },
+  {
+    id: "gas_262",
+    categoryId: "gastronomie",
+    question: "Sur quel arbre poussent les dattes ?",
+    options: ["Le palmier-dattier", "Le figuier", "L'olivier", "Le baobab"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Un seul régime de dattes peut porter plus de mille fruits."
+  },
+  {
+    id: "gas_263",
+    categoryId: "gastronomie",
+    question: "Dans quel pays la célèbre pâte à tartiner Nutella a-t-elle été créée ?",
+    options: ["La Suisse", "L'Italie", "La Belgique", "Les États-Unis"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Elle est née au Piémont après-guerre, quand le chocolat rare était allongé avec des noisettes locales."
+  },
+  {
+    id: "gas_264",
+    categoryId: "gastronomie",
+    question: "Quel était le métier de John Pemberton, l'inventeur du Coca-Cola en 1886 ?",
+    options: ["Cuisinier", "Forgeron", "Pharmacien", "Instituteur"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le Coca-Cola était d'abord vendu en pharmacie comme boisson tonifiante à Atlanta."
+  },
+  {
+    id: "gas_265",
+    categoryId: "gastronomie",
+    question: "De quel pays le gouda est-il originaire ?",
+    options: ["Le Danemark", "L'Allemagne", "La Suisse", "Les Pays-Bas"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Gouda est une ville néerlandaise où se tient encore un pittoresque marché aux fromages."
+  },
+  {
+    id: "gas_266",
+    categoryId: "gastronomie",
+    question: "Quelle est la particularité surprenante du véritable gruyère suisse ?",
+    options: ["Il n'a pas de trous", "Il est bleu à l'intérieur", "Il se mange uniquement fondu", "Il est fait de lait de chèvre"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Contrairement à l'image populaire, le gruyère AOP suisse a une pâte pleine ; c'est l'emmental qui a des trous."
+  },
+  {
+    id: "gas_267",
+    categoryId: "gastronomie",
+    question: "Que trempe-t-on dans le caquelon d'une fondue au fromage ?",
+    options: ["Des frites", "Des morceaux de pain", "Des biscuits salés", "Des quartiers de pomme uniquement"],
+    correctAnswerIndex: 1,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? La tradition prévoit un gage pour celui qui perd son morceau de pain dans le fromage fondu !"
+  },
+  {
+    id: "gas_268",
+    categoryId: "gastronomie",
+    question: "De quel pays vient le crumble, ce dessert aux fruits recouvert de pâte émiettée ?",
+    options: ["Des Pays-Bas", "De la Suède", "Du Royaume-Uni", "De l'Irlande"],
+    correctAnswerIndex: 2,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? Le crumble s'est répandu pendant la Seconde Guerre mondiale, car il demandait moins de beurre et de farine qu'une tarte."
+  },
+  {
+    id: "gas_269",
+    categoryId: "gastronomie",
+    question: "Quel fruit garnit le strudel autrichien traditionnel ?",
+    options: ["La poire", "La cerise noire", "L'orange", "La pomme"],
+    correctAnswerIndex: 3,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? La pâte du strudel doit être étirée si finement qu'on pourrait lire un journal à travers, dit-on à Vienne."
+  },
+  {
+    id: "gas_270",
+    categoryId: "gastronomie",
+    question: "De quel pays viennent les churros ?",
+    options: ["L'Espagne", "L'Italie", "La Grèce", "La Turquie"],
+    correctAnswerIndex: 0,
+    difficulty: "ado",
+    explanation: "Le saviez-vous ? En Espagne, on trempe les churros dans un chocolat chaud très épais au petit-déjeuner."
+  },
+  {
+    id: "gas_271",
+    categoryId: "gastronomie",
+    question: "Près de quelle ville se trouvait le restaurant triplement étoilé de Paul Bocuse, surnommé le « pape de la gastronomie » ?",
+    options: ["Paris", "Lyon", "Marseille", "Strasbourg"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Son Auberge du Pont de Collonges a conservé trois étoiles Michelin sans interruption de 1965 à 2019."
+  },
+  {
+    id: "gas_272",
+    categoryId: "gastronomie",
+    question: "Quel grand cuisinier a organisé les cuisines professionnelles en « brigade » au début du 20e siècle ?",
+    options: ["Paul Bocuse", "Alain Ducasse", "Auguste Escoffier", "Guy Savoy"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Escoffier, surnommé « le roi des cuisiniers et le cuisinier des rois », a aussi codifié des milliers de recettes."
+  },
+  {
+    id: "gas_273",
+    categoryId: "gastronomie",
+    question: "En l'honneur de qui Escoffier a-t-il créé la pêche Melba ?",
+    options: ["Une princesse anglaise", "Une romancière française", "Une danseuse étoile", "Une cantatrice australienne"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Nellie Melba, soprano australienne, a aussi donné son nom aux fines tranches de pain grillé, les toasts Melba."
+  },
+  {
+    id: "gas_274",
+    categoryId: "gastronomie",
+    question: "Quel pâtissier et cuisinier du 19e siècle était surnommé « le roi des chefs et le chef des rois » ?",
+    options: ["Antonin Carême", "Prosper Montagné", "Urbain Dubois", "Jules Gouffé"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Carême a cuisiné pour Talleyrand, le tsar Alexandre Ier et la cour d'Angleterre, et adorait les pièces montées architecturales."
+  },
+  {
+    id: "gas_275",
+    categoryId: "gastronomie",
+    question: "Pourquoi le maître d'hôtel François Vatel est-il tragiquement entré dans l'histoire en 1671 ?",
+    options: ["Il a empoisonné Louis XIV", "Il s'est donné la mort car la marée de poisson tardait", "Il a brûlé le château de Versailles", "Il a volé la vaisselle royale"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Vatel organisait alors une fête somptueuse pour Louis XIV au château de Chantilly."
+  },
+  {
+    id: "gas_276",
+    categoryId: "gastronomie",
+    question: "Quel chef français, longtemps le plus étoilé du monde, était célèbre pour sa purée de pommes de terre ?",
+    options: ["Michel Sarran", "Éric Frechon", "Joël Robuchon", "Georges Blanc"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La purée de Robuchon contient environ un quart de beurre, ce qui explique bien des choses."
+  },
+  {
+    id: "gas_277",
+    categoryId: "gastronomie",
+    question: "Quelle cheffe française, installée à Valence, détient trois étoiles Michelin ?",
+    options: ["Ghislaine Arabian", "Hélène Darroze", "Dominique Crenn", "Anne-Sophie Pic"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Anne-Sophie Pic perpétue une dynastie : son grand-père et son père avaient déjà obtenu trois étoiles."
+  },
+  {
+    id: "gas_278",
+    categoryId: "gastronomie",
+    question: "Quelle entreprise a créé le célèbre guide gastronomique rouge en 1900 ?",
+    options: ["Un fabricant de pneus", "Une compagnie de chemins de fer", "Un journal parisien", "Une chaîne d'hôtels"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Michelin offrait ce guide aux automobilistes pour les encourager à rouler... et à user leurs pneus."
+  },
+  {
+    id: "gas_279",
+    categoryId: "gastronomie",
+    question: "Quel mouvement culinaire les critiques Henri Gault et Christian Millau ont-ils défendu dans les années 1970 ?",
+    options: ["La cuisine médiévale", "La nouvelle cuisine", "Le fast-food à la française", "La cuisine moléculaire"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La nouvelle cuisine prônait des cuissons courtes, des sauces légères et des assiettes soignées."
+  },
+  {
+    id: "gas_280",
+    categoryId: "gastronomie",
+    question: "À quoi reconnaît-on un cuisinier « Meilleur Ouvrier de France » ?",
+    options: ["À sa veste noire brodée d'or", "À sa médaille portée en cuisine", "À son col bleu-blanc-rouge", "À sa toque plus haute que les autres"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Porter ce col tricolore sans avoir le titre est passible de poursuites, comme pour une usurpation de diplôme."
+  },
+  {
+    id: "gas_281",
+    categoryId: "gastronomie",
+    question: "Qui a popularisé la pomme de terre en France au 18e siècle ?",
+    options: ["Nicolas Appert", "Le marquis de Sade", "Vauban", "Antoine-Augustin Parmentier"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Parmentier faisait garder ses champs le jour pour attiser la convoitise, puis retirait les gardes la nuit pour laisser voler les tubercules."
+  },
+  {
+    id: "gas_282",
+    categoryId: "gastronomie",
+    question: "Qu'a inventé Nicolas Appert au début du 19e siècle ?",
+    options: ["La conserve alimentaire", "Le réfrigérateur", "Le four à gaz", "La cocotte-minute"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Son procédé, l'appertisation, répondait à un concours lancé pour nourrir les armées de Napoléon."
+  },
+  {
+    id: "gas_283",
+    categoryId: "gastronomie",
+    question: "Quel scientifique français a donné son nom au procédé de chauffage qui assainit le lait ?",
+    options: ["Antoine Lavoisier", "Louis Pasteur", "Marcellin Berthelot", "Claude Bernard"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Pasteur a d'abord mis au point son procédé pour conserver le vin et la bière, pas le lait."
+  },
+  {
+    id: "gas_284",
+    categoryId: "gastronomie",
+    question: "Quelle matière grasse a été inventée en France à la suite d'un concours lancé sous Napoléon III ?",
+    options: ["Le saindoux", "L'huile de colza", "La margarine", "Le beurre clarifié"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Il s'agissait de trouver un substitut au beurre, bon marché, pour la marine et les classes populaires."
+  },
+  {
+    id: "gas_285",
+    categoryId: "gastronomie",
+    question: "Le tournedos Rossini, garni de foie gras et de truffe, rend hommage à...",
+    options: ["Un peintre vénitien", "Un général italien", "Un explorateur génois", "Un compositeur d'opéras italien"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Gioachino Rossini, auteur du Barbier de Séville, était un gastronome notoire qui aurait inspiré ce plat."
+  },
+  {
+    id: "gas_286",
+    categoryId: "gastronomie",
+    question: "D'où vient le nom du carpaccio, ces fines tranches de bœuf cru ?",
+    options: ["D'un peintre italien aux rouges célèbres", "D'un mot italien signifiant « très fin »", "D'un quartier de Venise", "D'un couteau spécial"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le plat fut créé au Harry's Bar de Venise et baptisé d'après Vittore Carpaccio, dont une exposition se tenait alors."
+  },
+  {
+    id: "gas_287",
+    categoryId: "gastronomie",
+    question: "De qui la sauce béchamel tiendrait-elle son nom ?",
+    options: ["D'une cuisinière lyonnaise", "D'un marquis de la cour de Louis XIV", "D'un village normand", "D'un mot italien pour « lait »"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Louis de Béchameil, financier et maître d'hôtel du roi, n'a probablement jamais cuisiné la sauce lui-même."
+  },
+  {
+    id: "gas_288",
+    categoryId: "gastronomie",
+    question: "Laquelle de ces sauces n'est PAS une « sauce mère » de la cuisine française classique ?",
+    options: ["La béchamel", "La hollandaise", "La mayonnaise", "La sauce espagnole"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Les sauces mères classiques sont la béchamel, le velouté, l'espagnole, la hollandaise et la tomate."
+  },
+  {
+    id: "gas_289",
+    categoryId: "gastronomie",
+    question: "Qu'est-ce que l'UNESCO a inscrit en 2010 au patrimoine culturel immatériel de l'humanité ?",
+    options: ["La baguette de tradition", "Le camembert au lait cru", "Les vins de Bordeaux", "Le repas gastronomique des Français"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? C'est le rituel du repas — apéritif, entrée, plat, fromage, dessert et art de la table — qui est distingué, pas un plat précis."
+  },
+  {
+    id: "gas_290",
+    categoryId: "gastronomie",
+    question: "Combien la France compte-t-elle environ de fromages protégés par une AOP ?",
+    options: ["Environ 45", "Environ 10", "Environ 150", "Environ 400"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? On prête au général de Gaulle cette phrase : « Comment voulez-vous gouverner un pays où il existe plus de 250 variétés de fromage ? »"
+  },
+  {
+    id: "gas_291",
+    categoryId: "gastronomie",
+    question: "Qu'est-ce qui donne sa couleur orange vif à la mimolette ?",
+    options: ["Le safran", "Le rocou, un colorant végétal", "La carotte râpée", "Le paprika fumé"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La croûte de la mimolette vieille est travaillée par de minuscules acariens appelés cirons, qui participent à son affinage."
+  },
+  {
+    id: "gas_292",
+    categoryId: "gastronomie",
+    question: "Quel micro-organisme donne au roquefort ses veines bleues ?",
+    options: ["Une levure de bière", "Une algue microscopique", "Le champignon Penicillium roqueforti", "Une bactérie lactique rouge"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le roquefort doit obligatoirement être affiné dans les caves naturelles du Combalou, à Roquefort-sur-Soulzon."
+  },
+  {
+    id: "gas_293",
+    categoryId: "gastronomie",
+    question: "Avec quoi la croûte de l'époisses, fromage bourguignon très odorant, est-elle lavée ?",
+    options: ["De l'eau salée uniquement", "Du cidre fermier", "Du lait caillé", "Du marc de Bourgogne"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? L'époisses est si coulant qu'on le déguste traditionnellement à la petite cuillère."
+  },
+  {
+    id: "gas_294",
+    categoryId: "gastronomie",
+    question: "Dans quoi le vacherin Mont d'Or est-il cerclé et vendu ?",
+    options: ["Une sangle d'écorce d'épicéa et une boîte en bois", "Un filet de coton", "Une feuille de vigne", "Une croûte de cire rouge"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? L'écorce d'épicéa donne au Mont d'Or ses notes boisées ; il se déguste souvent chaud, passé au four."
+  },
+  {
+    id: "gas_295",
+    categoryId: "gastronomie",
+    question: "Avec quel ustensile racle-t-on la tête de moine, fromage suisse, en fines rosettes ?",
+    options: ["Une râpe à truffe", "Une girolle", "Un fil à beurre", "Une cuillère à melon"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La girolle, inventée en 1982, a démultiplié la popularité de ce fromage du Jura suisse."
+  },
+  {
+    id: "gas_296",
+    categoryId: "gastronomie",
+    question: "Quel moine bénédictin est associé, dans la légende, à l'élaboration du champagne ?",
+    options: ["Frère Gaucher", "Bernard de Clairvaux", "Dom Pérignon", "L'abbé Grégoire"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? On lui prête la phrase « Venez vite, je bois des étoiles ! », probablement inventée pour la publicité."
+  },
+  {
+    id: "gas_297",
+    categoryId: "gastronomie",
+    question: "Quel cépage est roi pour les grands vins rouges de Bourgogne ?",
+    options: ["Le merlot", "La syrah", "Le cabernet sauvignon", "Le pinot noir"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? En Bourgogne, la notion de « climat », parcelle au terroir unique, est classée à l'UNESCO."
+  },
+  {
+    id: "gas_298",
+    categoryId: "gastronomie",
+    question: "Comment appelle-t-on le professionnel chargé du vin et des accords mets-vins dans un grand restaurant ?",
+    options: ["Le sommelier", "Le saucier", "L'écailler", "Le maître affineur"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Au Moyen Âge, le « sommelier » était d'abord le responsable des bêtes de somme transportant les provisions."
+  },
+  {
+    id: "gas_299",
+    categoryId: "gastronomie",
+    question: "Quelle substance du vin rouge provoque cette sensation d'assèchement en bouche ?",
+    options: ["Le glucose", "Les tanins", "L'acide citrique", "Les sulfites"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Les tanins proviennent surtout de la peau et des pépins du raisin, ainsi que des fûts de chêne."
+  },
+  {
+    id: "gas_300",
+    categoryId: "gastronomie",
+    question: "Où une bière trappiste authentique doit-elle être brassée ?",
+    options: ["Dans une cave à température négative", "Dans la capitale de son pays", "Dans l'enceinte d'une abbaye, sous contrôle des moines", "Uniquement en Belgique"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Les revenus des bières trappistes doivent servir à la communauté monastique et à des œuvres caritatives."
+  },
+  {
+    id: "gas_301",
+    categoryId: "gastronomie",
+    question: "Laquelle de ces bières belges n'est PAS une trappiste ?",
+    options: ["Orval", "Rochefort", "Westmalle", "Leffe"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La Leffe est une « bière d'abbaye », brassée industriellement sous licence, et non par des moines."
+  },
+  {
+    id: "gas_302",
+    categoryId: "gastronomie",
+    question: "Quelle bière trappiste belge, régulièrement citée parmi les meilleures du monde, ne s'achète en principe qu'à l'abbaye Saint-Sixte ?",
+    options: ["La Westvleteren", "La Chimay bleue", "La Duvel", "La Kriek"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Pendant longtemps, il fallait réserver ses casiers par téléphone et donner sa plaque d'immatriculation pour en obtenir."
+  },
+  {
+    id: "gas_303",
+    categoryId: "gastronomie",
+    question: "Quelle est la particularité du lambic, bière traditionnelle de la région bruxelloise ?",
+    options: ["Il est brassé avec du miel", "Il fermente spontanément grâce aux levures sauvages de l'air", "Il ne contient pas de céréales", "Il est toujours servi chaud"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Les levures sauvages de la vallée de la Senne ensemencent le moût laissé à l'air libre dans de grands bacs de refroidissement."
+  },
+  {
+    id: "gas_304",
+    categoryId: "gastronomie",
+    question: "Comment obtient-on la gueuze, fleuron de la tradition brassicole bruxelloise ?",
+    options: ["En ajoutant du sirop de Liège à une blonde", "En distillant de la bière brune", "En assemblant des lambics jeunes et vieux qui refermentent en bouteille", "En filtrant une bière blanche"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? On surnomme parfois la gueuze le « champagne de Bruxelles » pour sa refermentation en bouteille."
+  },
+  {
+    id: "gas_305",
+    categoryId: "gastronomie",
+    question: "Quel chocolatier suisse a inventé le conchage, qui rend le chocolat fondant, en 1879 ?",
+    options: ["Philippe Suchard", "Henri Nestlé", "Jean Tobler", "Rodolphe Lindt"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La légende raconte qu'il aurait laissé tourner sa machine tout un week-end par accident, découvrant un chocolat incroyablement lisse."
+  },
+  {
+    id: "gas_306",
+    categoryId: "gastronomie",
+    question: "Qu'est-ce que le gianduja, né à Turin au 19e siècle ?",
+    options: ["Un mélange de chocolat et de pâte de noisettes", "Un café très serré", "Un vin doux piémontais", "Un fromage de montagne"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Il fut créé quand le blocus napoléonien renchérit le cacao, remplacé en partie par les noisettes du Piémont."
+  },
+  {
+    id: "gas_307",
+    categoryId: "gastronomie",
+    question: "Quelle est la variété de cacao la plus rare et la plus recherchée ?",
+    options: ["Le forastero", "Le criollo", "Le trinitario", "Le mercedario"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le criollo représente moins de 5 % de la production mondiale de cacao."
+  },
+  {
+    id: "gas_308",
+    categoryId: "gastronomie",
+    question: "Que signifie le pourcentage affiché sur une tablette de chocolat noir ?",
+    options: ["Le taux de sucre ajouté", "Le pourcentage de beurre laitier", "La proportion d'ingrédients issus du cacao", "Le taux d'humidité"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Un chocolat à 70 % contient 70 % de pâte et de beurre de cacao, le reste étant essentiellement du sucre."
+  },
+  {
+    id: "gas_309",
+    categoryId: "gastronomie",
+    question: "Comment s'appelle la cinquième saveur fondamentale, identifiée par le Japonais Kikunae Ikeda ?",
+    options: ["Le kokumi", "L'astringence", "Le piquant", "L'umami"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? L'umami, goût « savoureux » dû au glutamate, est très présent dans le parmesan, la tomate mûre et la sauce soja."
+  },
+  {
+    id: "gas_310",
+    categoryId: "gastronomie",
+    question: "Quels sont les deux ingrédients de base du dashi, bouillon fondamental de la cuisine japonaise ?",
+    options: ["L'algue kombu et la bonite séchée", "Le soja et le gingembre", "Le riz et le thé vert", "Le poulet et le poireau"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Les copeaux de bonite séchée, le katsuobushi, sont si durs qu'on les rabote comme du bois."
+  },
+  {
+    id: "gas_311",
+    categoryId: "gastronomie",
+    question: "Pourquoi la préparation du fugu, poisson-globe japonais, exige-t-elle une licence spéciale ?",
+    options: ["Le poisson est protégé par l'empereur", "Ses organes contiennent un poison mortel", "Il coûte plus cher que le caviar", "Il doit être pêché à la main"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La tétrodotoxine du fugu est des centaines de fois plus toxique que le cyanure et n'a pas d'antidote."
+  },
+  {
+    id: "gas_312",
+    categoryId: "gastronomie",
+    question: "Comment s'appelle le repas gastronomique japonais traditionnel composé d'une succession de petits plats raffinés ?",
+    options: ["Le teppanyaki", "Le bento", "Le kaiseki", "Le yakitori"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le kaiseki est lié à la cérémonie du thé et suit scrupuleusement les saisons, jusque dans la vaisselle choisie."
+  },
+  {
+    id: "gas_313",
+    categoryId: "gastronomie",
+    question: "Quel pays d'Amérique du Sud est le berceau du ceviche, poisson cru mariné au citron vert ?",
+    options: ["Le Venezuela", "L'Uruguay", "Le Paraguay", "Le Pérou"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le jus de marinade du ceviche, très relevé, est surnommé « leche de tigre », le lait de tigre."
+  },
+  {
+    id: "gas_314",
+    categoryId: "gastronomie",
+    question: "Quel ingrédient surprenant entre dans le mole poblano, grande sauce mexicaine ?",
+    options: ["Le chocolat", "Le miel de lavande", "La confiture de lait", "L'eau de rose"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le mole poblano peut compter plus de vingt ingrédients, dont plusieurs variétés de piments et du cacao."
+  },
+  {
+    id: "gas_315",
+    categoryId: "gastronomie",
+    question: "Avec quelle céréale l'injera, grande galette spongieuse éthiopienne, est-elle préparée ?",
+    options: ["Le sarrasin", "Le teff", "Le sorgho rouge", "L'amarante"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? L'injera sert à la fois d'assiette et de couvert : on y dépose les plats et on la déchire pour les saisir."
+  },
+  {
+    id: "gas_316",
+    categoryId: "gastronomie",
+    question: "Qu'était le garum, condiment star de la Rome antique ?",
+    options: ["Un vinaigre de figue", "Une purée d'olives noires", "Une sauce de poisson fermenté", "Un miel épicé"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le garum est un lointain cousin du nuoc-mâm vietnamien, obtenu lui aussi par fermentation de poissons dans le sel."
+  },
+  {
+    id: "gas_317",
+    categoryId: "gastronomie",
+    question: "Qu'est-ce que la pastilla marocaine ?",
+    options: ["Un thé épicé au safran", "Une semoule au lait d'amande", "Un tajine de poisson", "Un feuilleté sucré-salé, souvent au pigeon ou au poulet"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La pastilla marie viande, amandes, cannelle et sucre glace dans des feuilles de brick très fines."
+  },
+  {
+    id: "gas_318",
+    categoryId: "gastronomie",
+    question: "De quelle race bovine japonaise provient le célèbre bœuf de Kobe ?",
+    options: ["Le wagyu", "L'angus", "La charolaise", "La blonde de Galice"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le persillage extrême du wagyu fait fondre sa graisse à basse température, d'où sa texture fondante unique."
+  },
+  {
+    id: "gas_319",
+    categoryId: "gastronomie",
+    question: "De quoi se nourrissent les porcs ibériques donnant le fameux jambon « bellota » ?",
+    options: ["De maïs exclusivement", "De glands", "De châtaignes grillées", "D'olives"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? « Bellota » signifie « gland » en espagnol ; les porcs les dévorent en liberté dans les chênaies, la dehesa."
+  },
+  {
+    id: "gas_320",
+    categoryId: "gastronomie",
+    question: "De quel poisson provient le caviar ?",
+    options: ["Le saumon sauvage", "La morue arctique", "L'esturgeon", "Le thon rouge"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le beluga, esturgeon géant de la mer Caspienne, donne le caviar le plus cher du monde."
+  },
+  {
+    id: "gas_321",
+    categoryId: "gastronomie",
+    question: "Quel est le nom scientifique de la truffe noire du Périgord ?",
+    options: ["Tuber magnatum", "Boletus edulis", "Tuber aestivum", "Tuber melanosporum"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Pour la débusquer, on préfère aujourd'hui le chien au cochon... qui avait la fâcheuse tendance de la manger."
+  },
+  {
+    id: "gas_322",
+    categoryId: "gastronomie",
+    question: "De quels animaux provient le foie gras ?",
+    options: ["Du canard ou de l'oie", "Du porc ou du sanglier", "Du veau ou du bœuf", "De la pintade ou du faisan"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le gavage des oies était déjà pratiqué dans l'Égypte ancienne, comme en témoignent des bas-reliefs."
+  },
+  {
+    id: "gas_323",
+    categoryId: "gastronomie",
+    question: "Que signifie le numéro de calibre des huîtres, de 0 à 5 ?",
+    options: ["Leur âge en années", "Leur taille : plus le chiffre est petit, plus l'huître est grosse", "Leur teneur en sel", "Leur région d'élevage"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La numéro 3 est le calibre le plus consommé en France, notamment au réveillon."
+  },
+  {
+    id: "gas_324",
+    categoryId: "gastronomie",
+    question: "Que mesure l'échelle de Scoville ?",
+    options: ["L'amertume du café", "La teneur en sucre des fruits", "La force piquante des piments", "L'acidité des agrumes"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Les piments les plus forts du monde, comme le Carolina Reaper, dépassent les 2 millions d'unités Scoville."
+  },
 ];

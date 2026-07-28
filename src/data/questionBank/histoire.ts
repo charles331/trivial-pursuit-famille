@@ -2521,4 +2521,634 @@ export const HISTOIRE_QUESTIONS: Question[] = [
     difficulty: "adulte",
     explanation: "Le saviez-vous ? Godefroid aurait refusé le titre de roi, ne voulant pas porter une couronne d'or là où le Christ avait porté une couronne d'épines."
   },
+  {
+    id: "his_281",
+    categoryId: "histoire",
+    question: "Quel savant français a déchiffré les hiéroglyphes en 1822 grâce à la pierre de Rosette ?",
+    options: ["Auguste Mariette", "Gaspard Monge", "Jean-François Champollion", "Vivant Denon"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La pierre de Rosette porte le même texte en hiéroglyphes, en démotique et en grec, ce qui a permis la comparaison."
+  },
+  {
+    id: "his_282",
+    categoryId: "histoire",
+    question: "Quel roi de Babylone a fait graver l'un des plus anciens codes de lois, vers 1750 avant J.-C. ?",
+    options: ["Hammurabi", "Nabuchodonosor II", "Sargon d'Akkad", "Gilgamesh"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La stèle du code d'Hammurabi, découverte en Iran, est aujourd'hui exposée au musée du Louvre."
+  },
+  {
+    id: "his_283",
+    categoryId: "histoire",
+    question: "Quel souverain a fondé l'Empire perse au VIe siècle avant J.-C. ?",
+    options: ["Xerxès Ier", "Darius III", "Assurbanipal", "Cyrus le Grand"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le cylindre de Cyrus, qui proclame le respect des peuples conquis, est parfois présenté comme une des premières chartes de tolérance."
+  },
+  {
+    id: "his_284",
+    categoryId: "histoire",
+    question: "Quelle longue guerre a opposé Athènes et Sparte à la fin du Ve siècle avant J.-C. ?",
+    options: ["Les guerres médiques", "La guerre du Péloponnèse", "La guerre de Troie", "Les guerres sacrées"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? L'historien Thucydide, général athénien exilé, a raconté ce conflit dans une œuvre toujours étudiée aujourd'hui."
+  },
+  {
+    id: "his_285",
+    categoryId: "histoire",
+    question: "Quel roi de Sparte s'est sacrifié avec 300 de ses soldats au défilé des Thermopyles en 480 avant J.-C. ?",
+    options: ["Léonidas", "Lycurgue", "Agésilas", "Cléomène"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Selon la tradition, aux Perses qui exigeaient leurs armes, Léonidas aurait répondu : \"Viens les prendre\"."
+  },
+  {
+    id: "his_286",
+    categoryId: "histoire",
+    question: "Quel gladiateur a mené la plus grande révolte d'esclaves de l'histoire romaine, de 73 à 71 avant J.-C. ?",
+    options: ["Crixus", "Maximus", "Spartacus", "Cincinnatus"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? L'armée de Spartacus a compté jusqu'à des dizaines de milliers d'esclaves révoltés et a tenu Rome en échec pendant deux ans."
+  },
+  {
+    id: "his_287",
+    categoryId: "histoire",
+    question: "Quel amiral chinois a mené au début du XVe siècle de gigantesques expéditions maritimes jusqu'en Afrique ?",
+    options: ["Confucius", "Zheng He", "Kubilai Khan", "Sun Tzu"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Certains navires de Zheng He étaient bien plus grands que les caravelles européennes de la même époque."
+  },
+  {
+    id: "his_288",
+    categoryId: "histoire",
+    question: "Quel empereur du Mali a ébloui Le Caire par ses distributions d'or lors de son pèlerinage vers La Mecque en 1324 ?",
+    options: ["Chaka Zoulou", "Soundiata Keïta", "Askia Mohammed", "Mansa Moussa"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Mansa Moussa a distribué tant d'or que son passage aurait fait chuter le cours du métal précieux en Égypte pendant des années."
+  },
+  {
+    id: "his_289",
+    categoryId: "histoire",
+    question: "Quel chef a unifié les tribus mongoles et fondé au XIIIe siècle le plus vaste empire continu de l'histoire ?",
+    options: ["Tamerlan", "Attila", "Gengis Khan", "Batu Khan"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? L'empire mongol a mis en place un remarquable réseau de relais de poste, le Yam, qui traversait toute l'Asie."
+  },
+  {
+    id: "his_290",
+    categoryId: "histoire",
+    question: "Quel souverain russe a été le premier à porter officiellement le titre de tsar, au XVIe siècle ?",
+    options: ["Ivan le Terrible", "Pierre le Grand", "Boris Godounov", "Alexandre Nevski"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le mot tsar dérive de \"César\", le titre des empereurs romains."
+  },
+  {
+    id: "his_291",
+    categoryId: "histoire",
+    question: "Quel tsar a fondé la ville de Saint-Pétersbourg en 1703 pour ouvrir la Russie sur l'Europe ?",
+    options: ["Nicolas Ier", "Alexandre Ier", "Ivan III", "Pierre le Grand"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Pierre le Grand avait voyagé incognito en Europe et travaillé comme charpentier dans les chantiers navals hollandais."
+  },
+  {
+    id: "his_292",
+    categoryId: "histoire",
+    question: "Quels traités de 1648 ont mis fin à la guerre de Trente Ans et redessiné l'Europe ?",
+    options: ["Les traités d'Utrecht", "Les traités de Westphalie", "Le traité des Pyrénées", "Le traité de Tordesillas"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Ces traités sont souvent considérés comme l'acte de naissance de la diplomatie moderne entre États souverains."
+  },
+  {
+    id: "his_293",
+    categoryId: "histoire",
+    question: "Comment s'appelle la révolte des grands seigneurs et du parlement qui a marqué l'enfance de Louis XIV ?",
+    options: ["La Fronde", "La Jacquerie", "La Ligue", "Les Grands Jours"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Traumatisé par la Fronde, Louis XIV a préféré installer plus tard sa cour à Versailles, loin de l'agitation parisienne."
+  },
+  {
+    id: "his_294",
+    categoryId: "histoire",
+    question: "Quel ministre de Louis XIV a développé les manufactures royales et la marine française ?",
+    options: ["Louvois", "Fouquet", "Colbert", "Vauban"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Sa politique économique favorisant l'industrie nationale porte encore aujourd'hui son nom : le colbertisme."
+  },
+  {
+    id: "his_295",
+    categoryId: "histoire",
+    question: "Quelle décision de Louis XIV en 1685 a poussé des centaines de milliers de protestants à fuir la France ?",
+    options: ["La création de la gabelle", "La révocation de l'édit de Nantes", "L'instauration de la corvée royale", "L'interdiction du commerce maritime"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? De nombreux huguenots se sont réfugiés à Berlin, Amsterdam, Genève ou en Afrique du Sud, enrichissant leurs pays d'accueil."
+  },
+  {
+    id: "his_296",
+    categoryId: "histoire",
+    question: "Quel grand chimiste français, père de la chimie moderne, a été guillotiné en 1794 ?",
+    options: ["Claude Berthollet", "Joseph Gay-Lussac", "Pierre Macquer", "Antoine Lavoisier"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le mathématicien Lagrange aurait déploré qu'il n'ait fallu qu'un instant pour couper cette tête, quand un siècle ne suffirait pas à en produire une semblable."
+  },
+  {
+    id: "his_297",
+    categoryId: "histoire",
+    question: "Quelle victoire de septembre 1792 a été la première grande victoire des soldats de la Révolution française ?",
+    options: ["Jemappes", "Fleurus", "Valmy", "Wattignies"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le poète Goethe, présent à Valmy, aurait déclaré que ce jour-là commençait une nouvelle époque de l'histoire du monde."
+  },
+  {
+    id: "his_298",
+    categoryId: "histoire",
+    question: "Comment appelle-t-on le coup d'État par lequel Bonaparte a pris le pouvoir le 9 novembre 1799 ?",
+    options: ["Le coup d'État du 18 Brumaire", "La journée des Dupes", "Le coup du 2 Décembre", "La conjuration des Égaux"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le 18 Brumaire correspond à la date du calendrier républicain, dont les mois portaient des noms poétiques comme Vendémiaire ou Thermidor."
+  },
+  {
+    id: "his_299",
+    categoryId: "histoire",
+    question: "Quel grand texte juridique, promulgué en 1804, unifie le droit français et inspire encore de nombreux pays ?",
+    options: ["Le Code pénal", "La Grande Ordonnance", "Le Code du travail", "Le Code civil"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Napoléon estimait que sa vraie gloire n'était pas ses batailles mais son Code civil, \"que rien n'effacera\"."
+  },
+  {
+    id: "his_300",
+    categoryId: "histoire",
+    question: "Quel congrès réuni en 1814-1815 a redessiné la carte de l'Europe après la chute de Napoléon ?",
+    options: ["Le congrès de Berlin", "Le congrès de Vienne", "La conférence de Paris", "Le congrès de La Haye"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Entre deux négociations, les diplomates enchaînaient bals et réceptions, d'où le mot : \"Le congrès danse, mais ne marche pas\"."
+  },
+  {
+    id: "his_301",
+    categoryId: "histoire",
+    question: "Comment appelle-t-on les trois journées révolutionnaires de juillet 1830 qui ont renversé Charles X ?",
+    options: ["Les Trois Glorieuses", "La Semaine sanglante", "Les Journées de Juin", "La Grande Peur"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le célèbre tableau de Delacroix, \"La Liberté guidant le peuple\", a été inspiré par ces journées."
+  },
+  {
+    id: "his_302",
+    categoryId: "histoire",
+    question: "Quel souverain a régné sur la France de 1830 à 1848 avec le titre inédit de \"roi des Français\" ?",
+    options: ["Charles X", "Napoléon III", "Louis-Philippe Ier", "Louis XVIII"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Surnommé le \"roi bourgeois\", Louis-Philippe était souvent caricaturé avec une tête en forme de poire."
+  },
+  {
+    id: "his_303",
+    categoryId: "histoire",
+    question: "Lors de quelle bataille de 1870 Napoléon III a-t-il été fait prisonnier, entraînant la chute du Second Empire ?",
+    options: ["Gravelotte", "Sedan", "Metz", "Reichshoffen"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Deux jours après la capture de l'empereur à Sedan, la République était proclamée à Paris."
+  },
+  {
+    id: "his_304",
+    categoryId: "histoire",
+    question: "Comment s'appelle l'insurrection parisienne qui a instauré un gouvernement révolutionnaire au printemps 1871 ?",
+    options: ["La Révolution de Février", "Les Barricades de Juin", "La Grande Jacquerie", "La Commune de Paris"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? C'est pendant la Commune que la colonne Vendôme, symbole impérial, a été déboulonnée avant d'être relevée quelques années plus tard."
+  },
+  {
+    id: "his_305",
+    categoryId: "histoire",
+    question: "Quel ministre de la IIIe République a rendu l'école primaire gratuite, laïque et obligatoire dans les années 1880 ?",
+    options: ["Georges Clemenceau", "Léon Gambetta", "Jules Ferry", "Jean Jaurès"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Les instituteurs de la IIIe République étaient surnommés les \"hussards noirs\" en raison de leur longue blouse sombre."
+  },
+  {
+    id: "his_306",
+    categoryId: "histoire",
+    question: "Que établit la célèbre loi française du 9 décembre 1905 ?",
+    options: ["La séparation des Églises et de l'État", "Le repos dominical", "Le service militaire obligatoire", "La journée de huit heures"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Cette loi garantit la liberté de conscience et fonde la laïcité à la française."
+  },
+  {
+    id: "his_307",
+    categoryId: "histoire",
+    question: "Quel moyen de transport parisien a été réquisitionné en 1914 pour conduire des soldats vers la bataille de la Marne ?",
+    options: ["Les péniches de la Seine", "Le métro", "Les omnibus à chevaux", "Les taxis"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Environ 600 \"taxis de la Marne\" ont transporté plusieurs milliers d'hommes vers le front, un épisode devenu légendaire."
+  },
+  {
+    id: "his_308",
+    categoryId: "histoire",
+    question: "Quelle pandémie a fait des dizaines de millions de morts dans le monde en 1918-1919 ?",
+    options: ["Le choléra", "La grippe espagnole", "Le typhus", "La tuberculose"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Cette grippe n'était pas plus espagnole qu'une autre : l'Espagne, neutre, fut simplement la première à en parler librement dans sa presse."
+  },
+  {
+    id: "his_309",
+    categoryId: "histoire",
+    question: "Quelle organisation internationale, ancêtre de l'ONU, a été créée en 1920 avec son siège à Genève ?",
+    options: ["La Société des Nations", "La Croix-Rouge", "Le Conseil de sécurité", "L'Internationale ouvrière"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Les États-Unis n'ont jamais adhéré à la SDN, pourtant imaginée par leur propre président, Woodrow Wilson."
+  },
+  {
+    id: "his_310",
+    categoryId: "histoire",
+    question: "Comment s'appelle le programme de relance lancé par le président Roosevelt pour sortir les États-Unis de la crise des années 1930 ?",
+    options: ["Le Fair Deal", "La Grande Société", "Le New Deal", "Le plan Hoover"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Roosevelt s'adressait régulièrement aux Américains à la radio lors de \"causeries au coin du feu\" restées célèbres."
+  },
+  {
+    id: "his_311",
+    categoryId: "histoire",
+    question: "Que s'est-il passé dans la nuit du 4 août 1789 en France ?",
+    options: ["La fuite du roi à Varennes", "L'abolition des privilèges", "La proclamation de la République", "L'exécution de Robespierre"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? En une seule nuit d'enthousiasme, nobles et clergé ont renoncé à leurs droits féodaux séculaires."
+  },
+  {
+    id: "his_312",
+    categoryId: "histoire",
+    question: "Par quel serment les députés du tiers état ont-ils juré, le 20 juin 1789, de ne pas se séparer avant d'avoir donné une constitution à la France ?",
+    options: ["Le serment de Strasbourg", "Le serment du Grand Châtelet", "Le serment de Versailles", "Le serment du Jeu de paume"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Trouvant leur salle fermée, les députés se sont réunis dans une salle de sport de l'époque, dédiée au jeu de paume."
+  },
+  {
+    id: "his_313",
+    categoryId: "histoire",
+    question: "Dans quelle localité Louis XVI a-t-il été arrêté en juin 1791 alors qu'il fuyait Paris ?",
+    options: ["Metz", "Reims", "Varennes", "Compiègne"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le roi aurait été reconnu grâce à son profil figurant sur les pièces de monnaie et les assignats."
+  },
+  {
+    id: "his_314",
+    categoryId: "histoire",
+    question: "Quel révolutionnaire, ami du peuple, a été assassiné dans sa baignoire par Charlotte Corday en 1793 ?",
+    options: ["Jean-Paul Marat", "Georges Danton", "Camille Desmoulins", "Saint-Just"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Marat travaillait dans son bain pour soulager une maladie de peau ; le peintre David a immortalisé la scène."
+  },
+  {
+    id: "his_315",
+    categoryId: "histoire",
+    question: "Dans quelle ville Napoléon Bonaparte est-il né en 1769 ?",
+    options: ["Nice", "Bastia", "Toulon", "Ajaccio"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La Corse n'était française que depuis un an lorsque Napoléon y est né."
+  },
+  {
+    id: "his_316",
+    categoryId: "histoire",
+    question: "Comment s'appelait la première épouse de Napoléon, couronnée impératrice en 1804 ?",
+    options: ["Marie-Louise d'Autriche", "Joséphine de Beauharnais", "Hortense de Beauharnais", "Désirée Clary"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Napoléon a divorcé de Joséphine car elle ne lui donnait pas d'héritier, mais il aurait prononcé son nom sur son lit de mort."
+  },
+  {
+    id: "his_317",
+    categoryId: "histoire",
+    question: "Comment s'appelait la politique de Napoléon visant à fermer les ports européens au commerce britannique ?",
+    options: ["Le blocus continental", "L'embargo maritime", "La ligne de démarcation", "Le pacte colonial"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Privée de canne à sucre des colonies, l'Europe a alors développé le sucre de betterave."
+  },
+  {
+    id: "his_318",
+    categoryId: "histoire",
+    question: "Quel roi a régné le plus longtemps sur la Belgique, de 1865 à 1909 ?",
+    options: ["Léopold Ier", "Albert Ier", "Léopold II", "Baudouin"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Son règne de 44 ans dépasse de peu celui du roi Baudouin, qui a duré près de 42 ans."
+  },
+  {
+    id: "his_319",
+    categoryId: "histoire",
+    question: "Quel opéra, représenté à Bruxelles en août 1830, a déclenché la révolution belge ?",
+    options: ["Carmen", "La Muette de Portici", "Guillaume Tell", "Les Huguenots"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Enflammé par l'air patriotique \"Amour sacré de la patrie\", le public du théâtre de la Monnaie est descendu dans la rue."
+  },
+  {
+    id: "his_320",
+    categoryId: "histoire",
+    question: "Quel traité de 1839 garantissait la neutralité de la Belgique, qualifié de \"chiffon de papier\" par l'Allemagne en 1914 ?",
+    options: ["Le traité de Gand", "Le traité d'Utrecht", "Le traité de La Haye", "Le traité de Londres"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La violation de la neutralité belge a été l'argument décisif de l'entrée en guerre du Royaume-Uni en 1914."
+  },
+  {
+    id: "his_321",
+    categoryId: "histoire",
+    question: "Quel roi des Belges a abdiqué en 1951, au terme de la crise dite de la \"question royale\" ?",
+    options: ["Albert Ier", "Léopold II", "Léopold III", "Albert II"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Son fils Baudouin est devenu roi à seulement 20 ans."
+  },
+  {
+    id: "his_322",
+    categoryId: "histoire",
+    question: "Quelle université, l'une des plus anciennes d'Europe encore en activité, a été fondée en Belgique en 1425 ?",
+    options: ["L'université de Louvain", "L'université de Gand", "L'université de Liège", "L'université de Bruxelles"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le grand humaniste Érasme y a enseigné au XVIe siècle."
+  },
+  {
+    id: "his_323",
+    categoryId: "histoire",
+    question: "Comment appelle-t-on la révolution pacifique qui a mis fin à la dictature au Portugal en avril 1974 ?",
+    options: ["La révolution de velours", "Le printemps de Lisbonne", "La révolution des tulipes", "La révolution des œillets"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Les soldats insurgés glissaient des œillets rouges dans le canon de leurs fusils, d'où le nom de cette révolution."
+  },
+  {
+    id: "his_324",
+    categoryId: "histoire",
+    question: "Quels accords signés en mars 1962 ont mis fin à la guerre d'Algérie ?",
+    options: ["Les accords de Grenelle", "Les accords d'Évian", "Les accords de Genève", "Les accords de Matignon"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Les accords ont été signés dans la ville thermale d'Évian, au bord du lac Léman."
+  },
+  {
+    id: "his_325",
+    categoryId: "histoire",
+    question: "Quelle défaite française de 1954 a précipité la fin de la guerre d'Indochine ?",
+    options: ["Diên Biên Phu", "Lang Son", "La bataille de Hanoï", "La route coloniale 4"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le camp retranché français était installé dans une cuvette, dominée par l'artillerie adverse cachée dans les collines."
+  },
+  {
+    id: "his_326",
+    categoryId: "histoire",
+    question: "En quelle année la Ve République française a-t-elle été instaurée, avec le général de Gaulle à sa tête ?",
+    options: ["1946", "1954", "1958", "1962"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La Constitution de la Ve République a été approuvée par référendum avec près de 80 % de oui."
+  },
+  {
+    id: "his_327",
+    categoryId: "histoire",
+    question: "Qui a succédé à Charles de Gaulle à la présidence de la République française en 1969 ?",
+    options: ["Valéry Giscard d'Estaing", "Georges Pompidou", "François Mitterrand", "Alain Poher"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le grand centre culturel parisien de Beaubourg porte le nom de Georges Pompidou, qui en a lancé le projet."
+  },
+  {
+    id: "his_328",
+    categoryId: "histoire",
+    question: "Quel garde des Sceaux a porté l'abolition de la peine de mort en France, votée en 1981 ?",
+    options: ["Simone Veil", "Pierre Mauroy", "Michel Rocard", "Robert Badinter"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Robert Badinter est entré au Panthéon, où la République honore ses grandes figures."
+  },
+  {
+    id: "his_329",
+    categoryId: "histoire",
+    question: "Qui a été le premier président socialiste de la Ve République, élu en 1981 ?",
+    options: ["Lionel Jospin", "Pierre Mendès France", "François Mitterrand", "Michel Rocard"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Avec quatorze années à l'Élysée, François Mitterrand détient le record de longévité présidentielle sous la Ve République."
+  },
+  {
+    id: "his_330",
+    categoryId: "histoire",
+    question: "Quel traité signé en 1992 a créé l'Union européenne et préparé la monnaie unique ?",
+    options: ["Le traité de Maastricht", "Le traité d'Amsterdam", "L'Acte unique européen", "Le traité de Schengen"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Maastricht, ville néerlandaise où fut signé le traité, se trouve à quelques kilomètres seulement de la frontière belge."
+  },
+  {
+    id: "his_331",
+    categoryId: "histoire",
+    question: "À quelle date l'Allemagne a-t-elle été officiellement réunifiée ?",
+    options: ["Le 9 novembre 1989", "Le 1er janvier 1991", "Le 8 mai 1990", "Le 3 octobre 1990"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le 3 octobre est depuis le jour de la fête nationale allemande."
+  },
+  {
+    id: "his_332",
+    categoryId: "histoire",
+    question: "Comment s'appelait le système de ségrégation raciale institutionnalisé en Afrique du Sud de 1948 à 1991 ?",
+    options: ["Le protectorat", "L'apartheid", "Le régime des passes", "Le bantoustan"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Le mot apartheid signifie \"séparation\" en afrikaans, la langue des descendants des colons néerlandais."
+  },
+  {
+    id: "his_333",
+    categoryId: "histoire",
+    question: "Quel scandale politique a conduit le président américain Richard Nixon à démissionner en 1974 ?",
+    options: ["Le Watergate", "L'Irangate", "L'affaire des Pentagon Papers", "Le Teapot Dome"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Nixon reste à ce jour le seul président américain à avoir démissionné de ses fonctions."
+  },
+  {
+    id: "his_334",
+    categoryId: "histoire",
+    question: "Quelle mission lunaire de 1970 a connu une explosion en vol, rendant célèbre le message \"Houston, nous avons un problème\" ?",
+    options: ["Apollo 8", "Apollo 12", "Apollo 13", "Apollo 17"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Les astronautes ont utilisé leur module lunaire comme canot de sauvetage pour revenir sains et saufs sur Terre."
+  },
+  {
+    id: "his_335",
+    categoryId: "histoire",
+    question: "Dans quelle station balnéaire de Crimée Roosevelt, Churchill et Staline se sont-ils réunis en février 1945 ?",
+    options: ["Potsdam", "Yalta", "Sébastopol", "Téhéran"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La conférence s'est tenue dans l'ancien palais d'été des tsars, le palais de Livadia."
+  },
+  {
+    id: "his_336",
+    categoryId: "histoire",
+    question: "Dans quelle ville allemande les grands dirigeants nazis ont-ils été jugés par un tribunal international en 1945-1946 ?",
+    options: ["Berlin", "Munich", "Francfort", "Nuremberg"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Ce procès a posé les bases de la justice pénale internationale, dont la Cour pénale internationale est l'héritière."
+  },
+  {
+    id: "his_337",
+    categoryId: "histoire",
+    question: "Comment les Occidentaux ont-ils ravitaillé Berlin-Ouest pendant le blocus soviétique de 1948-1949 ?",
+    options: ["Par des convois ferroviaires blindés", "Par des tunnels secrets", "Par un pont aérien", "Par la voie fluviale"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Au plus fort du pont aérien, un avion atterrissait à Berlin-Ouest en moyenne toutes les 90 secondes."
+  },
+  {
+    id: "his_338",
+    categoryId: "histoire",
+    question: "Quelle couturière noire américaine a refusé de céder sa place dans un bus de Montgomery en 1955 ?",
+    options: ["Rosa Parks", "Harriet Tubman", "Coretta Scott King", "Ella Fitzgerald"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Son geste a déclenché un boycott des bus de 381 jours, mené par un jeune pasteur alors inconnu : Martin Luther King."
+  },
+  {
+    id: "his_339",
+    categoryId: "histoire",
+    question: "Quel archipel de l'Atlantique Sud a été l'enjeu d'une guerre entre le Royaume-Uni et l'Argentine en 1982 ?",
+    options: ["Les Açores", "Les Canaries", "Les Bermudes", "Les Malouines"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? La victoire britannique a considérablement renforcé la popularité de Margaret Thatcher."
+  },
+  {
+    id: "his_340",
+    categoryId: "histoire",
+    question: "En quelle année l'Inde a-t-elle obtenu son indépendance du Royaume-Uni ?",
+    options: ["1937", "1947", "1957", "1962"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? L'indépendance s'est accompagnée de la partition du pays, donnant naissance au Pakistan."
+  },
+  {
+    id: "his_341",
+    categoryId: "histoire",
+    question: "Quelles guerres du XIXe siècle ont opposé la Chine au Royaume-Uni à propos d'un commerce très controversé ?",
+    options: ["Les guerres de l'opium", "Les guerres du thé", "Les guerres de la soie", "Les guerres des Boxers"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? À l'issue de la première guerre de l'opium, la Chine a dû céder Hong Kong au Royaume-Uni, jusqu'en 1997."
+  },
+  {
+    id: "his_342",
+    categoryId: "histoire",
+    question: "Quelle grande révolte de 1857 a ébranlé la domination britannique en Inde ?",
+    options: ["La révolte des Boxers", "La révolte des Taiping", "La révolte des Cipayes", "La révolte des Mahdistes"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Après cette révolte, la Couronne britannique a pris directement le contrôle de l'Inde, jusque-là administrée par une compagnie de commerce."
+  },
+  {
+    id: "his_343",
+    categoryId: "histoire",
+    question: "Quel commodore américain a contraint le Japon à s'ouvrir au commerce international en 1853-1854 ?",
+    options: ["George Dewey", "Matthew Perry", "John Paul Jones", "David Farragut"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? L'arrivée de ses \"navires noirs\" à vapeur a provoqué une véritable onde de choc dans un Japon fermé depuis deux siècles."
+  },
+  {
+    id: "his_344",
+    categoryId: "histoire",
+    question: "Quel ancien esclave a mené la révolution qui a fait d'Haïti la première république noire indépendante ?",
+    options: ["Frederick Douglass", "Dessalines uniquement", "Olaudah Equiano", "Toussaint Louverture"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Capturé par les troupes de Napoléon, Toussaint Louverture est mort en 1803 dans une prison du Jura, un an avant l'indépendance d'Haïti."
+  },
+  {
+    id: "his_345",
+    categoryId: "histoire",
+    question: "Quel général surnommé \"El Libertador\" a libéré une grande partie de l'Amérique du Sud de la domination espagnole ?",
+    options: ["José de San Martín", "Emiliano Zapata", "Simón Bolívar", "Che Guevara"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Un pays porte son nom : la Bolivie."
+  },
+  {
+    id: "his_346",
+    categoryId: "histoire",
+    question: "Quelle doctrine américaine de 1823 s'opposait à toute nouvelle colonisation européenne dans les Amériques ?",
+    options: ["La doctrine Monroe", "La doctrine Truman", "Le Manifest Destiny", "La doctrine Jefferson"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? On la résume souvent par la formule \"l'Amérique aux Américains\"."
+  },
+  {
+    id: "his_347",
+    categoryId: "histoire",
+    question: "À quel pays les États-Unis ont-ils acheté l'Alaska en 1867 ?",
+    options: ["Au Canada", "Au Royaume-Uni", "Au Danemark", "À la Russie"],
+    correctAnswerIndex: 3,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? L'achat, pour 7,2 millions de dollars, fut moqué comme la \"folie de Seward\", avant la découverte de l'or puis du pétrole."
+  },
+  {
+    id: "his_348",
+    categoryId: "histoire",
+    question: "Quel chancelier prussien, surnommé le \"chancelier de fer\", a réalisé l'unification allemande en 1871 ?",
+    options: ["Metternich", "Otto von Bismarck", "Guillaume Ier", "Hindenburg"],
+    correctAnswerIndex: 1,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Bismarck a aussi créé les premières assurances sociales obligatoires au monde, pour couper l'herbe sous le pied des socialistes."
+  },
+  {
+    id: "his_349",
+    categoryId: "histoire",
+    question: "Quel héros de l'unification italienne a conquis le sud de la péninsule avec son expédition des \"Mille chemises rouges\" ?",
+    options: ["Giuseppe Garibaldi", "Cavour", "Mazzini", "Victor-Emmanuel II"],
+    correctAnswerIndex: 0,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Garibaldi était si populaire que Lincoln lui aurait proposé un commandement pendant la guerre de Sécession."
+  },
+  {
+    id: "his_350",
+    categoryId: "histoire",
+    question: "Quel empereur a régné 68 ans sur l'Autriche puis l'Autriche-Hongrie, jusqu'en 1916 ?",
+    options: ["Charles Ier", "Maximilien", "François-Joseph Ier", "Ferdinand Ier"],
+    correctAnswerIndex: 2,
+    difficulty: "adulte",
+    explanation: "Le saviez-vous ? Son épouse, l'impératrice Élisabeth, est restée célèbre sous le surnom de Sissi."
+  },
 ];
