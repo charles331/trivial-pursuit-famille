@@ -8,9 +8,22 @@ import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
 import { QUESTIONS_DATABASE } from './src/data/questions.js';
 import { BOARD_PRESETS } from './src/data/boards.js';
+import { CATEGORY_IDS, normalizeCategoryId } from './src/data/categories.js';
+import {
+  MAX_ADULT_OPTION_LENGTH,
+  MAX_ADULT_QUESTION_LENGTH,
+  normalize as normalizeText,
+} from './src/data/questionRules.js';
 import { checkStore, loadRooms, startRoomPersistence, saveRooms, ROOM_STORE_PATH } from './roomStore.js';
 import { advanceTurn, calculateMoves, resolveAnswer, togglePauseState } from './src/server/gameEngine.js';
 import { createGameStateView } from './src/server/gameStateView.js';
+import {
+  KnownFactIndex,
+  answerKeyOf,
+  assembleGeneratedPack,
+  describeRejections,
+} from './src/server/packAssembly.js';
+import { pickQuestionForPlayer } from './src/server/questionSelection.js';
 import { 
   GameState, 
   Player, 
@@ -35,25 +48,6 @@ const PLAYER_COLORS = ['#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#
 app.set('trust proxy', 1);
 app.use(express.json({ limit: '256kb' }));
 
-// Category Normalizer to prevent accent or formatting mismatches
-function normalizeCategoryId(rawCat: string): CategoryId {
-  if (!rawCat) return 'popculture';
-  const clean = String(rawCat).toLowerCase().trim()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  
-  if (clean.includes('hist')) return 'histoire';
-  if (clean.includes('geo')) return 'geographie';
-  if (clean.includes('cin') || clean.includes('film') || clean.includes('serie')) return 'cinema';
-  if (clean.includes('scien') || clean.includes('nat')) return 'sciences';
-  if (clean.includes('art') || clean.includes('lit')) return 'art';
-  if (clean.includes('sport')) return 'sports';
-  if (clean.includes('pop') || clean.includes('cult')) return 'popculture';
-  if (clean.includes('gastro') || clean.includes('cuis') || clean.includes('manger')) return 'gastronomie';
-
-  const validCategories: CategoryId[] = ['histoire', 'geographie', 'cinema', 'sciences', 'art', 'sports', 'popculture', 'gastronomie'];
-  return validCategories.includes(clean as CategoryId) ? (clean as CategoryId) : 'popculture';
-}
-
 // --- GEMINI API DYNAMIC PACK GENERATOR ---
 
 function normalizeDifficulty(raw: unknown): DifficultyLevel {
@@ -63,21 +57,27 @@ function normalizeDifficulty(raw: unknown): DifficultyLevel {
   return 'adulte';
 }
 
-// Normalized question text, used to detect near-duplicates (accents/punctuation ignored)
-function normalizeQuestionText(text: string): string {
-  return String(text)
-    .toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim();
-}
-
-let baseQuestionTexts: Set<string> | null = null;
-function getBaseQuestionTexts(): Set<string> {
-  if (!baseQuestionTexts) {
-    baseQuestionTexts = new Set(QUESTIONS_DATABASE.map(q => normalizeQuestionText(q.question)));
+/**
+ * Ce que la banque rédigée sait déjà, indexé une seule fois : un pack généré ne
+ * doit ni recopier une carte officielle, ni reposer le même fait autrement.
+ */
+let knownFacts: KnownFactIndex | null = null;
+function getKnownFacts(): KnownFactIndex {
+  if (!knownFacts) {
+    const texts = new Set(QUESTIONS_DATABASE.map(q => normalizeText(q.question)));
+    const questionsByAnswer = new Map<string, string[]>();
+    for (const question of QUESTIONS_DATABASE) {
+      const key = answerKeyOf(question);
+      const group = questionsByAnswer.get(key);
+      if (group) group.push(question.question);
+      else questionsByAnswer.set(key, [question.question]);
+    }
+    knownFacts = {
+      hasQuestionText: (normalizedQuestion: string) => texts.has(normalizedQuestion),
+      questionsSharingAnswer: (answerKey: string) => questionsByAnswer.get(answerKey) ?? [],
+    };
   }
-  return baseQuestionTexts;
+  return knownFacts;
 }
 
 const GENERATED_PACK_SCHEMA = {
@@ -87,7 +87,7 @@ const GENERATED_PACK_SCHEMA = {
     properties: {
       categoryId: {
         type: Type.STRING,
-        enum: ['histoire', 'geographie', 'cinema', 'sciences', 'art', 'sports', 'popculture', 'gastronomie']
+        enum: [...CATEGORY_IDS]
       },
       question: { type: Type.STRING },
       options: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -101,6 +101,10 @@ const GENERATED_PACK_SCHEMA = {
 
 const GENERATION_BATCH_SIZE = 15;
 const GENERATION_MAX_COUNT = 60;
+// Les contrôles éditoriaux rejettent une partie des cartes : on en demande
+// davantage pour livrer quand même le nombre promis à l'organisateur.
+const GENERATION_OVERSHOOT = 1.5;
+const GENERATION_ATTEMPT_CAP = 90;
 const GENERATION_WINDOW_MS = 60 * 60 * 1000;
 const MAX_GENERATIONS_PER_IP = 6;
 const generationAttempts = new Map<string, number[]>();
@@ -134,13 +138,25 @@ async function generateQuestionBatch(
   const perLevel = Math.max(1, Math.floor(count / 3));
   const prompt = `Génère exactement ${count} questions de quiz captivantes, amusantes et FACTUELLEMENT EXACTES en français sur le thème "${themeName}", pour un jeu familial de type Trivial Pursuit.
 
-Règles impératives :
-- Répartis les questions entre les catégories du jeu (histoire, geographie, cinema, sciences, art, sports, popculture, gastronomie) en choisissant celles qui collent le mieux au thème.
+Structure imposée :
+- Répartis les questions entre les catégories du jeu (${CATEGORY_IDS.join(', ')}) en choisissant celles qui collent le mieux au thème. Chaque question doit réellement porter sur "${themeName}".
 - Répartis les difficultés : environ ${perLevel} questions "enfant" (6-10 ans, très simples), ${perLevel} "ado" (11-16 ans) et le reste "adulte".
-- Exactement 4 options par question, une seule correcte (correctAnswerIndex entre 0 et 3), distracteurs plausibles.
-- "explanation" : une anecdote courte et intéressante ("Le saviez-vous ?").
-- Contenu adapté à un public familial, aucune question polémique ou choquante.
-- Aucune question en double ni reformulation d'une autre question du lot.`;
+- Exactement 4 options par question, une seule correcte (correctAnswerIndex entre 0 et 3), distracteurs plausibles et de même famille sémantique.
+- "explanation" : une anecdote courte qui APPREND quelque chose de neuf, absent de l'énoncé et de la bonne réponse. Une explication qui répète la question est refusée.
+
+Calibrage des niveaux :
+- "enfant" : fait concret et visuel, énoncé de 12 mots maximum.
+- "ado" : pas plus long qu'une carte enfant, mais plus daté et plus situé (une année, un lieu, un nom précis).
+- "adulte" : culture générale grand public, où un adulte informé répond juste à peu près une fois sur deux. Pas de pointe d'expert, pas de fait isolé qu'on oublie aussitôt.
+
+Contraintes de forme, éliminatoires :
+- Énoncé de ${MAX_ADULT_QUESTION_LENGTH} caractères maximum, chaque option de ${MAX_ADULT_OPTION_LENGTH} caractères maximum.
+- Interdit : le format « quelle association question-réponse est correcte ? », les paires dans les options, les questions à trou, les préfixes décoratifs (« Question flash : »), les questions vrai/faux.
+- Interdit : révéler la bonne réponse dans l'énoncé, et les quatre options réduites à quatre nombres nus.
+- Deux options ne doivent jamais être identiques.
+- Aucune question en double ni reformulation d'une autre question du lot.
+
+Ancrage : varie les époques, les pays et les disciplines ; évite un tropisme exclusivement français, la Belgique, l'Europe et le reste du monde ont leur place. Contenu familial, aucune question polémique ou choquante.`;
 
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash',
@@ -189,13 +205,17 @@ app.post('/api/generate-pack', async (req, res) => {
 
     const cleanTheme = themeName.trim();
     const requestedCount = Math.min(Math.max(Number(count) || 30, 5), GENERATION_MAX_COUNT);
+    const attemptCount = Math.min(
+      Math.ceil(requestedCount * GENERATION_OVERSHOOT),
+      GENERATION_ATTEMPT_CAP,
+    );
 
     const ai = new GoogleGenAI({ apiKey });
 
     // Split the generation into parallel batches: small batches are far more
     // reliable than a single large one, and one failed batch doesn't sink the pack.
     const batchSizes: number[] = [];
-    for (let remaining = requestedCount; remaining > 0; remaining -= GENERATION_BATCH_SIZE) {
+    for (let remaining = attemptCount; remaining > 0; remaining -= GENERATION_BATCH_SIZE) {
       batchSizes.push(Math.min(GENERATION_BATCH_SIZE, remaining));
     }
 
@@ -219,40 +239,40 @@ app.post('/api/generate-pack', async (req, res) => {
       throw new Error(firstError?.reason instanceof Error ? firstError.reason.message : 'La génération a échoué, réessayez.');
     }
 
-    // Validate, normalize and deduplicate (within the pack and against the base database)
-    const seenTexts = new Set<string>();
-    const baseTexts = getBaseQuestionTexts();
+    // Mise en forme, puis contrôle éditorial complet : ce sont les règles de
+    // l'ADR 0001, celles que `npm run audit:questions` applique à la banque
+    // rédigée. Une carte non conforme est écartée, jamais rafistolée.
     const stamp = Date.now();
-
-    const generatedQuestions: Question[] = rawQuestions
-      .filter((q) => {
-        if (!q || typeof q.question !== 'string' || q.question.trim().length < 10) return false;
-        if (!Array.isArray(q.options) || q.options.length !== 4) return false;
-        if (q.options.some((o: unknown) => typeof o !== 'string' || !String(o).trim())) return false;
-        if (typeof q.correctAnswerIndex !== 'number' || q.correctAnswerIndex < 0 || q.correctAnswerIndex > 3) return false;
-
-        const normalized = normalizeQuestionText(q.question);
-        if (seenTexts.has(normalized) || baseTexts.has(normalized)) return false;
-        seenTexts.add(normalized);
-        return true;
-      })
+    const candidates: Question[] = rawQuestions
+      .filter((q) => q && typeof q.question === 'string' && Array.isArray(q.options))
       .map((q, idx) => ({
         id: `gen_${stamp}_${idx}`,
         categoryId: normalizeCategoryId(q.categoryId),
         question: q.question.trim(),
-        options: q.options.map((o: string) => String(o).trim()),
+        options: q.options.map((o: unknown) => String(o ?? '').trim()),
         correctAnswerIndex: q.correctAnswerIndex,
-        explanation: (typeof q.explanation === 'string' && q.explanation.trim()) || `Question tirée du thème ${cleanTheme}`,
+        explanation: typeof q.explanation === 'string' ? q.explanation.trim() : undefined,
         difficulty: normalizeDifficulty(q.difficulty),
         themePack: cleanTheme
       }));
 
-    if (generatedQuestions.length === 0) {
-      throw new Error('Aucune question valide générée, réessayez avec un thème plus précis.');
+    const pack = assembleGeneratedPack(candidates, requestedCount, getKnownFacts());
+
+    if (pack.questions.length === 0) {
+      throw new Error('Aucune question conforme générée, réessayez avec un thème plus précis.');
     }
 
-    console.log(`[Pack IA] ${generatedQuestions.length}/${rawQuestions.length} questions valides générées pour "${cleanTheme}"`);
-    return res.json({ success: true, questions: generatedQuestions, themeName: cleanTheme });
+    console.log(
+      `[Pack IA] "${cleanTheme}" : ${pack.questions.length} question(s) retenue(s)`
+        + ` sur ${pack.examined} générée(s) — rejets : ${describeRejections(pack.rejections)}`,
+    );
+    return res.json({
+      success: true,
+      questions: pack.questions,
+      themeName: cleanTheme,
+      requested: requestedCount,
+      examined: pack.examined,
+    });
   } catch (err: unknown) {
     console.error('Erreur génération Gemini:', err);
     const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la génération du thème';
@@ -1054,87 +1074,6 @@ io.on('connection', (socket: Socket) => {
     }
   });
 });
-
-// Randomly shuffle question options so correct answer index is randomized
-function shuffleQuestionOptions(q: Question): Question {
-  const originalCorrectOption = q.options[q.correctAnswerIndex];
-  const shuffledOptions = [...q.options];
-  for (let i = shuffledOptions.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
-  }
-  const newCorrectIndex = shuffledOptions.indexOf(originalCorrectOption);
-  return {
-    ...q,
-    options: shuffledOptions,
-    correctAnswerIndex: newCorrectIndex
-  };
-}
-
-// Pick question from pool or DB matching category & player difficulty randomly (Game Consistency Agent)
-function pickQuestionForPlayer(state: GameState, targetCategoryId: CategoryId, playerDifficulty: DifficultyLevel): Question {
-  const activeCustomTheme = state.settings.customThemePackName;
-  const targetCategory = normalizeCategoryId(targetCategoryId);
-
-  // 1. If an active AI theme pack filter is selected, prioritize unused questions from that theme pack
-  if (activeCustomTheme) {
-    const customPackUnused = state.questionsPool.filter(q => 
-      q.themePack && q.themePack.toLowerCase().trim() === activeCustomTheme.toLowerCase().trim() &&
-      !state.usedQuestionIds.includes(q.id)
-    );
-
-    if (customPackUnused.length > 0) {
-      const catMatches = customPackUnused.filter(q => normalizeCategoryId(q.categoryId) === targetCategory);
-      let selected: Question;
-
-      if (catMatches.length > 0) {
-        const diffMatches = catMatches.filter(q => q.difficulty === playerDifficulty);
-        selected = diffMatches.length > 0
-          ? diffMatches[Math.floor(Math.random() * diffMatches.length)]
-          : catMatches[Math.floor(Math.random() * catMatches.length)];
-      } else {
-        const diffMatches = customPackUnused.filter(q => q.difficulty === playerDifficulty);
-        selected = diffMatches.length > 0
-          ? diffMatches[Math.floor(Math.random() * diffMatches.length)]
-          : customPackUnused[Math.floor(Math.random() * customPackUnused.length)];
-      }
-
-      state.usedQuestionIds.push(selected.id);
-      return shuffleQuestionOptions({ ...selected, categoryId: targetCategory });
-    }
-  }
-
-  // 2. Standard Pool Selection (Search unused questions from questionsPool matching targetCategory)
-  let candidates = state.questionsPool.filter(q => 
-    normalizeCategoryId(q.categoryId) === targetCategory && 
-    !state.usedQuestionIds.includes(q.id)
-  );
-
-  // If no unused question for targetCategory, try to find any unused question in questionsPool
-  if (candidates.length === 0) {
-    const allUnused = state.questionsPool.filter(q => !state.usedQuestionIds.includes(q.id));
-    if (allUnused.length > 0) {
-      candidates = allUnused;
-    } else {
-      // Entire pool exhausted: reset usedQuestionIds to restart a fresh cycle
-      state.usedQuestionIds = [];
-      candidates = state.questionsPool.filter(q => normalizeCategoryId(q.categoryId) === targetCategory);
-      if (candidates.length === 0) candidates = state.questionsPool;
-    }
-  }
-
-  // Filter by player difficulty if matching questions exist
-  const diffMatches = candidates.filter(q => q.difficulty === playerDifficulty);
-  const selected = diffMatches.length > 0
-    ? diffMatches[Math.floor(Math.random() * diffMatches.length)]
-    : candidates[Math.floor(Math.random() * candidates.length)];
-
-  state.usedQuestionIds.push(selected.id);
-
-  // Maintain question's category or align with targetCategory
-  const finalCategory = selected.categoryId ? normalizeCategoryId(selected.categoryId) : targetCategory;
-  return shuffleQuestionOptions({ ...selected, categoryId: finalCategory });
-}
 
 // Vite & Static file serving
 async function startServer() {
