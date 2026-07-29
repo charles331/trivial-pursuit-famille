@@ -5,7 +5,9 @@ import { PlayerWedgeBadge } from './PlayerWedgeBadge';
 import { LiveSpotlight } from './LiveSpotlight';
 import { resolveReaderId } from '../server/turnRoles';
 import { soundManager } from '../utils/sound';
-import { Timer, CheckCircle2, XCircle, Sparkles, HelpCircle, ArrowRight, Eye, EyeOff, BookOpen, Volume2 } from 'lucide-react';
+import { Timer, CheckCircle2, XCircle, Sparkles, HelpCircle, ArrowRight, Eye, EyeOff, BookOpen } from 'lucide-react';
+
+const LETTERS = ['A', 'B', 'C', 'D'];
 
 interface QuestionModalProps {
   question: Question;
@@ -43,6 +45,10 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
 }) => {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [localReaderReady, setLocalReaderReady] = useState(false);
+  // The reader's solution is shown only while the button is held down. Phones
+  // get put flat on the table between two questions, and a permanently
+  // highlighted answer was simply read by the player who had to guess it.
+  const [isSolutionHeld, setIsSolutionHeld] = useState(false);
 
   const category = CATEGORIES[question.categoryId] || CATEGORIES.histoire;
 
@@ -76,6 +82,14 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
 
   // Enforce card masking: active player's question is ALWAYS hidden in Reader Mode until answered (NO reveal button)
   const isCardMasked = Boolean(isReaderMode && isIActivePlayer && !lastAnswerResult);
+  const isAnswered = lastAnswerResult !== null;
+  const canAnswer = isMyTurn || isIReader;
+  // The server strips the solution from everyone but the reader, so this is
+  // absent for spectators even though the type says otherwise.
+  const solutionIndex = typeof question.correctAnswerIndex === 'number'
+    ? question.correctAnswerIndex
+    : null;
+  const canHoldToReveal = isIReader && !isAnswered && solutionIndex !== null;
 
   // In Reader Mode, reading aloud takes extra time. Give a minimum 60s when timer is active
   const effectiveTimerSeconds = (isReaderMode && timerSeconds > 0)
@@ -174,20 +188,40 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   useEffect(() => {
     setLocalReaderReady(false);
     setSelectedIdx(null);
+    setIsSolutionHeld(false);
   }, [question.id]);
 
+  // Release the solution from anywhere, not only from the button: a finger that
+  // slides off, a phone put down, a switch to another app. The answer must never
+  // be left on screen because a pointerup landed somewhere else.
+  useEffect(() => {
+    if (!isSolutionHeld) return;
+    const release = () => setIsSolutionHeld(false);
+    window.addEventListener('pointerup', release);
+    window.addEventListener('pointercancel', release);
+    window.addEventListener('blur', release);
+    document.addEventListener('visibilitychange', release);
+    return () => {
+      window.removeEventListener('pointerup', release);
+      window.removeEventListener('pointercancel', release);
+      window.removeEventListener('blur', release);
+      document.removeEventListener('visibilitychange', release);
+    };
+  }, [isSolutionHeld]);
+
   const timerPercent = effectiveTimerSeconds > 0 ? (timeLeft / effectiveTimerSeconds) * 100 : 100;
+  const showTimer = effectiveTimerSeconds > 0 && !isAnswered;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950 animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex justify-center bg-slate-950 animate-fadeIn sm:items-center sm:p-4">
       {isReaderMode && isLocalMode && !localReaderReady && !lastAnswerResult && (
-        <div className="absolute inset-0 z-20 bg-slate-950/95 flex items-center justify-center p-5">
-          <div className="w-full max-w-md text-center space-y-5 bg-slate-900 border-2 border-amber-500/50 rounded-3xl p-7 shadow-2xl">
-            <div className="text-5xl">📱</div>
+        <div className="absolute inset-0 z-20 flex items-start justify-center overflow-y-auto bg-slate-950/95 p-4">
+          <div className="my-auto w-full max-w-md space-y-4 rounded-3xl border-2 border-amber-500/50 bg-slate-900 p-5 text-center shadow-2xl">
+            <div className="text-4xl">📱</div>
             <div>
-              <h2 className="text-2xl font-black text-white">Passez l’appareil à {readerPlayer?.name}</h2>
-              <p className="mt-2 text-sm text-slate-300">
-                {readerPlayer?.name} va lire la carte à voix haute pour {activePlayer.name}. Ne montrez pas l’écran au joueur interrogé.
+              <h2 className="text-xl font-black text-white">Passez l’appareil à {readerPlayer.name}</h2>
+              <p className="mt-1.5 text-sm text-slate-300">
+                {readerPlayer.name} va lire la carte à voix haute pour {activePlayer.name}. Ne montrez pas l’écran au joueur interrogé.
               </p>
             </div>
             <button
@@ -195,56 +229,54 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                 soundManager.playClick();
                 setLocalReaderReady(true);
               }}
-              className="w-full py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black"
+              className="tap-target w-full rounded-2xl bg-amber-500 py-3.5 font-black text-slate-950 hover:bg-amber-400"
             >
-              Je suis {readerPlayer?.name}, afficher la carte
+              Je suis {readerPlayer.name}, afficher la carte
             </button>
           </div>
         </div>
       )}
-      <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border-4 border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
-        
+
+      {/* A full-bleed sheet on a phone, a card on a larger screen. The header and
+          the action bar stay put while only the question area scrolls, so the
+          options and the validate button are always reachable — the card used to
+          overflow a 667 px iPhone with no way to scroll to its bottom. */}
+      <div className="relative flex h-full max-h-dvh w-full max-w-xl flex-col overflow-hidden bg-white dark:bg-slate-900 sm:h-auto sm:max-h-[92dvh] sm:rounded-3xl sm:border-4 sm:border-slate-200 sm:shadow-2xl dark:sm:border-slate-800">
+
         {/* Category Header */}
-        <div 
-          className="p-4 text-white flex items-center justify-between"
+        <div
+          className="flex shrink-0 items-center justify-between gap-2 px-3 py-2 text-white max-sm:pt-[max(0.5rem,env(safe-area-inset-top))] sm:px-4 sm:py-3"
           style={{ backgroundColor: category.color }}
         >
-          <div className="flex items-center gap-2.5">
-            <span className="text-2xl">💡</span>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-black uppercase tracking-widest text-white/80">
-                  THÈME : {category.name}
-                </span>
-                {isReaderMode && (
-                  <span className="px-2 py-0.5 rounded-full bg-black/30 text-[10px] font-black uppercase text-amber-200 flex items-center gap-1">
-                    <BookOpen className="w-3 h-3" /> Mode Lecteur
-                  </span>
-                )}
-              </div>
-              <h2 className="text-base font-extrabold leading-tight">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="shrink-0 text-xl">💡</span>
+            <div className="min-w-0">
+              <p className="truncate text-[10px] font-black uppercase tracking-widest text-white/80">
+                {category.name}
+                {isReaderMode && ' · Mode lecteur'}
+              </p>
+              <h2 className="truncate text-sm font-extrabold leading-tight sm:text-base">
                 Question pour {activePlayer.name} ({activePlayer.difficulty.toUpperCase()})
               </h2>
             </div>
           </div>
 
           {/* Timer Countdown Badge */}
-          {effectiveTimerSeconds > 0 && !lastAnswerResult && (
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-black text-sm bg-black/20 ${timeLeft <= 5 ? 'text-red-200' : 'text-white'}`}>
-              <Timer className="w-4 h-4" />
+          {showTimer && (
+            <div className={`flex shrink-0 items-center gap-1 rounded-full bg-black/20 px-2.5 py-1 text-sm font-black ${timeLeft <= 5 ? 'text-red-200' : 'text-white'}`}>
+              <Timer className="h-3.5 w-3.5" />
               <span>{timeLeft}s</span>
             </div>
           )}
         </div>
 
-        {/* Live camera thumbnail: spectators watch the player who has to answer,
-            the answering player sees their own preview and controls. */}
+        {/* Live duo: the reader and the player being questioned. */}
         <LiveSpotlight />
 
         {/* Progress Timer Line */}
-        {effectiveTimerSeconds > 0 && !lastAnswerResult && (
-          <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800">
-            <div 
+        {showTimer && (
+          <div className="h-1 w-full shrink-0 bg-slate-200 dark:bg-slate-800">
+            <div
               className={`h-full transition-all duration-1000 ease-linear ${timeLeft <= 5 ? 'bg-red-500' : 'bg-amber-500'}`}
               style={{ width: `${timerPercent}%` }}
             />
@@ -252,79 +284,102 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
         )}
 
         {/* Reader Banner Notification */}
-        {isReaderMode && !lastAnswerResult && (
-          <div className="px-4 py-2.5 bg-amber-500/15 border-b border-amber-500/30 flex items-center justify-between text-xs font-bold text-amber-900 dark:text-amber-200">
-            <div className="flex items-center gap-2">
-              <Volume2 className="w-4 h-4 text-amber-500 shrink-0" />
-              {isIActivePlayer ? (
-                <span>
-                  📖 <strong>{readerPlayer?.name || 'Le lecteur'}</strong> lit votre question et les propositions à voix haute !
-                </span>
-              ) : isIReader ? (
-                <span>
-                  📖 <strong>VOUS ÊTES LE LECTEUR !</strong> Lisez la question et les options ci-dessous à <strong>{activePlayer.name}</strong>.
-                </span>
-              ) : (
-                <span>
-                  📖 <strong>{readerPlayer?.name}</strong> lit la question à haute voix pour <strong>{activePlayer.name}</strong>.
-                </span>
-              )}
-            </div>
+        {isReaderMode && !isAnswered && (
+          <div className="flex shrink-0 items-center gap-1.5 border-b border-amber-500/30 bg-amber-500/15 px-3 py-1.5 text-[11px] font-bold leading-snug text-amber-900 dark:text-amber-200">
+            <BookOpen className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+            {isIActivePlayer ? (
+              <span className="min-w-0">
+                <strong>{readerPlayer.name}</strong> vous lit la carte à voix haute.
+              </span>
+            ) : isIReader ? (
+              <span className="min-w-0">
+                <strong>Vous lisez</strong> la question et les options à <strong>{activePlayer.name}</strong>.
+              </span>
+            ) : (
+              <span className="min-w-0">
+                <strong>{readerPlayer.name}</strong> lit la carte à <strong>{activePlayer.name}</strong>.
+              </span>
+            )}
           </div>
         )}
 
-        {/* Question & Options Area */}
-        <div className="p-5 sm:p-6 space-y-5">
-          
+        {/* Question & Options Area — the only scrolling region.
+            `my-auto` on the inner block centres a short card in the space it has
+            and resolves to zero as soon as the content overflows, so a long
+            question scrolls from its very first line instead of being clipped. */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-3 py-3 sm:px-5 sm:py-4">
+         <div className="my-auto space-y-3">
+
           {/* Question Text */}
           {isCardMasked ? (
-            <div className="p-6 bg-purple-50/80 dark:bg-purple-950/40 rounded-2xl border-2 border-dashed border-purple-400 dark:border-purple-800 text-center space-y-3">
-              <div className="w-14 h-14 mx-auto rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-300 flex items-center justify-center text-3xl shadow-inner">
-                🎴
-              </div>
-              <div>
-                <h3 className="font-black text-purple-950 dark:text-purple-100 text-base">
-                  Question Masquée pour {activePlayer.name}
+            <div className="flex items-center gap-3 rounded-2xl border-2 border-dashed border-purple-400 bg-purple-50/80 p-3 dark:border-purple-800 dark:bg-purple-950/40">
+              <span className="shrink-0 text-2xl">🎴</span>
+              <div className="min-w-0">
+                <h3 className="text-sm font-black text-purple-950 dark:text-purple-100">
+                  Carte masquée
                 </h3>
-                <p className="text-xs text-purple-700 dark:text-purple-300 font-semibold mt-1 max-w-md mx-auto">
-                  Écoutez attentivement <strong>{readerPlayer?.name || 'le lecteur'}</strong> qui vous lit la carte à voix haute !
-                </p>
-                <p className="text-[11px] text-purple-600/80 dark:text-purple-400 mt-2 italic">
-                  Répondez de vive voix puis cliquez sur l&apos;option choisie (A, B, C ou D) ci-dessous.
+                <p className="mt-0.5 text-xs font-semibold leading-snug text-purple-700 dark:text-purple-300">
+                  Écoutez <strong>{readerPlayer.name}</strong>, répondez de vive voix, puis touchez l’option choisie.
                 </p>
               </div>
             </div>
           ) : (
-            <div className="space-y-2">
-              {/* Show indicator for Reader showing correct answer */}
-              {isReaderMode && isIReader && !lastAnswerResult && (
-                <div className="inline-block px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-extrabold text-[11px] border border-emerald-500/30 mb-1">
-                  ✨ Vue Lecteur : La bonne réponse est surlignée en vert pour vous !
-                </div>
-              )}
-              <div className="text-slate-900 dark:text-white font-bold text-lg sm:text-xl leading-snug">
-                {question.question}
-              </div>
+            <p className="text-base font-bold leading-snug text-slate-900 dark:text-white sm:text-lg">
+              {question.question}
+            </p>
+          )}
+
+          {/* Hold-to-reveal: the reader checks the answer without exposing it to
+              the table. Nothing is highlighted until the button is held. */}
+          {canHoldToReveal && solutionIndex !== null && (
+            <div className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-50/70 p-1.5 dark:bg-emerald-950/30">
+              <button
+                type="button"
+                aria-label="Maintenir pour afficher la réponse"
+                aria-pressed={isSolutionHeld}
+                onContextMenu={event => event.preventDefault()}
+                onPointerDown={() => setIsSolutionHeld(true)}
+                onPointerLeave={() => setIsSolutionHeld(false)}
+                onKeyDown={event => {
+                  if (event.key === ' ' || event.key === 'Enter') setIsSolutionHeld(true);
+                }}
+                onKeyUp={() => setIsSolutionHeld(false)}
+                onBlur={() => setIsSolutionHeld(false)}
+                className={`tap-target flex shrink-0 select-none touch-manipulation items-center gap-1.5 rounded-lg border px-2.5 text-[11px] font-black uppercase tracking-wide transition-colors ${
+                  isSolutionHeld
+                    ? 'border-emerald-500 bg-emerald-500 text-white'
+                    : 'border-emerald-500/50 bg-white text-emerald-700 dark:bg-slate-800 dark:text-emerald-300'
+                }`}
+                style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none' }}
+              >
+                {isSolutionHeld ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                Révéler
+              </button>
+              <p className="min-w-0 flex-1 text-[11px] font-bold leading-snug text-emerald-800 dark:text-emerald-200">
+                {isSolutionHeld ? (
+                  <>
+                    Réponse&nbsp;: <strong>{LETTERS[solutionIndex]}</strong> — {question.options[solutionIndex]}
+                  </>
+                ) : (
+                  'Réponse cachée. Maintenez le bouton pour la voir.'
+                )}
+              </p>
             </div>
           )}
 
           {/* Option Choices Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {question.options.map((opt, idx) => {
-              const letters = ['A', 'B', 'C', 'D'];
-              const isAnswered = lastAnswerResult !== null;
-              const isCorrect = idx === question.correctAnswerIndex;
+              const isCorrect = idx === solutionIndex;
               const isChosen = lastAnswerResult?.selectedOption === idx;
               const isSelected = !isAnswered && selectedIdx === idx;
-
-              // Reader Mode highlight for designated reader before answer is submitted
-              const isReaderHighlight = isReaderMode && isIReader && !isAnswered && isCorrect;
+              const isReaderHighlight = canHoldToReveal && isSolutionHeld && isCorrect;
 
               let btnStyle = 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 hover:border-amber-500 hover:bg-amber-50/50';
 
               if (isAnswered) {
                 if (isCorrect) {
-                  btnStyle = 'bg-emerald-500 text-white border-emerald-600 font-black shadow-lg scale-[1.02]';
+                  btnStyle = 'bg-emerald-500 text-white border-emerald-600 font-black shadow-lg';
                 } else if (isChosen) {
                   btnStyle = 'bg-red-500 text-white border-red-600 font-bold';
                 } else {
@@ -339,99 +394,97 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
               return (
                 <button
                   key={idx}
-                  disabled={isAnswered || (!isMyTurn && !isIReader)}
+                  disabled={isAnswered || !canAnswer}
                   onClick={() => handleOptionClick(idx)}
-                  className={`flex items-center gap-3 p-3.5 rounded-2xl border-2 text-left text-sm transition-all duration-200 ${btnStyle} ${
-                    !isAnswered && (isMyTurn || isIReader) ? 'active:scale-95' : ''
+                  className={`flex items-center gap-2.5 rounded-xl border-2 p-2.5 text-left text-sm transition-colors ${btnStyle} ${
+                    !isAnswered && canAnswer ? 'active:scale-[0.98]' : ''
                   }`}
                 >
-                  <span className={`w-8 h-8 rounded-xl font-extrabold flex items-center justify-center text-xs shadow-inner flex-shrink-0 ${
-                    isAnswered && isCorrect 
-                      ? 'bg-white/20 text-white' 
+                  <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-extrabold shadow-inner ${
+                    isAnswered && isCorrect
+                      ? 'bg-white/20 text-white'
                       : isReaderHighlight
                       ? 'bg-emerald-500 text-white'
-                      : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200'
+                      : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'
                   }`}>
-                    {letters[idx]}
+                    {LETTERS[idx]}
                   </span>
 
-                  <span className="font-semibold flex-1 leading-snug">
-                    {isCardMasked && !isAnswered ? `Option ${letters[idx]}` : opt}
+                  <span className="min-w-0 flex-1 font-semibold leading-snug">
+                    {isCardMasked && !isAnswered ? `Option ${LETTERS[idx]}` : opt}
                   </span>
 
-                  {isAnswered && isCorrect && <CheckCircle2 className="w-5 h-5 text-white flex-shrink-0" />}
-                  {isAnswered && isChosen && !isCorrect && <XCircle className="w-5 h-5 text-white flex-shrink-0" />}
-                  {isReaderHighlight && !isAnswered && (
-                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-emerald-500 text-white shrink-0">
-                      Correct
-                    </span>
-                  )}
-                  {isSelected && !isAnswered && !isReaderHighlight && (
-                    <CheckCircle2 className="w-5 h-5 text-amber-500 flex-shrink-0" />
-                  )}
+                  {isAnswered && isCorrect && <CheckCircle2 className="h-4 w-4 shrink-0 text-white" />}
+                  {isAnswered && isChosen && !isCorrect && <XCircle className="h-4 w-4 shrink-0 text-white" />}
+                  {isSelected && !isReaderHighlight && <CheckCircle2 className="h-4 w-4 shrink-0 text-amber-500" />}
                 </button>
               );
             })}
           </div>
 
-          {!lastAnswerResult && (isMyTurn || isIReader) && (
-            <div className="space-y-2">
-              <button
-                type="button"
-                disabled={selectedIdx === null}
-                onClick={handleConfirmAnswer}
-                className="w-full py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                {selectedIdx === null ? 'Choisissez une réponse' : `Valider la réponse ${['A', 'B', 'C', 'D'][selectedIdx]}`}
-              </button>
-              <p className="text-[11px] text-center text-slate-500 dark:text-slate-400">
-                Vous pouvez changer de choix avant de valider.
-              </p>
-            </div>
-          )}
-
           {/* Explanation & Result Banner */}
           {lastAnswerResult && (
-            <div className="space-y-4 pt-2 border-t border-slate-200 dark:border-slate-800 animate-fadeIn">
+            <div className="space-y-2.5 border-t border-slate-200 pt-3 animate-fadeIn dark:border-slate-800">
               {/* Earned Wedge Celebration Banner */}
               {lastAnswerResult.earnedWedge && (
-                <div className="p-3 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-sm rounded-2xl flex items-center justify-between shadow-lg">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5" />
-                    <span>CAMEMBERT GAGNÉ EN {CATEGORIES[lastAnswerResult.earnedWedge].name.toUpperCase()} ! 🎉</span>
-                  </div>
-                  <PlayerWedgeBadge wedges={[lastAnswerResult.earnedWedge]} size={36} />
+                <div className="flex items-center justify-between gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 p-2.5 text-xs font-black text-slate-950 shadow-lg">
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    <Sparkles className="h-4 w-4 shrink-0" />
+                    <span className="min-w-0">
+                      CAMEMBERT GAGNÉ EN {CATEGORIES[lastAnswerResult.earnedWedge].name.toUpperCase()} ! 🎉
+                    </span>
+                  </span>
+                  <PlayerWedgeBadge wedges={[lastAnswerResult.earnedWedge]} size={30} />
                 </div>
               )}
 
               {/* Le saviez-vous ? */}
               {question.explanation && (
-                <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-2xl text-xs text-slate-700 dark:text-slate-300 space-y-1">
-                  <div className="font-black text-amber-800 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <HelpCircle className="w-4 h-4 text-amber-500" /> Le saviez-vous ?
+                <div className="space-y-1 rounded-xl border border-amber-200 bg-amber-50 p-2.5 text-xs text-slate-700 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-slate-300">
+                  <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-400">
+                    <HelpCircle className="h-3.5 w-3.5 text-amber-500" /> Le saviez-vous ?
                   </div>
-                  <p className="leading-relaxed font-medium">{question.explanation}</p>
+                  <p className="font-medium leading-relaxed">{question.explanation}</p>
                 </div>
-              )}
-
-              {/* Continue / Next Turn Button */}
-              {(isMyTurn || isIReader) && (
-                <button
-                  onClick={() => {
-                    soundManager.playClick();
-                    onNextTurn();
-                  }}
-                  className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 dark:bg-amber-500 dark:hover:bg-amber-400 dark:text-slate-950 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2 shadow-xl transition-all"
-                >
-                  <span>
-                    {lastAnswerResult.isCorrect ? 'Super ! Relancer le dé 🎲' : 'Passer au Joueur Suivant ➡️'}
-                  </span>
-                  <ArrowRight className="w-4 h-4 stroke-[3]" />
-                </button>
               )}
             </div>
           )}
+         </div>
         </div>
+
+        {/* Action bar: pinned so the only thing left to do is always in reach. */}
+        {canAnswer && (
+          <div className="shrink-0 border-t border-slate-200 bg-white/95 px-3 py-2.5 backdrop-blur max-sm:pb-[max(0.625rem,env(safe-area-inset-bottom))] dark:border-slate-800 dark:bg-slate-900/95">
+            {isAnswered ? (
+              <button
+                onClick={() => {
+                  soundManager.playClick();
+                  onNextTurn();
+                }}
+                className="tap-target flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-3 text-sm font-black text-white shadow-xl transition-colors hover:bg-slate-800 dark:bg-amber-500 dark:text-slate-950 dark:hover:bg-amber-400"
+              >
+                <span>
+                  {lastAnswerResult?.isCorrect ? 'Super ! Relancer le dé 🎲' : 'Passer au Joueur Suivant ➡️'}
+                </span>
+                <ArrowRight className="h-4 w-4 stroke-[3]" />
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  disabled={selectedIdx === null}
+                  onClick={handleConfirmAnswer}
+                  className="tap-target w-full rounded-2xl bg-amber-500 py-3 text-sm font-black text-slate-950 shadow-lg transition-colors hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {selectedIdx === null ? 'Choisissez une réponse' : `Valider la réponse ${LETTERS[selectedIdx]}`}
+                </button>
+                <p className="mt-1.5 hidden text-center text-[11px] text-slate-500 sm:block dark:text-slate-400">
+                  Vous pouvez changer de choix avant de valider.
+                </p>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

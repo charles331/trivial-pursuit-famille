@@ -45,8 +45,8 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950 animate-fadeIn">
-      <div className="relative w-full max-w-lg bg-slate-900 border-4 border-amber-500 rounded-3xl p-6 shadow-2xl text-white text-center space-y-6">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 bg-slate-950 animate-fadeIn">
+      <div className="relative my-auto w-full max-w-lg bg-slate-900 border-4 border-amber-500 rounded-3xl p-6 shadow-2xl text-white text-center space-y-6">
         
         {/* Crown & Trophy Header */}
         <div className="relative inline-block">

@@ -150,8 +150,8 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({
 
       {/* Confirmation Modal to Stop Game */}
       {showLeaveConfirm && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-slate-900 border border-red-500/40 rounded-3xl p-6 max-w-md w-full text-white space-y-5 shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-start justify-center overflow-y-auto p-4 animate-fadeIn">
+          <div className="my-auto bg-slate-900 border border-red-500/40 rounded-3xl p-6 max-w-md w-full text-white space-y-5 shadow-2xl">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-red-500/20 border border-red-500/30 flex items-center justify-center text-red-400">
                 <LogOut className="w-6 h-6" />
@@ -249,8 +249,8 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({
 
       {/* Rules Modal */}
       {showRules && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full text-white space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center overflow-y-auto p-4">
+          <div className="my-auto bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full text-white space-y-4">
             <h3 className="text-lg font-black text-amber-400 flex items-center gap-2">
               📜 Règles du Trivial Pursuit Famille
             </h3>

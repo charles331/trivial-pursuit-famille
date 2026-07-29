@@ -84,9 +84,52 @@ réglage « Mode Lecteur » reste disponible seul, pour les parties sans caméra
 - Deux émetteurs au lieu d’un : à quatre joueurs, chacun des deux encode trois
   flux sortants. Le plafond existant (320×240, 10 i/s, 150 kbit/s par flux)
   reste indispensable et n’a pas été relevé.
-- Un serveur TURN (`VITE_TURN_URL`) devient nettement plus utile : le duo est le
-  cœur du mode, et une paire de joueurs sur deux réseaux différents peut ne pas
-  s’établir en STUN seul. L’échec est signalé et la partie continue.
+- Un serveur TURN (`VITE_TURN_URL`) reste facultatif. Les serveurs STUN publics
+  suffisent dans la grande majorité des cas, y compris entre deux box internet
+  différentes ; TURN ne sert que pour les réseaux qui refusent la connexion
+  directe (NAT symétrique, certains opérateurs mobiles, Wi-Fi d’entreprise).
+  L’échec est signalé aux joueurs concernés et la partie continue. `.env.example`
+  indique où en trouver un si le besoin se présente.
 - Le haut-parleur est un seul interrupteur pour tout le duo, et non un par
   participant : c’est le geste attendu sur mobile, et le déverrouillage audio
   iOS (qui exige un vrai appui) n’a ainsi qu’un seul bouton.
+
+## Complément — La solution ne s’affiche qu’à la demande
+
+Le lecteur voyait la bonne réponse surlignée en vert en permanence. En pratique
+le téléphone finit posé sur la table, et le joueur interrogé lisait la réponse
+par-dessus l’épaule du lecteur.
+
+La solution est désormais masquée par défaut, derrière un bouton « Révéler » que
+le lecteur **maintient** appuyé : elle apparaît le temps de l’appui, sous forme
+de lettre et de texte, et l’option correspondante est surlignée. Chaque lecteur
+gère son propre affichage, l’état étant purement local.
+
+Le relâchement est écouté au niveau de la fenêtre, et pas seulement sur le
+bouton : un doigt qui glisse, un changement d’application ou un onglet qui perd
+le focus referment la réponse. Un `pointerup` qui atterrit ailleurs ne doit
+jamais laisser la solution à l’écran.
+
+## Complément — Tenir sur un iPhone sans défilement
+
+La carte question dépassait la hauteur d’un iPhone de 667 px, et le conteneur
+centrait son contenu en `flex` sans zone de défilement : le débordement partait
+autant vers le haut que vers le bas, et le bas de la carte — les options et le
+bouton de validation — devenait tout simplement inatteignable.
+
+La carte est maintenant une feuille pleine page sur téléphone (`h-full`,
+`max-h-dvh`, encoches respectées) et garde son aspect de carte à partir de `sm`.
+Elle se découpe en trois : en-tête et bandeau lecteur fixes, zone question et
+options seule région défilante, barre d’action épinglée en bas. Le bloc interne
+est centré par `my-auto`, qui se réduit à zéro dès que le contenu déborde — une
+question longue défile donc depuis sa première ligne au lieu d’être rognée.
+
+Les hauteurs ont par ailleurs été resserrées : en-tête sur une ligne, bandeau
+lecteur en une phrase, vignettes du direct en 72 px avec les contrôles sur leur
+propre ligne pleine largeur (ils passaient à la ligne et coûtaient 55 px), et
+options plus compactes.
+
+Le même défaut touchait les autres fenêtres centrées du jeu (ajout d’un joueur
+local, réglages en cours de partie, écran de victoire, confirmations) : sur un
+écran de 600 px, leur bouton de validation était hors de portée. Elles défilent
+désormais et se centrent par `my-auto`.
