@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Trivial Pursuit Famille">
+  <title>Trivial Pursuit Famille</title>
+  <path d="M 32.00 32.00 L 32.00 2.00 A 30.00 30.00 0 0 1 53.21 10.79 Z" fill="#EAB308"/>
+  <path d="M 32.00 32.00 L 53.21 10.79 A 30.00 30.00 0 0 1 62.00 32.00 Z" fill="#3B82F6"/>
+  <path d="M 32.00 32.00 L 62.00 32.00 A 30.00 30.00 0 0 1 53.21 53.21 Z" fill="#EC4899"/>
+  <path d="M 32.00 32.00 L 53.21 53.21 A 30.00 30.00 0 0 1 32.00 62.00 Z" fill="#10B981"/>
+  <path d="M 32.00 32.00 L 32.00 62.00 A 30.00 30.00 0 0 1 10.79 53.21 Z" fill="#8B5CF6"/>
+  <path d="M 32.00 32.00 L 10.79 53.21 A 30.00 30.00 0 0 1 2.00 32.00 Z" fill="#F97316"/>
+  <path d="M 32.00 32.00 L 2.00 32.00 A 30.00 30.00 0 0 1 10.79 10.79 Z" fill="#06B6D4"/>
+  <path d="M 32.00 32.00 L 10.79 10.79 A 30.00 30.00 0 0 1 32.00 2.00 Z" fill="#D97706"/>
+  <circle cx="32.00" cy="32.00" r="30.00" fill="none" stroke="#0B1220" stroke-width="1.65"/>
+  <line x1="32.00" y1="32.00" x2="32.00" y2="2.00" stroke="#0B1220" stroke-width="1.65"/>
+  <line x1="32.00" y1="32.00" x2="53.21" y2="10.79" stroke="#0B1220" stroke-width="1.65"/>
+  <line x1="32.00" y1="32.00" x2="62.00" y2="32.00" stroke="#0B1220" stroke-width="1.65"/>
+  <line x1="32.00" y1="32.00" x2="53.21" y2="53.21" stroke="#0B1220" stroke-width="1.65"/>
+  <line x1="32.00" y1="32.00" x2="32.00" y2="62.00" stroke="#0B1220" stroke-width="1.65"/>
+  <line x1="32.00" y1="32.00" x2="10.79" y2="53.21" stroke="#0B1220" stroke-width="1.65"/>
+  <line x1="32.00" y1="32.00" x2="2.00" y2="32.00" stroke="#0B1220" stroke-width="1.65"/>
+  <line x1="32.00" y1="32.00" x2="10.79" y2="10.79" stroke="#0B1220" stroke-width="1.65"/>
+  <circle cx="32.00" cy="32.00" r="9.00" fill="#0B1220"/>
+  <circle cx="32.00" cy="32.00" r="4.95" fill="#F8FAFC"/>
+</svg>

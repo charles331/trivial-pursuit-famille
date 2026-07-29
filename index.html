@@ -6,16 +6,30 @@
     <title>Trivial Pursuit Famille</title>
     <meta name="description" content="Jeu de quiz familial multijoueur : salons privés, plateaux personnalisables et questions de culture générale pour toute la famille." />
 
+    <!-- Icônes. Le SVG sert aux navigateurs récents, le PNG aux plus anciens,
+         et `apple-touch-icon` à l'ajout sur l'écran d'accueil iOS. -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
     <!-- Aperçu des liens partagés : sans ces balises, un message affiche le
-         titre de la page et l'adresse brute de l'hébergeur. -->
+         titre de la page et l'adresse brute de l'hébergeur. Les adresses
+         d'image sont réécrites en absolu à la livraison (voir server.ts), les
+         messageries refusant les chemins relatifs. -->
     <meta property="og:title" content="Trivial Pursuit Famille" />
     <meta property="og:description" content="Rejoignez le salon et jouez en famille : quiz de culture générale, plateaux personnalisables et niveaux enfant, ado et adulte." />
     <meta property="og:site_name" content="Trivial Pursuit Famille" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="fr_BE" />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Roue des huit catégories du jeu, à côté du titre Trivial Pursuit Famille." />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Trivial Pursuit Famille" />
     <meta name="twitter:description" content="Rejoignez le salon et jouez en famille : quiz de culture générale, plateaux personnalisables et niveaux enfant, ado et adulte." />
+    <meta name="twitter:image" content="/og-image.png" />
 
     <!-- Nom affiché quand la page est ajoutée à l'écran d'accueil. -->
     <meta name="apple-mobile-web-app-title" content="Trivial Pursuit" />
