@@ -13,6 +13,7 @@ import { Lobby } from './components/Lobby';
 import { InGameHeader } from './components/InGameHeader';
 import { LiveChat } from './components/LiveChat';
 import { LiveCameraStatusBar } from './components/LiveSpotlight';
+import { isCardReadAloud } from './server/turnRoles';
 import { questionRevealDelayMs, usePrefersReducedMotion } from './utils/motion';
 
 const VictoryModal = React.lazy(() =>
@@ -309,6 +310,9 @@ export default function App() {
   // Keep it visible only during the short pawn-arrival delay before the card.
   const isBoardCovered =
     showQuestionModal || gameState.phase === 'evaluating' || gameState.phase === 'game_over';
+  // The live camera implies the card is read out loud: opening the reader's
+  // microphone only makes sense for a card the answerer cannot see.
+  const readAloud = isCardReadAloud(gameState.settings);
 
   const gameContent = (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between select-none">
@@ -352,7 +356,7 @@ export default function App() {
             questionStartTime={gameState.questionStartTime}
             lastAnswerResult={gameState.lastAnswerResult}
             isMyTurn={isMyTurn}
-            isReaderMode={gameState.settings.isReaderMode}
+            isReaderMode={readAloud}
             isLocalMode={gameState.settings.isLocalMode}
             allPlayers={gameState.players}
             currentUserId={currentUserId}
@@ -372,7 +376,7 @@ export default function App() {
             questionStartTime={null}
             lastAnswerResult={gameState.lastAnswerResult}
             isMyTurn={isMyTurn}
-            isReaderMode={gameState.settings.isReaderMode}
+            isReaderMode={readAloud}
             isLocalMode={gameState.settings.isLocalMode}
             allPlayers={gameState.players}
             currentUserId={currentUserId}

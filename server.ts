@@ -17,6 +17,7 @@ import {
 import { checkStore, loadRooms, startRoomPersistence, saveRooms, ROOM_STORE_PATH } from './roomStore.js';
 import { advanceTurn, calculateMoves, resolveAnswer, togglePauseState } from './src/server/gameEngine.js';
 import { createGameStateView } from './src/server/gameStateView.js';
+import { isCardReadAloud, resolveOnAirIds, resolveReaderId } from './src/server/turnRoles.js';
 import {
   KnownFactIndex,
   answerKeyOf,
@@ -807,11 +808,9 @@ io.on('connection', (socket: Socket) => {
 
   function isPlayerAllowedToAnswer(room: Room, socketId: string): boolean {
     if (isPlayerAllowedToAct(room, socketId)) return true;
-    if (!room.settings.isReaderMode) return false;
+    if (!isCardReadAloud(room.settings)) return false;
 
-    const players = room.gameState.players;
-    const readerIndex = (room.gameState.activePlayerIndex + 1) % players.length;
-    return players[readerIndex]?.id === socketId;
+    return resolveReaderId(room.gameState.players, room.gameState.activePlayerIndex) === socketId;
   }
 
   /**
@@ -963,15 +962,21 @@ io.on('connection', (socket: Socket) => {
     });
   });
 
-  // WebRTC Signaling for Live Camera Spotlight
-  const isActiveBroadcaster = (room: Room, socketId: string) =>
+  // WebRTC Signaling for the live reader/answerer duo.
+  //
+  // Two players are on air during a question: the answerer and their reader.
+  // Each of them publishes to every other room member, so the duo see and hear
+  // each other and the remaining players follow along. Only a publisher may
+  // offer, which keeps the handshake free of glare: a connection is therefore
+  // fully identified by its publisher, carried in `publisherId`.
+  const isOnAir = (room: Room, socketId: string) =>
     room.settings.enableLiveCamera === true
     && room.gameState.phase === 'question'
-    && room.gameState.players[room.gameState.activePlayerIndex]?.id === socketId;
+    && resolveOnAirIds(room.gameState.players, room.gameState.activePlayerIndex).includes(socketId);
 
   socket.on('webrtc-broadcaster-ready', (data: { roomCode: string }) => {
     const room = getRoom(data.roomCode);
-    if (!room || !isActiveBroadcaster(room, socket.id)) return;
+    if (!room || !isOnAir(room, socket.id)) return;
 
     socket.to(data.roomCode).emit('webrtc-broadcaster-ready', {
       senderPlayerId: socket.id
@@ -981,7 +986,10 @@ io.on('connection', (socket: Socket) => {
   socket.on('webrtc-viewer-ready', (data: { roomCode: string; targetPlayerId: string }) => {
     const room = getRoom(data.roomCode);
     if (!room || !room.sockets.has(socket.id)) return;
-    if (!isActiveBroadcaster(room, data.targetPlayerId)) return;
+    if (!isOnAir(room, data.targetPlayerId)) return;
+    // A publisher never subscribes to itself, and asking for one's own stream
+    // would make it open a peer connection to its own socket.
+    if (data.targetPlayerId === socket.id) return;
 
     io.to(data.targetPlayerId).emit('webrtc-viewer-ready', {
       senderPlayerId: socket.id
@@ -990,7 +998,7 @@ io.on('connection', (socket: Socket) => {
 
   socket.on('webrtc-offer', (data: { roomCode: string; targetPlayerId: string; offer: any }) => {
     const room = getRoom(data.roomCode);
-    if (!room || !isActiveBroadcaster(room, socket.id)) return;
+    if (!room || !isOnAir(room, socket.id)) return;
     if (!room.sockets.has(data.targetPlayerId)) return;
 
     io.to(data.targetPlayerId).emit('webrtc-offer', {
@@ -1002,7 +1010,7 @@ io.on('connection', (socket: Socket) => {
   socket.on('webrtc-answer', (data: { roomCode: string; targetPlayerId: string; answer: any }) => {
     const room = getRoom(data.roomCode);
     if (!room || !room.sockets.has(socket.id)) return;
-    if (!isActiveBroadcaster(room, data.targetPlayerId)) return;
+    if (!isOnAir(room, data.targetPlayerId)) return;
 
     io.to(data.targetPlayerId).emit('webrtc-answer', {
       senderPlayerId: socket.id,
@@ -1010,15 +1018,24 @@ io.on('connection', (socket: Socket) => {
     });
   });
 
-  socket.on('webrtc-candidate', (data: { roomCode: string; targetPlayerId: string; candidate: any }) => {
+  socket.on('webrtc-candidate', (data: {
+    roomCode: string;
+    targetPlayerId: string;
+    publisherId: string;
+    candidate: any;
+  }) => {
     const room = getRoom(data.roomCode);
     if (!room || !room.sockets.has(socket.id)) return;
     if (!room.sockets.has(data.targetPlayerId)) return;
-    const activePlayerId = room.gameState.players[room.gameState.activePlayerIndex]?.id;
-    if (socket.id !== activePlayerId && data.targetPlayerId !== activePlayerId) return;
+    // The candidate must belong to a live connection, and both ends must be part
+    // of it: without this, any room member could inject candidates into a
+    // stranger's session.
+    if (!isOnAir(room, data.publisherId)) return;
+    if (data.publisherId !== socket.id && data.publisherId !== data.targetPlayerId) return;
 
     io.to(data.targetPlayerId).emit('webrtc-candidate', {
       senderPlayerId: socket.id,
+      publisherId: data.publisherId,
       candidate: data.candidate
     });
   });

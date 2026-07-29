@@ -3,6 +3,7 @@ import { Question, Player, CategoryId } from '../types';
 import { CATEGORIES } from '../data/categories';
 import { PlayerWedgeBadge } from './PlayerWedgeBadge';
 import { LiveSpotlight } from './LiveSpotlight';
+import { resolveReaderId } from '../server/turnRoles';
 import { soundManager } from '../utils/sound';
 import { Timer, CheckCircle2, XCircle, Sparkles, HelpCircle, ArrowRight, Eye, EyeOff, BookOpen, Volume2 } from 'lucide-react';
 
@@ -48,22 +49,27 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   // Determine if current client is the active player
   const isIActivePlayer = !localReaderReady && (isMyTurn || (currentUserId ? activePlayer.id === currentUserId : false) || activePlayer.id.startsWith('local_'));
 
-  // Find designated Reader (next player in turn order)
+  // The reader is the player seated just *before* the one being questioned, so
+  // the card is handed over in table order. `resolveReaderId` is the same helper
+  // the server uses to decide who receives the solution.
   const activeIndex = allPlayers.findIndex(p => p.id === activePlayer.id);
-  const readerPlayer = allPlayers.length > 1 
-    ? allPlayers[(activeIndex + 1) % (allPlayers.length || 1)] 
-    : activePlayer;
+  const readerId = activeIndex >= 0 ? resolveReaderId(allPlayers, activeIndex) : null;
+  const readerPlayer = allPlayers.find(p => p.id === readerId) ?? activePlayer;
 
-  // Determine if current client is the designated Reader (MUST be a non-active player when Reader Mode is ENABLED)
+  // Determine if current client is the designated Reader (MUST be a non-active player when Reader Mode is ENABLED).
+  // The match is exact: a spectator who wrongly believed they were the reader
+  // used to be told to read a card the server never sent them.
   const isIReader = Boolean(
     isReaderMode &&
     (
       (isLocalMode && localReaderReady) ||
       (
         !isIActivePlayer &&
-        (currentUserId
-          ? (readerPlayer?.id === currentUserId || (readerPlayer?.id?.startsWith('local_') && activePlayer.id !== readerPlayer?.id))
-          : true)
+        (
+          readerPlayer.id === currentUserId
+          // Pass-and-play seats own no socket: the host acts on their behalf.
+          || (readerPlayer.id.startsWith('local_') && readerPlayer.id !== activePlayer.id)
+        )
       )
     )
   );

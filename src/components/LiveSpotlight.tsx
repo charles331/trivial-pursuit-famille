@@ -3,11 +3,12 @@ import { Camera, CameraOff, Mic, MicOff, Video, VideoOff, Volume2, VolumeX, Aler
 import { useLiveCamera } from '../contexts/liveCamera';
 
 /**
- * The live camera thumbnail, rendered *inside* the question card.
+ * The live duo, rendered *inside* the question card.
  *
- * Spectators see the player who has to answer, small, on the right of the card,
- * with the controls right next to it. The broadcaster sees their own preview in
- * the same place, so muting or stopping the stream is always one tap away.
+ * Two players are on air: the one who answers, and the one just before them who
+ * reads the card out loud. Each of them sees the other's thumbnail next to their
+ * own preview, so the pair really talk to each other. Everyone else sees both
+ * thumbnails and listens.
  *
  * This must stay part of the card's own layout: a floating panel would end up
  * behind the full-screen card.
@@ -15,8 +16,10 @@ import { useLiveCamera } from '../contexts/liveCamera';
 export const LiveSpotlight: React.FC = () => {
   const {
     isCameraEnabled,
-    isActivePlayer,
-    activePlayerName,
+    myRole,
+    isOnAir,
+    answererName,
+    readerName,
     isBroadcasting,
     attachLocalVideo,
     isMuted,
@@ -26,7 +29,7 @@ export const LiveSpotlight: React.FC = () => {
     stopBroadcast,
     needsManualStart,
     startBroadcast,
-    remoteStream,
+    remoteParticipants,
     attachRemoteVideo,
     isRemoteMuted,
     toggleRemoteMute,
@@ -41,29 +44,31 @@ export const LiveSpotlight: React.FC = () => {
 
   if (!isCameraEnabled) return null;
 
-  const showBroadcaster = isActivePlayer && sharingPreference === 'enabled' && (isBroadcasting || needsManualStart);
-  const showSpectator = !isActivePlayer && Boolean(remoteStream);
+  const showSelf = isOnAir && sharingPreference === 'enabled' && (isBroadcasting || needsManualStart);
+  const hasRemotes = remoteParticipants.length > 0;
 
-  if (!showBroadcaster && !showSpectator) return null;
+  if (!showSelf && !hasRemotes) return null;
+
+  const headline = myRole === 'reader'
+    ? `Vous lisez la carte à ${answererName || 'le joueur'}`
+    : myRole === 'answerer'
+      ? `${readerName || 'Un joueur'} vous lit la carte`
+      : `${readerName || 'Un joueur'} lit la carte à ${answererName || 'le joueur'}`;
 
   return (
     <div className="border-b border-slate-200 bg-slate-100 px-3 py-2 dark:border-slate-800 dark:bg-slate-950/60">
-      <div className="flex items-center gap-3">
+      <div className="flex items-start gap-3">
         {/* Label + controls */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" />
             <p className="truncate text-[11px] font-black uppercase tracking-wide text-slate-600 dark:text-slate-300">
-              {showBroadcaster
-                ? isBroadcasting
-                  ? 'Vous êtes en direct'
-                  : 'Caméra en attente'
-                : `${activePlayerName || 'Joueur'} en direct`}
+              {showSelf && !isBroadcasting ? 'Caméra en attente' : headline}
             </p>
           </div>
 
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-            {showBroadcaster && isBroadcasting && (
+            {showSelf && isBroadcasting && (
               <>
                 <button
                   type="button"
@@ -99,7 +104,7 @@ export const LiveSpotlight: React.FC = () => {
               </>
             )}
 
-            {showBroadcaster && !isBroadcasting && needsManualStart && (
+            {showSelf && !isBroadcasting && needsManualStart && (
               <button
                 type="button"
                 onClick={startBroadcast}
@@ -109,12 +114,12 @@ export const LiveSpotlight: React.FC = () => {
               </button>
             )}
 
-            {showSpectator && (
+            {hasRemotes && (
               <>
                 <button
                   type="button"
                   onClick={toggleRemoteMute}
-                  aria-label={isRemoteMuted ? 'Activer le son du joueur' : 'Couper le son du joueur'}
+                  aria-label={isRemoteMuted ? 'Activer le haut-parleur' : 'Couper le haut-parleur'}
                   className={`flex h-9 w-9 items-center justify-center rounded-xl border transition-colors ${
                     isRemoteMuted
                       ? 'border-red-500 bg-red-500/20 text-red-400'
@@ -126,7 +131,7 @@ export const LiveSpotlight: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsCollapsed(value => !value)}
-                  aria-label={isCollapsed ? 'Afficher la vidéo' : 'Masquer la vidéo'}
+                  aria-label={isCollapsed ? 'Afficher les vidéos' : 'Masquer les vidéos'}
                   className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-500 transition-colors dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
                 >
                   {isCollapsed ? <Camera className="h-4 w-4" /> : <CameraOff className="h-4 w-4" />}
@@ -136,49 +141,71 @@ export const LiveSpotlight: React.FC = () => {
           </div>
         </div>
 
-        {/* The thumbnail itself, on the right of the card.
-            Kept mounted while collapsed so the stream never detaches. */}
-        <div
-          className={`relative shrink-0 overflow-hidden rounded-xl border-2 border-slate-300 bg-black dark:border-slate-700 ${
-            isCollapsed ? 'hidden' : ''
-          }`}
-          style={{ width: 96, height: 72 }}
-        >
-          {showSpectator ? (
-            <video
-              ref={attachRemoteVideo}
-              autoPlay
-              playsInline
-              muted={isRemoteMuted}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <video
-              ref={attachLocalVideo}
-              autoPlay
-              playsInline
-              muted
-              className="h-full w-full -scale-x-100 object-cover"
-            />
-          )}
+        {/* The thumbnails, on the right of the card: everyone we receive, plus
+            our own preview when we are on air.
+            Kept mounted while collapsed so the streams never detach. */}
+        <div className={`flex shrink-0 gap-1.5 ${isCollapsed ? 'hidden' : ''}`}>
+          {remoteParticipants.map(participant => (
+            <figure key={participant.playerId} className="m-0 shrink-0">
+              <div
+                className={`relative overflow-hidden rounded-xl border-2 bg-black ${
+                  participant.role === 'reader'
+                    ? 'border-amber-400'
+                    : 'border-slate-300 dark:border-slate-700'
+                }`}
+                style={{ width: 96, height: 72 }}
+              >
+                <video
+                  ref={element => attachRemoteVideo(participant.playerId, element)}
+                  autoPlay
+                  playsInline
+                  muted={isRemoteMuted}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <figcaption className="mt-0.5 max-w-24 truncate text-center text-[9px] font-black uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                {participant.role === 'reader' ? '📖 ' : '🎯 '}
+                {participant.playerName}
+              </figcaption>
+            </figure>
+          ))}
 
-          {showBroadcaster && isVideoOff && (
-            <div className="absolute inset-0 flex items-center justify-center bg-slate-950/85 text-[10px] font-bold text-slate-300">
-              Vidéo coupée
-            </div>
+          {showSelf && (
+            <figure className="m-0 shrink-0">
+              <div
+                className="relative overflow-hidden rounded-xl border-2 border-emerald-500 bg-black"
+                style={{ width: 96, height: 72 }}
+              >
+                <video
+                  ref={attachLocalVideo}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="h-full w-full -scale-x-100 object-cover"
+                />
+                {isVideoOff && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-slate-950/85 text-[10px] font-bold text-slate-300">
+                    Vidéo coupée
+                  </div>
+                )}
+              </div>
+              <figcaption className="mt-0.5 max-w-24 truncate text-center text-[9px] font-black uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+                {myRole === 'reader' ? '📖 Vous' : '🎯 Vous'}
+              </figcaption>
+            </figure>
           )}
         </div>
       </div>
 
       {/* Audio unlock: iOS refuses audible autoplay, and this button used to be
           unreachable behind the card. */}
-      {showSpectator && isAudioBlocked && (
+      {hasRemotes && isAudioBlocked && (
         <button
           type="button"
           onClick={enableRemoteAudio}
           className="tap-target mt-2 w-full rounded-xl bg-amber-500 px-3 py-2 text-xs font-black text-slate-950 shadow"
         >
-          🔊 Toucher pour entendre {activePlayerName || 'le joueur'}
+          🔊 Toucher pour entendre {remoteParticipants.map(p => p.playerName).join(' et ')}
         </button>
       )}
 
@@ -223,7 +250,7 @@ export const LiveCameraStatusBar: React.FC = () => {
             <CameraOff className="h-4 w-4 shrink-0 text-slate-400" />
           )}
           <p className="truncate text-xs">
-            <span className="font-black">Mon direct pendant mes tours :</span>{' '}
+            <span className="font-black">Mon direct quand je réponds ou je lis :</span>{' '}
             <span className={isEnabled ? 'text-emerald-300' : 'text-slate-400'}>
               {isEnabled ? 'activé' : 'désactivé'}
             </span>
