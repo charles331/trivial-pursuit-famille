@@ -1,7 +1,6 @@
 import { Question } from '../../types';
 type Q=[string,[string,string,string,string],string];
 const D:Q[]=[
-["Quel auteur a imaginé la ville d'Armada et le monde de Bas-Lag ?",["China Miéville","Jeff VanderMeer","M. John Harrison","Iain M. Banks"],"Les Scarifiés et Perdido Street Station mêlent fantasy urbaine, politique et créatures étranges."],
 ["Quel roman de Douglas Adams commence par la destruction de la Terre pour une voie express hyperspatiale ?",["Le Guide du voyageur galactique","Dirk Gently","Restaurant at the End of the Universe","Mostly Harmless"],"Arthur Dent échappe à la destruction grâce à son ami extraterrestre Ford Prefect."],
 ["Quel auteur a imaginé la Culture, civilisation post-rareté dirigée avec des intelligences artificielles ?",["Iain M. Banks","Alastair Reynolds","Peter F. Hamilton","Dan Simmons"],"Les romans de la Culture explorent notamment l'interventionnisme d'une société utopique."],
 ["Quel roman d'Ursula K. Le Guin se déroule sur la planète hivernale Gethen ?",["La Main gauche de la nuit","Les Dépossédés","Le Nom du monde est forêt","Rocannon"],"L'envoyé Genly Ai tente de convaincre les nations de Gethen de rejoindre l'Ekumen."],
@@ -9,7 +8,6 @@ const D:Q[]=[
 ["Quel roman d'Octavia E. Butler suit une femme noire transportée dans une plantation esclavagiste ?",["Liens de sang","Parabole du semeur","Aube","La Survivante"],"Dana est ramenée à plusieurs reprises dans le Maryland du début du XIXe siècle."],
 ["Quel écrivain chinois a signé Le Problème à trois corps ?",["Liu Cixin","Chen Qiufan","Hao Jingfang","Ken Liu"],"Le roman ouvre une trilogie consacrée au premier contact avec la civilisation trisolarienne."],
 ["Quel roman de Susanna Clarke met en scène deux magiciens dans l'Angleterre napoléonienne ?",["Jonathan Strange & Mr Norrell","Piranèse","La Tour de Babylone","Stardust"],"La magie réapparaît en Angleterre sur fond de rivalité, de guerre et de pactes féeriques."],
-["Quel auteur a créé le détective sorcier Harry Dresden ?",["Jim Butcher","Ben Aaronovitch","Kevin Hearne","Charles Stross"],"The Dresden Files mêle enquête noire, magie urbaine et créatures surnaturelles à Chicago."],
 ["Quel roman de Neil Gaiman suit le dieu Odin sous le nom de Wednesday ?",["American Gods","Neverwhere","Anansi Boys","Stardust"],"Shadow Moon accompagne Wednesday dans un conflit entre anciennes et nouvelles divinités."],
 ["Quel roman ouvre la carrière d'Amélie Nothomb en 1992 ?",["Hygiène de l'assassin","Stupeur et Tremblements","Métaphysique des tubes","Les Catilinaires"],"Le livre met en scène les entretiens d'un écrivain misanthrope avec plusieurs journalistes."],
 ["Quel auteur belge a écrit Malpertuis ?",["Jean Ray","Georges Simenon","Michel de Ghelderode","Henri Vernes"],"Le roman fantastique enferme d'anciennes divinités dans une maison inquiétante."],
@@ -27,12 +25,8 @@ const D:Q[]=[
 ["Quel jeu de lettres utilise une grille 5 × 5 de mots et des maîtres-espions ?",["Codenames","Decrypto","Just One","So Clover!"],"Un indice et un nombre permettent de relier plusieurs mots tout en évitant l'assassin."],
 ["Quel jeu belge demande à deux équipes d'intercepter des codes chiffrés associés à des mots ?",["Decrypto","Codenames","Cryptid","The Mind"],"Les joueurs donnent des indices assez clairs pour leur équipe mais opaques pour les adversaires."],
 ["Quel jeu d'ambiance utilise un sablier et des célébrités à faire deviner en trois manches ?",["Time's Up!","Taboo","Pictionary","Concept"],"Les mêmes cartes reviennent avec description libre, un seul mot puis mime."],
-["Quel jeu de cartes demande de classer des événements sur une frise chronologique ?",["Timeline","Anno Domini","Chronology","History of the World"],"Une carte n'est retournée qu'après son placement pour révéler sa date."],
 ["Quel jeu de plateau plonge les joueurs dans une enquête londonienne avec des journaux d'époque ?",["Sherlock Holmes Détective Conseil","Mr. Jack","Chronicles of Crime","MicroMacro"],"Le groupe choisit librement ses pistes puis compare sa solution à celle de Sherlock Holmes."],
 ["Quel jeu demande d'observer une grande carte urbaine pour résoudre des crimes ?",["MicroMacro: Crime City","Detective","Unlock!","Suspects"],"Les scènes successives d'une affaire sont dessinées simultanément sur une immense carte."],
-["Quel jeu d'énigmes coopératif se joue sans application et peut demander de plier ou découper du matériel ?",["Exit","Unlock!","Chronicles of Crime","Alchemists"],"La série Exit reproduit une escape room avec cartes, disque décodeur et éléments transformables."],
-["Quel jeu de plis coopératif envoie des astronautes accomplir des missions ?",["The Crew","Hanabi","The Mind","Skull King"],"Les joueurs doivent respecter les règles de couleur tout en réalisant des plis attribués."],
-["Quel jeu coopératif demande de jouer des cartes dans l'ordre sans communiquer ?",["The Mind","Hanabi","The Game","Tranquillity"],"Les joueurs tentent de ressentir le bon moment pour poser leurs nombres croissants."],
 ["Quel jeu de cartes demande de créer un feu d'artifice en tenant sa main à l'envers ?",["Hanabi","The Mind","6 qui prend !","Love Letter"],"Chaque joueur voit les cartes des autres, mais pas les siennes, et dépend d'indices limités."],
 ["Quel feuilleton radiophonique d'Orson Welles provoqua une controverse en 1938 ?",["La Guerre des mondes","The Shadow","Suspense","Dimension X"],"L'adaptation utilisait la forme de bulletins d'information, sans provoquer la panique massive souvent racontée."],
 ["Quel réseau radiophonique britannique diffuse Desert Island Discs depuis 1942 ?",["BBC Radio 4","NPR","RTÉ Radio 1","France Culture"],"Les invités choisissent huit enregistrements à emporter sur une île déserte."],
