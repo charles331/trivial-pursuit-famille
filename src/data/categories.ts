@@ -91,3 +91,35 @@ export const DEFAULT_6_CATEGORIES: CategoryId[] = [
   'art',
   'sports'
 ];
+
+export const CATEGORY_IDS: CategoryId[] = [
+  'histoire',
+  'geographie',
+  'cinema',
+  'sciences',
+  'art',
+  'sports',
+  'popculture',
+  'gastronomie'
+];
+
+/**
+ * Ramène une catégorie écrite librement — accents, pluriels, libellé d'un
+ * modèle de langage — sur l'un des huit camemberts du plateau.
+ */
+export function normalizeCategoryId(rawCat: string): CategoryId {
+  if (!rawCat) return 'popculture';
+  const clean = String(rawCat).toLowerCase().trim()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  if (clean.includes('hist')) return 'histoire';
+  if (clean.includes('geo')) return 'geographie';
+  if (clean.includes('cin') || clean.includes('film') || clean.includes('serie')) return 'cinema';
+  if (clean.includes('scien') || clean.includes('nat')) return 'sciences';
+  if (clean.includes('art') || clean.includes('lit')) return 'art';
+  if (clean.includes('sport')) return 'sports';
+  if (clean.includes('pop') || clean.includes('cult')) return 'popculture';
+  if (clean.includes('gastro') || clean.includes('cuis') || clean.includes('manger')) return 'gastronomie';
+
+  return CATEGORY_IDS.includes(clean as CategoryId) ? (clean as CategoryId) : 'popculture';
+}

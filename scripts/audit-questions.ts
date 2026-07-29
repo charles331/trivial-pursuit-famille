@@ -1,4 +1,21 @@
 import { QUESTIONS_DATABASE } from '../src/data/questions';
+import {
+  MAX_ADULT_OPTION_LENGTH,
+  MAX_ADULT_QUESTION_LENGTH,
+  MAX_BARE_NUMBER_RATIO,
+  MAX_SKELETON_REUSE,
+  comparableAnswer,
+  hasDecorativePrefix,
+  hasGrammarHintAroundBlank,
+  isArtificialFillIn,
+  isBareNumberCard,
+  leaksCorrectAnswer,
+  merelyRestatesQuestion,
+  normalize,
+  paraphrasesSameFact,
+  questionSkeleton,
+  stripDecorativePrefix,
+} from '../src/data/questionRules';
 import { CategoryId, DifficultyLevel, Question } from '../src/types';
 
 const CATEGORIES: CategoryId[] = [
@@ -13,132 +30,6 @@ const CATEGORIES: CategoryId[] = [
 ];
 const DIFFICULTIES: DifficultyLevel[] = ['enfant', 'ado', 'adulte'];
 const ADULT_EDITORIAL_TARGET_PER_CATEGORY = 400;
-
-function normalize(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim();
-}
-
-const CONTENT_STOP_WORDS = new Set([
-  'alors', 'avec', 'avoir', 'cette', 'comme', 'dans', 'depuis', 'elle', 'elles',
-  'entre', 'etre', 'fait', 'font', 'leur', 'leurs', 'mais', 'meme', 'pour',
-  'quel', 'quelle', 'quels', 'quelles', 'sans', 'sont', 'sous', 'tous', 'toutes',
-  'vers', 'votre',
-]);
-
-function contentWords(value: string): Set<string> {
-  return new Set(
-    normalize(value)
-      .split(' ')
-      .filter((word) => word.length >= 4 && !CONTENT_STOP_WORDS.has(word)),
-  );
-}
-
-function containsWholeNormalizedPhrase(haystack: string, needle: string): boolean {
-  const normalizedHaystack = ` ${normalize(haystack)} `;
-  const normalizedNeedle = normalize(needle);
-  return normalizedNeedle.length >= 4
-    && normalizedHaystack.includes(` ${normalizedNeedle} `);
-}
-
-function leaksCorrectAnswer(question: string, correctAnswer: string): boolean {
-  if (!containsWholeNormalizedPhrase(question, correctAnswer)) return false;
-
-  const prompt = ` ${normalize(question)} `;
-  const answer = normalize(correctAnswer);
-  const occurrences = prompt.split(` ${answer} `).length - 1;
-  if (occurrences > 1) return true;
-
-  // Deliberately conservative: merely naming an answer candidate in the
-  // question can be legitimate ("entre le lièvre et la tortue"). We only
-  // reject wording which explicitly asserts that candidate as the answer.
-  return [
-    ` est ${answer} `,
-    ` s appelle ${answer} `,
-    ` appele ${answer} `,
-    ` appelee ${answer} `,
-    ` nomme ${answer} `,
-    ` nommee ${answer} `,
-  ].some((assertion) => prompt.includes(assertion));
-}
-
-function isArtificialFillIn(question: string): boolean {
-  return (
-    /\b(?:compl[eè]te|compl[eé]tez|compl[eè]te-t-il|manque)\b.{0,45}\b(?:fait|phrase|affirmation|citation)\b/i.test(question)
-    || /\bquel (?:mot|[ée]l[ée]ment) compl[eè]te\b/i.test(question)
-    || /(?:_{2,}|[…]{1,3})\s*[a-z]{0,3}\b.*\?/iu.test(question)
-  );
-}
-
-function merelyRestatesQuestion(question: Question, correctAnswer: string): boolean {
-  const explanation = question.explanation?.trim() ?? '';
-  if (!explanation) return true;
-
-  const explanationWithoutLabel = explanation
-    .replace(/^\s*le saviez-vous\s*\?\s*/i, '')
-    .replace(/^\s*(?:r[ée]ponse|explication)\s*:\s*/i, '');
-  const explanationWords = contentWords(explanationWithoutLabel);
-  if (explanationWords.size === 0) return true;
-
-  const knownWords = contentWords(`${question.question} ${correctAnswer}`);
-  return [...explanationWords].every((word) => knownWords.has(word));
-}
-
-
-/**
- * Squelette d'un énoncé : noms propres et titres cités remplacés par un blanc.
- * « Quel fleuve traverse Budapest ? » et « Quel fleuve traverse Belgrade ? »
- * partagent alors la même clé. Un découpage sur les premiers mots les voyait
- * comme deux moules distincts, et laissait passer les séries de dix-huit cartes.
- */
-function questionSkeleton(question: string): string {
-  return question
-    .replace(/[«"][^»"]*[»"]/g, '_')
-    .split(/\s+/)
-    .map((word, index) => (index > 0 && /^[A-ZÀ-Ý]/.test(word) ? '_' : normalize(word)))
-    .join(' ')
-    .replace(/(?:_[\s,]*)+/g, '_ ')
-    .trim();
-}
-
-/** Mots pleins d'un énoncé, pour rapprocher deux reformulations du même fait. */
-function comparableWords(value: string): Set<string> {
-  return new Set(
-    normalize(value)
-      .split(' ')
-      .filter((word) => word.length > 2 && !CONTENT_STOP_WORDS.has(word))
-      .map((word) => {
-        const trimmed = word.replace(/(aux|es|s|e)$/, '');
-        return trimmed.length > 7 ? trimmed.slice(0, 6) : trimmed;
-      }),
-  );
-}
-
-/**
- * Noms propres et titres cités d'un énoncé.
- *
- * Deux cartes peuvent partager la même réponse sans poser le même fait : « La
- * Nuit étoilée » et « Le Café de nuit » sont deux van Gogh, XIII et Thorgal
- * deux séries de Van Hamme. Quand chaque énoncé nomme une œuvre ou une entité
- * que l'autre ignore, il ne s'agit pas d'une reformulation.
- */
-function distinctiveNames(question: string): Set<string> {
-  const quoted = [...question.matchAll(/[«"]([^»"]*)[»"]/g)].map((match) => match[1]);
-  const capitalised = question
-    .split(/\s+/)
-    .slice(1)
-    .filter((word) => /^[A-ZÀ-Ý]/.test(word));
-  return new Set([...quoted, ...capitalised].map(normalize).filter(Boolean));
-}
-
-/** Réponse comparable : « Le Danube » et « Danube » désignent le même fait. */
-function comparableAnswer(answer: string): string {
-  return normalize(answer).replace(/^(le|la|les|l|un|une|des|du|de)\s+/, '');
-}
 
 const errors: string[] = [];
 const editorialIssueCounts = new Map<string, number>();
@@ -217,12 +108,12 @@ for (const question of QUESTIONS_DATABASE) {
     } else if (teenFactSignatures.has(sourceSignature)) {
       editorialError(`Question ado promue au niveau adulte`, question.id);
     }
-    const factSignature = `${normalize(question.question.replace(/^(question flash|défi express|à vous de jouer)\s*:\s*/i, ''))}|${normalize(correctAnswer)}`;
+    const factSignature = `${normalize(stripDecorativePrefix(question.question))}|${normalize(correctAnswer)}`;
     const facts = adultFactsByCategory.get(question.categoryId) ?? new Set<string>();
     if (facts.has(factSignature)) errors.push(`Fait adulte répété : ${question.id}`);
     facts.add(factSignature);
     adultFactsByCategory.set(question.categoryId, facts);
-    if (/^(question flash|défi express|à vous de jouer)\s*:/i.test(question.question)) {
+    if (hasDecorativePrefix(question.question)) {
       errors.push(`Préfixe artificiel interdit : ${question.id}`);
     }
     if (question.id.includes('_adulte_anecdote_')) {
@@ -237,14 +128,13 @@ for (const question of QUESTIONS_DATABASE) {
     if (merelyRestatesQuestion(question, correctAnswer)) {
       editorialError(`Explication adulte non informative`, question.id);
     }
-    if (
-      /(?:_{2,}|[…]{1,3})\s*(?:s|e|es|ent)\b/iu.test(question.question)
-      || /\b(?:un|une|des|le|la|les)\s+(?:_{2,}|[…]{1,3})/iu.test(question.question)
-    ) {
+    if (hasGrammarHintAroundBlank(question.question)) {
       editorialError(`Indice grammatical autour d'un blanc`, question.id);
     }
-    if (question.options.some((option) => option.length > 72)) longAdultOptions += 1;
-    if (question.question.length > 125) longAdultQuestions += 1;
+    if (question.options.some((option) => option.length > MAX_ADULT_OPTION_LENGTH)) {
+      longAdultOptions += 1;
+    }
+    if (question.question.length > MAX_ADULT_QUESTION_LENGTH) longAdultQuestions += 1;
     if (question.id.includes('_adulte_association_')) associationCards += 1;
   }
 }
@@ -253,7 +143,6 @@ for (const question of QUESTIONS_DATABASE) {
 // L'audit ne comparait que des textes identiques : deux cartes « Quelle mer
 // sépare l'Australie de la Nouvelle-Zélande ? » et « Quelle mer se trouve
 // entre l'Australie et la Nouvelle-Zélande ? » passaient toutes deux.
-const PARAPHRASE_OVERLAP = 0.34;
 const adultByAnswer = new Map<string, Question[]>();
 for (const question of QUESTIONS_DATABASE) {
   if (question.difficulty !== 'adulte') continue;
@@ -263,17 +152,7 @@ for (const question of QUESTIONS_DATABASE) {
 for (const group of adultByAnswer.values()) {
   for (let left = 0; left < group.length; left += 1) {
     for (let right = left + 1; right < group.length; right += 1) {
-      const a = comparableWords(group[left].question);
-      const b = comparableWords(group[right].question);
-      if (a.size === 0 || b.size === 0) continue;
-      const namesLeft = distinctiveNames(group[left].question);
-      const namesRight = distinctiveNames(group[right].question);
-      const eachNamesSomethingOwn = [...namesLeft].some((name) => !namesRight.has(name))
-        && [...namesRight].some((name) => !namesLeft.has(name));
-      if (eachNamesSomethingOwn) continue;
-      const shared = [...a].filter((word) => b.has(word)).length;
-      const union = new Set([...a, ...b]).size;
-      if (shared / union >= PARAPHRASE_OVERLAP) {
+      if (paraphrasesSameFact(group[left].question, group[right].question)) {
         editorialError(
           `Fait adulte reformulé (déjà posé par ${group[left].id})`,
           group[right].id,
@@ -284,7 +163,6 @@ for (const group of adultByAnswer.values()) {
 }
 
 // --- Moules d'énoncé sur-utilisés -------------------------------------------
-const MAX_SKELETON_REUSE = 8;
 for (const categoryId of CATEGORIES) {
   const rows = QUESTIONS_DATABASE.filter(
     (question) => question.categoryId === categoryId && question.difficulty === 'adulte',
@@ -305,16 +183,11 @@ for (const categoryId of CATEGORIES) {
 }
 
 // --- Cartes jouées au hasard entre quatre nombres nus ------------------------
-const MAX_BARE_NUMBER_RATIO = 0.05;
 for (const categoryId of CATEGORIES) {
   const rows = QUESTIONS_DATABASE.filter(
     (question) => question.categoryId === categoryId && question.difficulty === 'adulte',
   );
-  const bare = rows.filter(
-    (question) => question.options.every(
-      (option) => /^[^\d]{0,6}\d{1,4}[^\d]{0,12}$/.test(option.trim()),
-    ),
-  ).length;
+  const bare = rows.filter((question) => isBareNumberCard(question.options)).length;
   if (bare > rows.length * MAX_BARE_NUMBER_RATIO) {
     errors.push(
       `${categoryId} compte ${bare} cartes adultes dont les quatre options sont`
@@ -362,10 +235,15 @@ if (associationCards > 0) {
   errors.push(`${associationCards} cartes utilisent encore le format d’association`);
 }
 if (longAdultOptions > 0) {
-  errors.push(`${longAdultOptions} cartes adultes contiennent un choix de plus de 72 caractères`);
+  errors.push(
+    `${longAdultOptions} cartes adultes contiennent un choix de plus de`
+      + ` ${MAX_ADULT_OPTION_LENGTH} caractères`,
+  );
 }
 if (longAdultQuestions > 0) {
-  errors.push(`${longAdultQuestions} cartes adultes dépassent 125 caractères`);
+  errors.push(
+    `${longAdultQuestions} cartes adultes dépassent ${MAX_ADULT_QUESTION_LENGTH} caractères`,
+  );
 }
 
 if (errors.length > 0) {
@@ -382,7 +260,10 @@ if (errors.length > 0) {
 } else {
   console.log(`\nAudit réussi : ${QUESTIONS_DATABASE.length} questions valides.`);
   console.log('Qualité adulte : aucun fait répété ni reformulé, aucun préfixe artificiel,');
-  console.log('question ≤ 125 caractères, choix ≤ 72 caractères.');
+  console.log(
+    `question ≤ ${MAX_ADULT_QUESTION_LENGTH} caractères,`
+      + ` choix ≤ ${MAX_ADULT_OPTION_LENGTH} caractères.`,
+  );
   console.log(`Moules : aucun énoncé adulte réutilisé plus de ${MAX_SKELETON_REUSE} fois par catégorie.`);
   console.log('Niveaux : aucune carte enfant recopiée au niveau ado ou adulte.');
   console.log(`Volume adulte : exactement ${ADULT_EDITORIAL_TARGET_PER_CATEGORY} cartes relues par catégorie.`);

@@ -73,7 +73,11 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
         throw new Error(data.error || 'Impossible de générer le thème.');
       }
 
-      setGenSuccess(`Thème "${data.themeName}" créé avec succès (${data.questions.length} questions générées) !`);
+      const examined = typeof data.examined === 'number' ? data.examined : data.questions.length;
+      setGenSuccess(
+        `Thème "${data.themeName}" créé : ${data.questions.length} questions retenues`
+          + ` sur ${examined} générées (les non conformes sont écartées).`
+      );
       if (onAddCustomPack) {
         onAddCustomPack(data.themeName, data.questions);
       }
@@ -329,7 +333,10 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
         </div>
 
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          L&apos;IA génère un pack instantané de 30 questions sur mesure par thème (jusqu&apos;à 3 thèmes cumulables par salon, s&apos;ajoutant au réservoir de 2 400+ questions officielles).
+          L&apos;IA génère un pack de 30 questions sur mesure par thème (jusqu&apos;à 3 thèmes par salon), soumis aux mêmes règles éditoriales que la banque officielle.
+        </p>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Le thème activé sort <strong>au maximum une fois sur trois tours</strong>, et seulement quand la carte correspond au camembert de la case et au niveau du joueur. Le reste du temps, la banque officielle garde la main.
         </p>
 
         {/* List of Created Custom Theme Packs & Selection */}

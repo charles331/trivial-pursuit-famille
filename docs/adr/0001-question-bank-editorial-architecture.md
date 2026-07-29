@@ -44,10 +44,32 @@ partir d’une autre question au chargement.
   explicites et structurés ;
 - `src/data/questions.ts` : assemblage de la banque ;
 - `src/data/adultExpansion.ts` : complément du seul niveau ado ;
-- `scripts/audit-questions.ts` : contrat automatique de volume et de qualité.
+- `src/data/questionRules.ts` : les règles ci-dessus sous forme de fonctions,
+  seule définition partagée ;
+- `scripts/audit-questions.ts` : contrat automatique de volume et de qualité,
+  bâti sur `questionRules.ts` ;
+- `src/server/packAssembly.ts` : même contrat appliqué aux packs générés par
+  l'IA.
+
+## Packs générés par l'IA
+
+Les cartes produites par `/api/generate-pack` sont des cartes du jeu : elles
+passent les mêmes contrôles que les cartes rédigées, via
+`src/server/packAssembly.ts`. Une carte non conforme est rejetée, jamais
+corrigée d'office — en particulier, une explication manquante n'est plus
+remplacée par un texte de remplissage, qui serait exactement l'« explication non
+informative » que l'audit interdit. Le générateur demande donc plus de cartes
+qu'il n'en livre, pour absorber ces rejets.
+
+Un thème actif ne remplace pas la banque : `src/server/questionSelection.ts` lui
+accorde au maximum une carte tous les trois tours, et seulement si elle
+correspond au camembert de la case et au niveau du joueur. La catégorie d'une
+carte n'est jamais réécrite pour la faire entrer sur une case.
 
 Chaque carte suit l’interface `Question` de `src/types.ts`. Un agent ne doit pas
-modifier le schéma sans mettre à jour l’audit et le présent ADR.
+modifier le schéma sans mettre à jour l’audit et le présent ADR. Une règle
+nouvelle s’écrit dans `src/data/questionRules.ts`, jamais en double dans l’audit
+ou dans le générateur.
 
 ## Contrôles obligatoires
 
