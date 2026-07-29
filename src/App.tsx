@@ -8,17 +8,25 @@ import {
   CategoryId, 
   Question 
 } from './types';
-import { QUESTIONS_DATABASE } from './data/questions';
 import { BOARD_PRESETS } from './data/boards';
 import { Lobby } from './components/Lobby';
 import { InGameHeader } from './components/InGameHeader';
-import { GameCanvasBoard } from './components/GameCanvasBoard';
-import { QuestionModal } from './components/QuestionModal';
 import { LiveChat } from './components/LiveChat';
-import { VictoryModal } from './components/VictoryModal';
-import { LiveCameraProvider } from './components/LiveCameraOverlay';
 import { LiveCameraStatusBar } from './components/LiveSpotlight';
 import { questionRevealDelayMs, usePrefersReducedMotion } from './utils/motion';
+
+const VictoryModal = React.lazy(() =>
+  import('./components/VictoryModal').then(module => ({ default: module.VictoryModal }))
+);
+const LiveCameraProvider = React.lazy(() =>
+  import('./components/LiveCameraOverlay').then(module => ({ default: module.LiveCameraProvider }))
+);
+const GameCanvasBoard = React.lazy(() =>
+  import('./components/GameCanvasBoard').then(module => ({ default: module.GameCanvasBoard }))
+);
+const QuestionModal = React.lazy(() =>
+  import('./components/QuestionModal').then(module => ({ default: module.QuestionModal }))
+);
 
 export default function App() {
   const reducedMotion = usePrefersReducedMotion();
@@ -204,17 +212,17 @@ export default function App() {
     }
   };
 
-  const handleRollDice = () => {
+  const handleRollDice = React.useCallback(() => {
     if (socket && gameState) {
       socket.emit('roll-dice', { roomCode: gameState.roomCode });
     }
-  };
+  }, [socket, gameState?.roomCode]);
 
-  const handleSelectTile = (tileId: number) => {
+  const handleSelectTile = React.useCallback((tileId: number) => {
     if (socket && gameState) {
       socket.emit('move-player', { roomCode: gameState.roomCode, destinationTileId: tileId });
     }
-  };
+  }, [socket, gameState?.roomCode]);
 
   const handleSubmitAnswer = (optionIndex: number) => {
     if (socket && gameState) {
@@ -288,13 +296,14 @@ export default function App() {
 
   const activePlayer = gameState.players[gameState.activePlayerIndex] || gameState.players[0];
   const isMyTurn = activePlayer?.id === currentUserId || gameState.settings.isLocalMode || (activePlayer?.id?.startsWith('local_') ?? false);
+  // Once a full-screen card covers the board there is no reason to keep its
+  // SVG filters, Motion animations and pawn effects mounted underneath it.
+  // Keep it visible only during the short pawn-arrival delay before the card.
+  const isBoardCovered =
+    showQuestionModal || gameState.phase === 'evaluating' || gameState.phase === 'game_over';
 
-  return (
-    // The provider owns the camera/mic session and exposes it through context, so
-    // the live thumbnail can be rendered inside the question card instead of in a
-    // sibling layer that the card would paint over.
-    <LiveCameraProvider socket={socket} gameState={gameState} currentUserId={currentUserId}>
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between select-none">
+  const gameContent = (
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between select-none">
       {/* Top Header Controls */}
       <InGameHeader
         gameState={gameState}
@@ -307,62 +316,89 @@ export default function App() {
       {/* Bottom padding keeps the floating emoji bar from covering the board legend */}
       <main className="flex-1 w-full max-w-5xl mx-auto p-2 sm:p-4 pb-20 sm:pb-24 flex flex-col justify-center">
         <LiveCameraStatusBar />
-        <GameCanvasBoard
-          gameState={gameState}
-          currentUserId={currentUserId}
-          onRollDice={handleRollDice}
-          onSelectTile={handleSelectTile}
-        />
+        {!isBoardCovered && (
+          <React.Suspense
+            fallback={
+              <div className="flex min-h-64 items-center justify-center rounded-3xl border border-slate-800 bg-slate-900 text-sm font-bold text-slate-300">
+                Préparation du plateau…
+              </div>
+            }
+          >
+            <GameCanvasBoard
+              gameState={gameState}
+              currentUserId={currentUserId}
+              onRollDice={handleRollDice}
+              onSelectTile={handleSelectTile}
+            />
+          </React.Suspense>
+        )}
       </main>
 
       {/* Live Question Modal */}
       {showQuestionModal && gameState.phase === 'question' && gameState.currentQuestion && (
-        <QuestionModal
-          question={gameState.currentQuestion}
-          activePlayer={activePlayer}
-          timerSeconds={gameState.settings.timerSeconds}
-          questionStartTime={gameState.questionStartTime}
-          lastAnswerResult={gameState.lastAnswerResult}
-          isMyTurn={isMyTurn}
-          isReaderMode={gameState.settings.isReaderMode}
-          isLocalMode={gameState.settings.isLocalMode}
-          allPlayers={gameState.players}
-          currentUserId={currentUserId}
-          onSubmitAnswer={handleSubmitAnswer}
-          onNextTurn={handleNextTurn}
-        />
+        <React.Suspense fallback={<div className="fixed inset-0 z-50 bg-slate-950" />}>
+          <QuestionModal
+            question={gameState.currentQuestion}
+            activePlayer={activePlayer}
+            timerSeconds={gameState.settings.timerSeconds}
+            questionStartTime={gameState.questionStartTime}
+            lastAnswerResult={gameState.lastAnswerResult}
+            isMyTurn={isMyTurn}
+            isReaderMode={gameState.settings.isReaderMode}
+            isLocalMode={gameState.settings.isLocalMode}
+            allPlayers={gameState.players}
+            currentUserId={currentUserId}
+            onSubmitAnswer={handleSubmitAnswer}
+            onNextTurn={handleNextTurn}
+          />
+        </React.Suspense>
       )}
 
       {/* Evaluating Stage Modal (when question is answered but waiting to click next) */}
       {gameState.phase === 'evaluating' && gameState.currentQuestion && (
-        <QuestionModal
-          question={gameState.currentQuestion}
-          activePlayer={activePlayer}
-          timerSeconds={0}
-          questionStartTime={null}
-          lastAnswerResult={gameState.lastAnswerResult}
-          isMyTurn={isMyTurn}
-          isReaderMode={gameState.settings.isReaderMode}
-          isLocalMode={gameState.settings.isLocalMode}
-          allPlayers={gameState.players}
-          currentUserId={currentUserId}
-          onSubmitAnswer={handleSubmitAnswer}
-          onNextTurn={handleNextTurn}
-        />
+        <React.Suspense fallback={<div className="fixed inset-0 z-50 bg-slate-950" />}>
+          <QuestionModal
+            question={gameState.currentQuestion}
+            activePlayer={activePlayer}
+            timerSeconds={0}
+            questionStartTime={null}
+            lastAnswerResult={gameState.lastAnswerResult}
+            isMyTurn={isMyTurn}
+            isReaderMode={gameState.settings.isReaderMode}
+            isLocalMode={gameState.settings.isLocalMode}
+            allPlayers={gameState.players}
+            currentUserId={currentUserId}
+            onSubmitAnswer={handleSubmitAnswer}
+            onNextTurn={handleNextTurn}
+          />
+        </React.Suspense>
       )}
 
       {/* Victory Celebration Modal */}
       {gameState.phase === 'game_over' && (
-        <VictoryModal
-          gameState={gameState}
-          onPlayAgain={handleStartGame}
-          onReturnToLobby={handleLeaveGame}
-        />
+        <React.Suspense fallback={null}>
+          <VictoryModal
+            gameState={gameState}
+            onPlayAgain={handleStartGame}
+            onReturnToLobby={handleLeaveGame}
+          />
+        </React.Suspense>
       )}
 
       {/* Live Reactions Emoji Toolbar & Overlay */}
       <LiveChat onSendEmoji={handleSendEmoji} emojiEvent={emojiEvent} />
-      </div>
-    </LiveCameraProvider>
+    </div>
+  );
+
+  // Camera/WebRTC code is a sizeable optional feature. The normal game never
+  // downloads or parses it while live camera is disabled (the default).
+  if (!gameState.settings.enableLiveCamera) return gameContent;
+
+  return (
+    <React.Suspense fallback={gameContent}>
+      <LiveCameraProvider socket={socket} gameState={gameState} currentUserId={currentUserId}>
+        {gameContent}
+      </LiveCameraProvider>
+    </React.Suspense>
   );
 }

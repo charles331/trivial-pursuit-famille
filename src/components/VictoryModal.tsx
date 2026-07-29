@@ -22,28 +22,18 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
   useEffect(() => {
     soundManager.playVictory();
 
-    // Trigger confetti cannon
-    const duration = 3.5 * 1000;
-    const end = Date.now() + duration;
+    // Two bounded bursts replace the former 3.5-second requestAnimationFrame
+    // loop, which could create thousands of particles on a phone.
+    const options = {
+      particleCount: 55,
+      spread: 60,
+      ticks: 140,
+      disableForReducedMotion: true
+    };
+    void confetti({ ...options, angle: 60, origin: { x: 0, y: 0.65 } });
+    void confetti({ ...options, angle: 120, origin: { x: 1, y: 0.65 } });
 
-    (function frame() {
-      confetti({
-        particleCount: 5,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0 }
-      });
-      confetti({
-        particleCount: 5,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1 }
-      });
-
-      if (Date.now() < end) {
-        requestAnimationFrame(frame);
-      }
-    })();
+    return () => confetti.reset();
   }, []);
 
   // Sort players by score / wedges count
@@ -55,7 +45,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950 animate-fadeIn">
       <div className="relative w-full max-w-lg bg-slate-900 border-4 border-amber-500 rounded-3xl p-6 shadow-2xl text-white text-center space-y-6">
         
         {/* Crown & Trophy Header */}
@@ -63,7 +53,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
           <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-5xl shadow-xl ring-4 ring-amber-300">
             {avatar.emoji}
           </div>
-          <div className="absolute -top-4 -right-2 bg-amber-400 text-slate-950 p-2 rounded-full shadow-lg animate-bounce">
+          <div className="absolute -top-4 -right-2 bg-amber-400 text-slate-950 p-2 rounded-full shadow-lg">
             <Crown className="w-6 h-6 stroke-[3]" />
           </div>
         </div>

@@ -34,7 +34,7 @@ export const PlayerWedgeBadge: React.FC<PlayerWedgeBadgeProps> = ({
         width={size}
         height={size}
         viewBox={`0 0 ${size} ${size}`}
-        className={isComplete ? 'animate-haloPulse drop-shadow-sm' : 'drop-shadow-sm'}
+        className="drop-shadow-sm"
       >
         {/* Outer Circle Ring */}
         <circle

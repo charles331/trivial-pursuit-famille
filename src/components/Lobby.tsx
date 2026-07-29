@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { GameState, GameSettings, Player, DifficultyLevel } from '../types';
 import { AvatarPicker } from './AvatarPicker';
-import { BoardCustomizer } from './BoardCustomizer';
 import { soundManager } from '../utils/sound';
 import { AVATARS } from '../data/avatars';
 import { BOARD_PRESETS } from '../data/boards';
@@ -9,6 +8,10 @@ import {
   Users, Play, Plus, Copy, Check, Sparkles, Smartphone, Globe, Shield, 
   Crown, Wand2, QrCode, LogOut, Trash2, SlidersHorizontal, ChevronDown
 } from 'lucide-react';
+
+const BoardCustomizer = React.lazy(() =>
+  import('./BoardCustomizer').then(module => ({ default: module.BoardCustomizer }))
+);
 
 interface LobbyProps {
   gameState: GameState | null;
@@ -336,13 +339,17 @@ export const Lobby: React.FC<LobbyProps> = ({
               </button>
               {showAdvancedSettings && (
                 <div className="border-t border-slate-200 dark:border-slate-800">
-                  <BoardCustomizer
-                    settings={gameState.settings}
-                    isHost={isHost}
-                    onUpdateSettings={onUpdateSettings}
-                    onAddCustomPack={onAddCustomPack}
-                    customPacks={gameState.customPacks}
-                  />
+                  <React.Suspense
+                    fallback={<div className="p-5 text-center text-xs font-bold text-slate-500">Chargement des réglages…</div>}
+                  >
+                    <BoardCustomizer
+                      settings={gameState.settings}
+                      isHost={isHost}
+                      onUpdateSettings={onUpdateSettings}
+                      onAddCustomPack={onAddCustomPack}
+                      customPacks={gameState.customPacks}
+                    />
+                  </React.Suspense>
                 </div>
               )}
             </div>
@@ -510,7 +517,7 @@ export const Lobby: React.FC<LobbyProps> = ({
         {tab === 'join' && (
           <form onSubmit={handleJoinSubmit} className="space-y-4 pt-2">
             {codeFromUrl && (
-              <div className="p-4 bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 border-2 border-amber-500/60 text-amber-950 dark:text-amber-200 text-xs font-bold rounded-2xl flex items-center gap-3 shadow-lg animate-pulse">
+              <div className="p-4 bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 border-2 border-amber-500/60 text-amber-950 dark:text-amber-200 text-xs font-bold rounded-2xl flex items-center gap-3 shadow-lg">
                 <Sparkles className="w-5 h-5 text-amber-500 shrink-0" />
                 <div>
                   <div className="font-extrabold text-sm text-amber-600 dark:text-amber-300">

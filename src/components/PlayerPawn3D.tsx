@@ -76,7 +76,9 @@ export const PlayerPawn3D: React.FC<PlayerPawn3DProps> = ({
   const groundY = size * 1.12; // distance from box top to the tile centre
   const boxH = size * 1.34;
   const thickness = Math.max(1.8, size * 0.07);
-  const layerCount = 10;
+  // Four extrusion slices are enough at phone scale. Larger boards retain a
+  // little more depth without paying for ten transformed/filter layers per pawn.
+  const layerCount = boardPx < 520 ? 4 : 7;
 
   const toPx = (value: number) => (value / 1000) * boardPx;
   // Pawns sharing a tile fan out sideways, with a slight depth stagger so the
@@ -230,7 +232,7 @@ export const PlayerPawn3D: React.FC<PlayerPawn3DProps> = ({
           tile the pawn actually occupies. */}
       {isActive && !pathTiles && (
         <div
-          className="animate-haloPulse absolute rounded-[50%]"
+          className="absolute rounded-[50%]"
           style={{
             width: size * 1.15,
             height: size * 0.42,
@@ -264,13 +266,12 @@ export const PlayerPawn3D: React.FC<PlayerPawn3DProps> = ({
 
       {/* Contact shadow: squashes while the pawn is airborne */}
       <motion.div
-        className="pointer-events-none absolute rounded-[50%] bg-slate-950"
+        className="pointer-events-none absolute rounded-[50%] bg-slate-950/75"
         style={{
           width: size * 0.68,
           height: size * 0.19,
           left: size * 0.16,
-          top: groundY - size * 0.095,
-          filter: 'blur(2px)'
+          top: groundY - size * 0.095
         }}
         animate={{
           scale: shadowScaleFrames ?? 1,
@@ -303,7 +304,6 @@ export const PlayerPawn3D: React.FC<PlayerPawn3DProps> = ({
         >
           {/* The token itself: an extruded disc seen in three-quarter view */}
           <div
-            className={isActive && !pathTiles ? 'animate-floatIdle' : undefined}
             style={{
               position: 'absolute',
               left: (size - discD) / 2,
@@ -365,7 +365,8 @@ export const PlayerPawn3D: React.FC<PlayerPawn3DProps> = ({
                   <span style={{ transform: 'translateY(2%)' }}>{avatar.emoji}</span>
                 </div>
 
-                {/* Specular highlight + moving sheen for the active pawn */}
+                {/* Static specular highlight. A moving sheen kept the GPU busy
+                    for the whole turn without adding gameplay information. */}
                 <div
                   className="pointer-events-none absolute inset-0 rounded-full"
                   style={{
@@ -373,18 +374,6 @@ export const PlayerPawn3D: React.FC<PlayerPawn3DProps> = ({
                       'radial-gradient(circle at 30% 22%, rgba(255,255,255,0.45), rgba(255,255,255,0) 55%)'
                   }}
                 />
-                {isActive && (
-                  <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-full">
-                    <div
-                      className="animate-sheen absolute inset-y-0"
-                      style={{
-                        width: '45%',
-                        background:
-                          'linear-gradient(100deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0) 100%)'
-                      }}
-                    />
-                  </div>
-                )}
               </div>
             </div>
 
@@ -403,7 +392,7 @@ export const PlayerPawn3D: React.FC<PlayerPawn3DProps> = ({
           {/* "It is my turn" caret above the token */}
           {isActive && (
             <div
-              className="animate-floatIdle absolute flex flex-col items-center"
+              className="absolute flex flex-col items-center"
               style={{ left: 0, right: 0, top: -size * 0.26 }}
             >
               <div

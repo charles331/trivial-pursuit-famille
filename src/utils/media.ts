@@ -98,9 +98,9 @@ export function describeMediaError(error: unknown, isEmbedded: boolean): string 
 export const BROADCAST_CONSTRAINTS: MediaStreamConstraints = {
   video: {
     facingMode: 'user',
-    width: { ideal: 320, max: 640 },
-    height: { ideal: 240, max: 480 },
-    frameRate: { ideal: 15, max: 20 }
+    width: { ideal: 320, max: 320 },
+    height: { ideal: 240, max: 240 },
+    frameRate: { ideal: 10, max: 10 }
   },
   audio: {
     echoCancellation: true,
@@ -111,12 +111,12 @@ export const BROADCAST_CONSTRAINTS: MediaStreamConstraints = {
 
 /** Cheapest possible capture, only used to trigger the permission prompt. */
 export const PERMISSION_PROBE_CONSTRAINTS: MediaStreamConstraints = {
-  video: { facingMode: 'user', width: { ideal: 320, max: 640 }, height: { ideal: 240, max: 480 } },
+  video: { facingMode: 'user', width: { ideal: 320, max: 320 }, height: { ideal: 240, max: 240 }, frameRate: { max: 10 } },
   audio: true
 };
 
-export const MAX_VIDEO_BITRATE = 250_000;
-export const MAX_VIDEO_FRAMERATE = 15;
+export const MAX_VIDEO_BITRATE = 150_000;
+export const MAX_VIDEO_FRAMERATE = 10;
 
 /**
  * Caps an outgoing video sender. Without this, WebRTC ramps the bitrate up to

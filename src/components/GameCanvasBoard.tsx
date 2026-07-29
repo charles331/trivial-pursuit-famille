@@ -242,7 +242,7 @@ const BoardBackdrop: React.FC<{ config: BoardConfig }> = ({ config }) => {
       <circle cx="500" cy="500" r="342" fill="none" stroke="#FFFFFF" strokeWidth="1.5" opacity="0.12" />
 
       {/* Central hub: wedge ring + gold medallion */}
-      <g filter="url(#tileShadow)">
+      <g>
         {MAIN_CATEGORIES.map((categoryId, index) => {
           const outer = 104;
           const inner = 62;
@@ -272,7 +272,7 @@ const BoardBackdrop: React.FC<{ config: BoardConfig }> = ({ config }) => {
   );
 };
 
-export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
+const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
   gameState,
   currentUserId,
   onRollDice,
@@ -586,18 +586,6 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
                 <stop offset="100%" stopColor="#92400E" />
               </linearGradient>
 
-              <filter id="tileShadow" x="-30%" y="-30%" width="160%" height="160%">
-                <feDropShadow dx="0" dy="5" stdDeviation="6" floodColor="#020617" floodOpacity="0.7" />
-              </filter>
-
-              <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
-                <feGaussianBlur stdDeviation="6" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-
               <marker
                 id="pathArrow"
                 viewBox="0 0 10 10"
@@ -621,7 +609,6 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
                 stroke={withAlpha(tileColor(previewPath[previewPath.length - 1]), 0.55)}
                 strokeWidth="30"
                 strokeLinecap="round"
-                filter="url(#softGlow)"
               />
             )}
 
@@ -638,8 +625,9 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
 
               return (
                 <g key={`tile_${tile.id}`} opacity={isDimmed ? 0.55 : 1} className="transition-opacity duration-300">
-                  <g filter="url(#tileShadow)">
-                    {/* Q.G. tiles wear a rotating golden crown ring */}
+                  <g>
+                    {/* Q.G. tiles wear a static golden crown ring. Keeping this
+                        static avoids continuously repainting SVG on mobile. */}
                     {isCamembert && (
                       <circle
                         cx={tile.x}
@@ -649,7 +637,6 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
                         stroke="#FDE047"
                         strokeWidth="4"
                         strokeDasharray="10 7"
-                        className="animate-spin-slow"
                         style={{ transformOrigin: `${tile.x}px ${tile.y}px` }}
                       />
                     )}
@@ -718,9 +705,7 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
                   strokeLinecap="round"
                   strokeDasharray="14 16"
                   markerEnd="url(#pathArrow)"
-                >
-                  <animate attributeName="stroke-dashoffset" values="60;0" dur="1.1s" repeatCount="indefinite" />
-                </path>
+                />
                 {previewPath.slice(1, -1).map((tile, index) => (
                   <circle
                     key={`preview_step_${tile.id}_${index}`}
@@ -768,7 +753,6 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
                       fill={withAlpha(color, isPreview ? 0.3 : 0.14)}
                       stroke="#FDE047"
                       strokeWidth={isPreview ? 7 : 4}
-                      className="animate-haloPulse"
                       style={{ transformOrigin: `${tile.x}px ${tile.y}px` }}
                     />
 
@@ -919,7 +903,7 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
                 />
               ) : (
                 <div className="flex items-center gap-3 px-2 py-4">
-                  <Hourglass className="h-5 w-5 animate-pulse text-amber-400" />
+                  <Hourglass className="h-5 w-5 text-amber-400" />
                   <span className="text-sm font-bold text-slate-300">
                     {activePlayer?.name} lance le dé…
                   </span>
@@ -1018,7 +1002,7 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
               transition={{ duration: 0.24, ease: EASE_OUT_SOFT }}
               className="flex items-center justify-center gap-3 py-3"
             >
-              <span className="flex h-2.5 w-2.5 animate-pulse rounded-full bg-amber-400" />
+              <span className="flex h-2.5 w-2.5 rounded-full bg-amber-400" />
               <span className="text-sm font-bold text-slate-300">
                 {activePlayer?.name} répond à la question…
               </span>
@@ -1103,3 +1087,7 @@ export const GameCanvasBoard: React.FC<GameCanvasBoardProps> = ({
     </section>
   );
 };
+
+// Emoji reactions and other page-level UI state should not rebuild this large
+// SVG tree when neither the game state nor the board callbacks changed.
+export const GameCanvasBoard = React.memo(GameCanvasBoardComponent);

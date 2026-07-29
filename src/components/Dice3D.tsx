@@ -254,7 +254,7 @@ export const Dice3D: React.FC<Dice3DProps> = ({
             bottom: `${size * 0.12}px`
           }}
           animate={{
-            scale: isRolling ? [1, 0.3, 1.3, 0.8, 1] : dragOffset ? 0.75 : [1, 1.05, 1],
+            scale: isRolling ? [1, 0.3, 1.3, 0.8, 1] : dragOffset ? 0.75 : 1,
             opacity: isRolling ? [0.8, 0.2, 0.9, 0.5, 0.8] : 0.65,
           }}
           transition={{ duration: 1.25, ease: "easeInOut" }}
@@ -295,14 +295,14 @@ export const Dice3D: React.FC<Dice3DProps> = ({
               ? [-90, -110, -15, -35, 0]
               : dragOffset
               ? dragOffset.y * 0.5
-              : [0, -5, 0],
+              : 0,
           }}
           transition={{
             y: isRolling
               ? { duration: 1.25, times: [0, 0.3, 0.7, 0.85, 1], ease: [0.22, 1, 0.36, 1] }
               : dragOffset
               ? { duration: 0 }
-              : { duration: 2.8, repeat: Infinity, ease: "easeInOut" },
+              : { duration: 0.2 },
             rotateX: dragOffset ? { duration: 0 } : { duration: 1.25, ease: [0.15, 0.85, 0.35, 1] },
             rotateY: dragOffset ? { duration: 0 } : { duration: 1.25, ease: [0.15, 0.85, 0.35, 1] },
             rotateZ: { duration: 1.25, ease: [0.15, 0.85, 0.35, 1] },

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Camera, CameraOff, Mic, MicOff, Video, VideoOff, Volume2, VolumeX, AlertTriangle } from 'lucide-react';
-import { useLiveCamera } from './LiveCameraOverlay';
+import { useLiveCamera } from '../contexts/liveCamera';
 
 /**
  * The live camera thumbnail, rendered *inside* the question card.
@@ -9,8 +9,8 @@ import { useLiveCamera } from './LiveCameraOverlay';
  * with the controls right next to it. The broadcaster sees their own preview in
  * the same place, so muting or stopping the stream is always one tap away.
  *
- * This must stay part of the card's own layout: a floating panel ends up behind
- * the card, which is `z-50` with a backdrop blur.
+ * This must stay part of the card's own layout: a floating panel would end up
+ * behind the full-screen card.
  */
 export const LiveSpotlight: React.FC = () => {
   const {

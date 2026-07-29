@@ -70,51 +70,6 @@
   }
 }
 
-@keyframes spinSlow {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Soft breathing halo used for "it is your turn" / "tap here" affordances */
-@keyframes haloPulse {
-  0%,
-  100% {
-    opacity: 0.35;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.85;
-    transform: scale(1.06);
-  }
-}
-
-/* Vertical idle bob for the 3D pawns and floating markers */
-@keyframes floatIdle {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8%);
-  }
-}
-
-/* Light sweep across glossy surfaces (pawn caps, gold medallion) */
-@keyframes sheenSweep {
-  0% {
-    transform: translateX(-120%) rotate(12deg);
-    opacity: 0;
-  }
-  35% {
-    opacity: 0.55;
-  }
-  100% {
-    transform: translateX(160%) rotate(12deg);
-    opacity: 0;
-  }
-}
-
 /* ------------------------------------------------------------------
    Animation utilities
    Declared as plain CSS (outside Tailwind layers) so they always ship
@@ -134,24 +89,6 @@
 
 .animate-popIn {
   animation: popIn var(--dur-base) var(--ease-spring) both;
-}
-
-.animate-spin-slow {
-  animation: spinSlow 9s linear infinite;
-  transform-origin: center;
-}
-
-.animate-haloPulse {
-  animation: haloPulse 2.2s var(--ease-in-out-soft) infinite;
-  transform-origin: center;
-}
-
-.animate-floatIdle {
-  animation: floatIdle 3.4s var(--ease-in-out-soft) infinite;
-}
-
-.animate-sheen {
-  animation: sheenSweep 4.5s var(--ease-in-out-soft) infinite;
 }
 
 /* Staggering helper for lists that appear together (destination chips…) */

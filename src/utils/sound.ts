@@ -3,8 +3,13 @@
 class SoundManager {
   private ctx: AudioContext | null = null;
   private isMuted: boolean = false;
+  private suspendTimer: number | null = null;
 
   private initCtx() {
+    if (this.suspendTimer !== null) {
+      window.clearTimeout(this.suspendTimer);
+      this.suspendTimer = null;
+    }
     if (!this.ctx) {
       const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (AudioContextClass) {
@@ -14,6 +19,16 @@ class SoundManager {
     if (this.ctx && this.ctx.state === 'suspended') {
       this.ctx.resume();
     }
+  }
+
+  /** Let Web Audio release its processing thread between short sound effects. */
+  private scheduleSuspend(delayMs = 2500) {
+    if (!this.ctx) return;
+    if (this.suspendTimer !== null) window.clearTimeout(this.suspendTimer);
+    this.suspendTimer = window.setTimeout(() => {
+      this.suspendTimer = null;
+      if (this.ctx?.state === 'running') void this.ctx.suspend();
+    }, delayMs);
   }
 
   public toggleMute(): boolean {
@@ -46,6 +61,7 @@ class SoundManager {
 
     osc.start();
     osc.stop(this.ctx.currentTime + 0.05);
+    this.scheduleSuspend();
   }
 
   // Dice Roll Sound
@@ -72,6 +88,7 @@ class SoundManager {
       osc.start(time);
       osc.stop(time + 0.03);
     }
+    this.scheduleSuspend();
   }
 
   // Correct Answer Chime
@@ -99,6 +116,7 @@ class SoundManager {
       osc.start(startTime);
       osc.stop(startTime + 0.25);
     });
+    this.scheduleSuspend();
   }
 
   // Wrong Answer Buzzer
@@ -123,6 +141,7 @@ class SoundManager {
 
     osc.start(now);
     osc.stop(now + 0.3);
+    this.scheduleSuspend();
   }
 
   // Pie Wedge / Camembert Win Sound
@@ -150,6 +169,7 @@ class SoundManager {
       osc.start(startTime);
       osc.stop(startTime + 0.3);
     });
+    this.scheduleSuspend();
   }
 
   // Timer Tick
@@ -172,6 +192,7 @@ class SoundManager {
 
     osc.start();
     osc.stop(this.ctx.currentTime + 0.03);
+    this.scheduleSuspend();
   }
 
   // Game Victory Fanfare
@@ -209,6 +230,7 @@ class SoundManager {
 
       t += note.d + 0.05;
     });
+    this.scheduleSuspend(3500);
   }
 }
 

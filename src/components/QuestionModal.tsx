@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Question, Player, CategoryId } from '../types';
 import { CATEGORIES } from '../data/categories';
 import { PlayerWedgeBadge } from './PlayerWedgeBadge';
@@ -84,6 +84,27 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
     }
     return effectiveTimerSeconds;
   });
+  const timeLeftRef = useRef(timeLeft);
+  const selectedIdxRef = useRef(selectedIdx);
+  const submitAnswerRef = useRef(onSubmitAnswer);
+  const answerRoleRef = useRef({ isIActivePlayer, isIReader });
+
+  // The interval below deliberately stays stable for the whole question. Refs
+  // give it the latest selection/callback without tearing it down every second.
+  timeLeftRef.current = timeLeft;
+  selectedIdxRef.current = selectedIdx;
+  submitAnswerRef.current = onSubmitAnswer;
+  answerRoleRef.current = { isIActivePlayer, isIReader };
+
+  useEffect(() => {
+    let initial = effectiveTimerSeconds <= 0 ? 999 : effectiveTimerSeconds;
+    if (effectiveTimerSeconds > 0 && questionStartTime && !(isReaderMode && isLocalMode)) {
+      const elapsed = Math.floor((Date.now() - questionStartTime) / 1000);
+      initial = Math.max(0, effectiveTimerSeconds - elapsed);
+    }
+    timeLeftRef.current = initial;
+    setTimeLeft(initial);
+  }, [question.id, effectiveTimerSeconds, questionStartTime, isReaderMode, isLocalMode]);
 
   // Countdown timer effect
   useEffect(() => {
@@ -95,16 +116,18 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
         const elapsed = Math.floor((Date.now() - questionStartTime) / 1000);
         remaining = Math.max(0, effectiveTimerSeconds - elapsed);
       } else {
-        remaining = Math.max(0, timeLeft - 1);
+        remaining = Math.max(0, timeLeftRef.current - 1);
       }
 
+      timeLeftRef.current = remaining;
       setTimeLeft(remaining);
 
       if (remaining <= 0) {
         clearInterval(interval);
-        if ((isIActivePlayer || isIReader) && !lastAnswerResult) {
-          const timedAnswer = selectedIdx ?? -1;
-          onSubmitAnswer(timedAnswer);
+        const { isIActivePlayer: canActiveAnswer, isIReader: canReaderAnswer } = answerRoleRef.current;
+        if ((canActiveAnswer || canReaderAnswer) && !lastAnswerResult) {
+          const timedAnswer = selectedIdxRef.current ?? -1;
+          submitAnswerRef.current(timedAnswer);
           if (timedAnswer === question.correctAnswerIndex) {
             soundManager.playCorrect();
           } else {
@@ -117,7 +140,16 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [question.id, effectiveTimerSeconds, questionStartTime, lastAnswerResult, isReaderMode, isLocalMode, localReaderReady, selectedIdx, isIActivePlayer, isIReader, onSubmitAnswer, timeLeft]);
+  }, [
+    question.id,
+    question.correctAnswerIndex,
+    effectiveTimerSeconds,
+    questionStartTime,
+    lastAnswerResult,
+    isReaderMode,
+    isLocalMode,
+    localReaderReady
+  ]);
 
   const handleOptionClick = (idx: number) => {
     if (lastAnswerResult) return;
@@ -144,7 +176,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   const timerPercent = effectiveTimerSeconds > 0 ? (timeLeft / effectiveTimerSeconds) * 100 : 100;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950 animate-fadeIn">
       {isReaderMode && isLocalMode && !localReaderReady && !lastAnswerResult && (
         <div className="absolute inset-0 z-20 bg-slate-950/95 flex items-center justify-center p-5">
           <div className="w-full max-w-md text-center space-y-5 bg-slate-900 border-2 border-amber-500/50 rounded-3xl p-7 shadow-2xl">
@@ -195,7 +227,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
 
           {/* Timer Countdown Badge */}
           {effectiveTimerSeconds > 0 && !lastAnswerResult && (
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-black text-sm bg-black/20 ${timeLeft <= 5 ? 'animate-bounce text-red-200' : 'text-white'}`}>
+            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-black text-sm bg-black/20 ${timeLeft <= 5 ? 'text-red-200' : 'text-white'}`}>
               <Timer className="w-4 h-4" />
               <span>{timeLeft}s</span>
             </div>
@@ -220,7 +252,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
         {isReaderMode && !lastAnswerResult && (
           <div className="px-4 py-2.5 bg-amber-500/15 border-b border-amber-500/30 flex items-center justify-between text-xs font-bold text-amber-900 dark:text-amber-200">
             <div className="flex items-center gap-2">
-              <Volume2 className="w-4 h-4 text-amber-500 shrink-0 animate-bounce" />
+              <Volume2 className="w-4 h-4 text-amber-500 shrink-0" />
               {isIActivePlayer ? (
                 <span>
                   📖 <strong>{readerPlayer?.name || 'Le lecteur'}</strong> lit votre question et les propositions à voix haute !
@@ -360,7 +392,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
             <div className="space-y-4 pt-2 border-t border-slate-200 dark:border-slate-800 animate-fadeIn">
               {/* Earned Wedge Celebration Banner */}
               {lastAnswerResult.earnedWedge && (
-                <div className="p-3 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-sm rounded-2xl flex items-center justify-between shadow-lg animate-bounce">
+                <div className="p-3 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-sm rounded-2xl flex items-center justify-between shadow-lg">
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-5 h-5" />
                     <span>CAMEMBERT GAGNÉ EN {CATEGORIES[lastAnswerResult.earnedWedge].name.toUpperCase()} ! 🎉</span>

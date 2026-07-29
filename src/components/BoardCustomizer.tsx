@@ -308,7 +308,7 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
       <div className="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Wand2 className="w-5 h-5 text-purple-500 animate-pulse" />
+            <Wand2 className="w-5 h-5 text-purple-500" />
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">
               Générateur IA de Thème Personnalisé
             </h3>

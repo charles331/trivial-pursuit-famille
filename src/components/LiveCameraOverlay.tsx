@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Socket } from 'socket.io-client';
 import { GameState } from '../types';
 import { Camera, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { LiveCameraContext, LiveCameraContextValue } from '../contexts/liveCamera';
 import {
   BROADCAST_CONSTRAINTS,
   PERMISSION_PROBE_CONSTRAINTS,
@@ -33,87 +34,6 @@ const ICE_SERVERS: RTCConfiguration = {
     ...optionalTurnServer
   ]
 };
-
-/**
- * Everything the spotlight UI needs, exposed through context.
- *
- * The live video used to be a `fixed` panel rendered as a sibling of the
- * question card. The card is `z-50` with a `backdrop-blur`, so the panel was
- * painted *underneath* it during the only phase where the camera is live: the
- * stream was running (and draining the battery) while nobody could see it, and
- * every control — mute, stop, "tap to hear" — was unreachable behind the card.
- * The stream is now consumed inside the card itself, which removes that whole
- * class of stacking bugs.
- */
-export interface LiveCameraContextValue {
-  isCameraEnabled: boolean;
-  mediaAvailable: boolean;
-  mediaMessage: string | null;
-  sharingPreference: 'pending' | 'enabled' | 'disabled';
-  isActivePlayer: boolean;
-  activePlayerName: string | undefined;
-
-  // Broadcaster side
-  isBroadcasting: boolean;
-  localStream: MediaStream | null;
-  attachLocalVideo: (element: HTMLVideoElement | null) => void;
-  isMuted: boolean;
-  toggleMic: () => void;
-  isVideoOff: boolean;
-  toggleVideo: () => void;
-  stopBroadcast: () => void;
-  needsManualStart: boolean;
-  startBroadcast: () => void;
-
-  // Spectator side
-  remoteStream: MediaStream | null;
-  attachRemoteVideo: (element: HTMLVideoElement | null) => void;
-  isRemoteMuted: boolean;
-  toggleRemoteMute: () => void;
-  isAudioBlocked: boolean;
-  enableRemoteAudio: () => void;
-
-  cameraError: string | null;
-  connectionWarning: string | null;
-  enableSharing: () => void;
-  disableSharing: () => void;
-}
-
-const NOOP = () => undefined;
-
-const DEFAULT_CONTEXT: LiveCameraContextValue = {
-  isCameraEnabled: false,
-  mediaAvailable: false,
-  mediaMessage: null,
-  sharingPreference: 'disabled',
-  isActivePlayer: false,
-  activePlayerName: undefined,
-  isBroadcasting: false,
-  localStream: null,
-  attachLocalVideo: NOOP,
-  isMuted: false,
-  toggleMic: NOOP,
-  isVideoOff: false,
-  toggleVideo: NOOP,
-  stopBroadcast: NOOP,
-  needsManualStart: false,
-  startBroadcast: NOOP,
-  remoteStream: null,
-  attachRemoteVideo: NOOP,
-  isRemoteMuted: false,
-  toggleRemoteMute: NOOP,
-  isAudioBlocked: false,
-  enableRemoteAudio: NOOP,
-  cameraError: null,
-  connectionWarning: null,
-  enableSharing: NOOP,
-  disableSharing: NOOP
-};
-
-const LiveCameraContext = React.createContext<LiveCameraContextValue>(DEFAULT_CONTEXT);
-
-/** Safe outside a provider: returns an inert value so the UI simply renders nothing. */
-export const useLiveCamera = (): LiveCameraContextValue => React.useContext(LiveCameraContext);
 
 export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: React.ReactNode }> = ({
   socket,
