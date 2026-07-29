@@ -28,6 +28,9 @@ const GameCanvasBoard = React.lazy(() =>
 const QuestionModal = React.lazy(() =>
   import('./components/QuestionModal').then(module => ({ default: module.QuestionModal }))
 );
+const OpeningRoll = React.lazy(() =>
+  import('./components/OpeningRoll').then(module => ({ default: module.OpeningRoll }))
+);
 
 export default function App() {
   const reducedMotion = usePrefersReducedMotion();
@@ -219,6 +222,12 @@ export default function App() {
     }
   };
 
+  const handleRollOpeningDice = () => {
+    if (socket && gameState) {
+      socket.emit('roll-opening-dice', { roomCode: gameState.roomCode });
+    }
+  };
+
   const handleRollDice = React.useCallback(() => {
     if (socket && gameState) {
       socket.emit('roll-dice', { roomCode: gameState.roomCode });
@@ -300,6 +309,20 @@ export default function App() {
           errorMessage={errorMessage}
         />
       </div>
+    );
+  }
+
+  // Le lancé d'ouverture précède le premier tour et remplace l'ancien départ
+  // d'office sur le siège de l'organisateur.
+  if (gameState.phase === 'opening_roll' && gameState.openingRoll) {
+    return (
+      <React.Suspense fallback={<div className="fixed inset-0 z-50 bg-slate-950" />}>
+        <OpeningRoll
+          gameState={gameState}
+          currentUserId={currentUserId}
+          onRoll={handleRollOpeningDice}
+        />
+      </React.Suspense>
     );
   }
 

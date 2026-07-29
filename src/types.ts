@@ -1,3 +1,5 @@
+import type { OpeningRollState } from './server/openingRoll';
+
 export type CategoryId = 
   | 'histoire'
   | 'geographie'
@@ -95,6 +97,8 @@ export interface GameSettings {
 
 export type GamePhase = 
   | 'lobby'
+  /** Lancé d'ouverture : chaque joueur lance un dé, le plus haut commence. */
+  | 'opening_roll'
   | 'rolling'
   | 'moving'
   | 'question'
@@ -120,6 +124,12 @@ export interface GameState {
     earnedWedge: CategoryId | null;
   } | null;
   winnerId: string | null;
+  /**
+   * Le lancé d'ouverture en cours. Présent uniquement pendant la phase
+   * `opening_roll` ; le reste du temps il vaut `null`, et il est absent des
+   * parties sauvegardées avant son introduction.
+   */
+  openingRoll?: OpeningRollState | null;
   questionsPool: Question[];
   usedQuestionIds: string[];
   customPacks?: { name: string; questions: Question[] }[];

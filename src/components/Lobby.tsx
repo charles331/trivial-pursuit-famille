@@ -374,12 +374,12 @@ export const Lobby: React.FC<LobbyProps> = ({
                   className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-lg rounded-3xl flex items-center justify-center gap-3 shadow-2xl scale-105 active:scale-100 transition-all disabled:opacity-40 disabled:grayscale disabled:cursor-not-allowed"
                 >
                   <Play className="w-6 h-6 fill-slate-950 stroke-none" />
-                  {!gameState.settings.isLocalMode && !everyoneReady ? 'EN ATTENTE DES JOUEURS' : 'DÉMARRER LA PARTIE'}
+                  {!gameState.settings.isLocalMode && !everyoneReady ? 'EN ATTENTE DES JOUEURS' : 'AU LANCÉ DE DÉS !'}
                 </button>
               </div>
             ) : (
               <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl text-center text-slate-600 dark:text-slate-300 font-semibold text-sm">
-                ⏳ En attente que l&apos;hôte lance la partie...
+                ⏳ En attente que l&apos;hôte ouvre le lancé de dés...
               </div>
             )}
           </div>

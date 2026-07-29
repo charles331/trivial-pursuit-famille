@@ -17,6 +17,15 @@ import {
 import { checkStore, loadRooms, startRoomPersistence, saveRooms, ROOM_STORE_PATH } from './roomStore.js';
 import { advanceTurn, calculateMoves, resolveAnswer, togglePauseState } from './src/server/gameEngine.js';
 import { createGameStateView } from './src/server/gameStateView.js';
+import {
+  createOpeningRoll,
+  openingContenders,
+  pendingRollerId,
+  recordOpeningRoll,
+  remapOpeningRollId,
+  settleOpeningRoll,
+  unblockOpeningRoll,
+} from './src/server/openingRoll.js';
 import { isCardReadAloud, resolveOnAirIds, resolveReaderId } from './src/server/turnRoles.js';
 import {
   KnownFactIndex,
@@ -550,6 +559,13 @@ io.on('connection', (socket: Socket) => {
     room.reconnectTokens.set(socket.id, expectedSessionToken);
     room.emptySince = null;
 
+    // Le lancé d'ouverture est indexé sur les identifiants de joueur : il doit
+    // suivre le nouvel id, sinon le revenant n'est plus en lice et son jet est
+    // perdu — voire le lancé bloqué s'il était le dernier attendu.
+    if (room.gameState.openingRoll) {
+      remapOpeningRollId(room.gameState.openingRoll, oldSocketId, socket.id);
+    }
+
     if (room.hostSocketId === oldSocketId) {
       room.hostSocketId = socket.id;
       room.hostDisconnectedAt = null;
@@ -779,13 +795,108 @@ io.on('connection', (socket: Socket) => {
     room.gameState.questionsPool = shuffled([...customQuestions, ...QUESTIONS_DATABASE]);
     room.gameState.usedQuestionIds = [];
 
-    room.gameState.phase = 'rolling';
-    room.gameState.activePlayerIndex = 0;
     room.gameState.diceValue = null;
     room.gameState.possibleMoves = [];
-    room.gameState.lastTurnEventMessage = null;
+    room.gameState.winnerId = null;
+    room.gameState.currentQuestion = null;
+    room.gameState.lastAnswerResult = null;
+
+    // Le premier tour ne revient plus au siège de l'organisateur : les joueurs
+    // le jouent au dé. `activePlayerIndex` n'est fixé qu'à l'issue du lancé.
+    const contenders = openingContenders(room.gameState.players, room.settings.isLocalMode === true);
+
+    if (contenders.length < 2) {
+      // Un seul joueur : rien à départager.
+      room.gameState.openingRoll = null;
+      room.gameState.phase = 'rolling';
+      room.gameState.activePlayerIndex = 0;
+      room.gameState.lastTurnEventMessage = null;
+      emitGameState(room);
+      return;
+    }
+
+    room.gameState.openingRoll = createOpeningRoll(contenders);
+    room.gameState.phase = 'opening_roll';
+    room.gameState.lastTurnEventMessage = 'Qui commence ? Le plus haut dé ouvre la partie !';
 
     emitGameState(room);
+  });
+
+  /** En pass & play tous les sièges sont là ; en ligne il faut être connecté. */
+  function isPresentInRoom(room: Room, playerId: string): boolean {
+    if (room.settings.isLocalMode) return true;
+    return room.gameState.players.find(player => player.id === playerId)?.isConnected === true;
+  }
+
+  /**
+   * Sort du lancé d'ouverture les joueurs qui viennent de partir, et le conclut
+   * si les départs suffisent à désigner un vainqueur.
+   *
+   * Sans cela, quitter le salon pendant le lancé laisse la partie à attendre
+   * indéfiniment le jet de quelqu'un qui ne reviendra pas.
+   */
+  function releaseOpeningRoll(room: Room): void {
+    const state = room.gameState.openingRoll;
+    if (room.gameState.phase !== 'opening_roll' || !state) return;
+
+    unblockOpeningRoll(state, id => isPresentInRoom(room, id));
+
+    if (settleOpeningRoll(state) !== 'won' || !state.winnerId) return;
+
+    const winnerIndex = room.gameState.players.findIndex(player => player.id === state.winnerId);
+    const winnerName = room.gameState.players[winnerIndex]?.name || 'Joueur';
+    room.gameState.activePlayerIndex = winnerIndex >= 0 ? winnerIndex : 0;
+    room.gameState.phase = 'rolling';
+    room.gameState.lastTurnEventMessage = `🎲 ${winnerName} ouvre la partie !`;
+  }
+
+  /**
+   * Un jet du lancé d'ouverture.
+   *
+   * En ligne chacun lance pour soi. En pass & play l'hôte lance pour chaque
+   * siège à son tour, comme il le fait déjà pour les autres actions.
+   */
+  socket.on('roll-opening-dice', (data: { roomCode: string }) => {
+    const room = getRoom(data.roomCode);
+    if (!room || room.gameState.phase !== 'opening_roll' || !room.gameState.openingRoll) return;
+    if (isPaused(room)) return;
+
+    const state = room.gameState.openingRoll;
+    const isLocal = room.settings.isLocalMode === true;
+
+    // En pass & play l'hôte lance pour le siège attendu ; en ligne chacun ne
+    // lance que pour lui-même, hôte compris.
+    const rollerId = isLocal ? pendingRollerId(state) : socket.id;
+    if (!rollerId) return;
+    if (isLocal && room.hostSocketId !== socket.id) return;
+
+    const dice = Math.floor(Math.random() * 6) + 1;
+    if (!recordOpeningRoll(state, rollerId, dice)) return;
+
+    // Ce jet peut être le dernier d'un joueur présent : les absents qui restent
+    // sont alors écartés pour que la manche puisse se conclure.
+    unblockOpeningRoll(state, id => isPresentInRoom(room, id));
+
+    const outcome = settleOpeningRoll(state);
+    const nameOf = (id: string) =>
+      room.gameState.players.find(player => player.id === id)?.name || 'Joueur';
+
+    if (outcome === 'tie') {
+      room.gameState.lastTurnEventMessage =
+        `Égalité à ${state.tiedIds.length} : ${state.tiedIds.map(nameOf).join(', ')} relancent !`;
+    } else if (outcome === 'won' && state.winnerId) {
+      const winnerIndex = room.gameState.players.findIndex(player => player.id === state.winnerId);
+      room.gameState.activePlayerIndex = winnerIndex >= 0 ? winnerIndex : 0;
+      room.gameState.phase = 'rolling';
+      room.gameState.lastTurnEventMessage =
+        `🎲 ${nameOf(state.winnerId)} remporte le lancé et ouvre la partie !`;
+      console.log(`[Ouverture] ${nameOf(state.winnerId)} commence dans le salon ${room.code}`);
+    }
+
+    emitGameState(room);
+    // Une écriture disque par jet serait inutile : seule l'issue mérite d'être
+    // retenue si le serveur redémarre.
+    if (outcome === 'won') saveRooms(rooms);
   });
 
   // Helper to check if a socket is authorized to take action for the active player
@@ -1067,6 +1178,7 @@ io.on('connection', (socket: Socket) => {
     removeSocketFromRoom(room, socket.id);
     socket.leave(code);
     socket.emit('room-left');
+    releaseOpeningRoll(room);
     room.emptySince = room.sockets.size === 0 ? Date.now() : null;
     emitGameState(room);
   });
@@ -1081,6 +1193,10 @@ io.on('connection', (socket: Socket) => {
         if (p) {
           p.isConnected = false;
         }
+
+        // Un départ pendant le lancé d'ouverture ne doit pas figer la partie sur
+        // un jet qui n'arrivera jamais.
+        releaseOpeningRoll(room);
 
         if (room.hostSocketId === socket.id) {
           room.hostDisconnectedAt = Date.now();
