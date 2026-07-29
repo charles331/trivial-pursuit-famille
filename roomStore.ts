@@ -1,5 +1,6 @@
 import { mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'fs';
 import { mkdir, rename, writeFile } from 'fs/promises';
+import { randomBytes } from 'crypto';
 import path from 'path';
 import { GameSettings, GameState, Player, Question } from './src/types.js';
 
@@ -28,6 +29,8 @@ import { GameSettings, GameState, Player, Question } from './src/types.js';
 export interface PersistableRoom {
   code: string;
   hostSocketId: string;
+  generationToken: string;
+  reconnectTokens: Map<string, string>;
   settings: GameSettings;
   gameState: GameState;
   sockets: Map<string, Player>;
@@ -41,6 +44,8 @@ export interface PersistableRoom {
 interface StoredRoom {
   code: string;
   hostSocketId: string;
+  generationToken?: string;
+  reconnectTokens?: Record<string, string>;
   settings: GameSettings;
   createdAt: number;
   lastActivityAt: number;
@@ -84,6 +89,8 @@ function serialize(rooms: Map<string, PersistableRoom>): string {
       return {
         code: room.code,
         hostSocketId: room.hostSocketId,
+        generationToken: room.generationToken,
+        reconnectTokens: Object.fromEntries(room.reconnectTokens),
         settings: room.settings,
         createdAt: room.createdAt,
         lastActivityAt: room.lastActivityAt,
@@ -196,6 +203,8 @@ export function loadRooms(
     rooms.set(stored.code, {
       code: stored.code,
       hostSocketId: stored.hostSocketId,
+      generationToken: stored.generationToken || randomBytes(32).toString('base64url'),
+      reconnectTokens: new Map(Object.entries(stored.reconnectTokens ?? {})),
       settings: stored.settings,
       createdAt: stored.createdAt,
       lastActivityAt: stored.lastActivityAt,

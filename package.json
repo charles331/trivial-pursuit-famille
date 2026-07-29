@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "build": "vite build && node --import tsx scripts/compress-dist.ts && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
     "clean": "rm -rf dist server.cjs",
     "lint": "tsc --noEmit",
     "audit:questions": "node --import tsx scripts/audit-questions.ts",
+    "test": "node --import tsx --test tests/*.test.ts",
     "analyze:difficulty": "node --import tsx scripts/analyze-difficulty.ts",
-    "check": "npm run lint && npm run audit:questions && npm run build"
+    "check": "npm run lint && npm test && npm run audit:questions && npm run build"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

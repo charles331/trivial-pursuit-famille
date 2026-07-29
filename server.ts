@@ -1,5 +1,7 @@
 import express from 'express';
 import path from 'path';
+import { randomBytes, timingSafeEqual } from 'crypto';
+import { existsSync } from 'fs';
 import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { createServer as createViteServer } from 'vite';
@@ -7,6 +9,8 @@ import { GoogleGenAI, Type } from '@google/genai';
 import { QUESTIONS_DATABASE } from './src/data/questions.js';
 import { BOARD_PRESETS } from './src/data/boards.js';
 import { checkStore, loadRooms, startRoomPersistence, saveRooms, ROOM_STORE_PATH } from './roomStore.js';
+import { advanceTurn, calculateMoves, resolveAnswer, togglePauseState } from './src/server/gameEngine.js';
+import { createGameStateView } from './src/server/gameStateView.js';
 import { 
   GameState, 
   Player, 
@@ -28,7 +32,8 @@ const io = new Server(httpServer, {
 const PORT = Number(process.env.PORT) || 3000;
 const PLAYER_COLORS = ['#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#F97316'];
 
-app.use(express.json());
+app.set('trust proxy', 1);
+app.use(express.json({ limit: '256kb' }));
 
 // Category Normalizer to prevent accent or formatting mismatches
 function normalizeCategoryId(rawCat: string): CategoryId {
@@ -96,6 +101,30 @@ const GENERATED_PACK_SCHEMA = {
 
 const GENERATION_BATCH_SIZE = 15;
 const GENERATION_MAX_COUNT = 60;
+const GENERATION_WINDOW_MS = 60 * 60 * 1000;
+const MAX_GENERATIONS_PER_IP = 6;
+const generationAttempts = new Map<string, number[]>();
+const generationsInProgress = new Set<string>();
+
+function safeTokenEquals(actual: string | undefined, expected: string): boolean {
+  if (!actual) return false;
+  const actualBuffer = Buffer.from(actual);
+  const expectedBuffer = Buffer.from(expected);
+  return actualBuffer.length === expectedBuffer.length
+    && timingSafeEqual(actualBuffer, expectedBuffer);
+}
+
+function consumeGenerationQuota(key: string, now = Date.now()): boolean {
+  const activeAttempts = (generationAttempts.get(key) ?? [])
+    .filter(timestamp => now - timestamp < GENERATION_WINDOW_MS);
+  if (activeAttempts.length >= MAX_GENERATIONS_PER_IP) {
+    generationAttempts.set(key, activeAttempts);
+    return false;
+  }
+  activeAttempts.push(now);
+  generationAttempts.set(key, activeAttempts);
+  return true;
+}
 
 async function generateQuestionBatch(
   ai: GoogleGenAI,
@@ -130,6 +159,22 @@ Règles impératives :
 }
 
 app.post('/api/generate-pack', async (req, res) => {
+  const roomCode = String(req.header('x-room-code') ?? '').toUpperCase().trim();
+  const hostToken = req.header('x-host-token');
+  const room = rooms.get(roomCode);
+  if (!room || !safeTokenEquals(hostToken, room.generationToken)) {
+    return res.status(403).json({ error: 'Génération réservée à l’organisateur du salon.' });
+  }
+
+  const sourceKey = req.ip || req.socket.remoteAddress || 'unknown';
+  if (!consumeGenerationQuota(sourceKey)) {
+    return res.status(429).json({ error: 'Trop de générations récentes. Réessayez dans une heure.' });
+  }
+  if (generationsInProgress.has(roomCode)) {
+    return res.status(409).json({ error: 'Une génération est déjà en cours pour ce salon.' });
+  }
+
+  generationsInProgress.add(roomCode);
   try {
     const { themeName, count = 30 } = req.body;
     const apiKey = process.env.GEMINI_API_KEY;
@@ -212,6 +257,8 @@ app.post('/api/generate-pack', async (req, res) => {
     console.error('Erreur génération Gemini:', err);
     const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la génération du thème';
     return res.status(500).json({ error: errorMessage });
+  } finally {
+    generationsInProgress.delete(roomCode);
   }
 });
 
@@ -219,6 +266,8 @@ app.post('/api/generate-pack', async (req, res) => {
 interface Room {
   code: string;
   hostSocketId: string;
+  generationToken: string;
+  reconnectTokens: Map<string, string>;
   settings: GameSettings;
   gameState: GameState;
   sockets: Map<string, Player>; // socketId -> Player
@@ -267,6 +316,19 @@ function getRoom(code: string): Room | undefined {
   return room;
 }
 
+function emitGameState(room: Room): void {
+  for (const socketId of room.sockets.keys()) {
+    io.to(socketId).emit(
+      'game-state-update',
+      createGameStateView(room.gameState, socketId, room.hostSocketId),
+    );
+  }
+}
+
+function gameStateFor(room: Room, socketId: string) {
+  return createGameStateView(room.gameState, socketId, room.hostSocketId);
+}
+
 function closeRoom(code: string, reason: string): boolean {
   const room = rooms.get(code);
   if (!room) return false;
@@ -274,6 +336,7 @@ function closeRoom(code: string, reason: string): boolean {
   io.to(code).emit('room-closed', { reason });
   io.in(code).socketsLeave(code);
   room.sockets.clear();
+  room.reconnectTokens.clear();
   room.gameState.players.length = 0;
   room.gameState.questionsPool.length = 0;
   room.gameState.usedQuestionIds.length = 0;
@@ -288,6 +351,7 @@ function closeRoom(code: string, reason: string): boolean {
 
 function removeSocketFromRoom(room: Room, socketId: string): void {
   room.sockets.delete(socketId);
+  room.reconnectTokens.delete(socketId);
   const playerIndex = room.gameState.players.findIndex(player => player.id === socketId);
   if (playerIndex >= 0) {
     room.gameState.players.splice(playerIndex, 1);
@@ -307,7 +371,7 @@ function leaveAllRoomsForSocket(socketId: string, reason: string): void {
     } else {
       removeSocketFromRoom(room, socketId);
       room.emptySince = room.sockets.size === 0 ? Date.now() : null;
-      io.to(code).emit('game-state-update', room.gameState);
+      emitGameState(room);
     }
   }
 }
@@ -414,6 +478,8 @@ io.on('connection', (socket: Socket) => {
     const room: Room = {
       code: roomCode,
       hostSocketId: socket.id,
+      generationToken: randomBytes(32).toString('base64url'),
+      reconnectTokens: new Map([[socket.id, randomBytes(32).toString('base64url')]]),
       settings: initialSettings,
       gameState: initialGameState,
       sockets: new Map([[socket.id, hostPlayer]]),
@@ -426,12 +492,18 @@ io.on('connection', (socket: Socket) => {
     rooms.set(roomCode, room);
     socket.join(roomCode);
 
-    socket.emit('room-created', { roomCode, player: hostPlayer, gameState: initialGameState });
+    socket.emit('room-created', {
+      roomCode,
+      player: hostPlayer,
+      gameState: gameStateFor(room, socket.id),
+      generationToken: room.generationToken,
+      sessionToken: room.reconnectTokens.get(socket.id),
+    });
     console.log(`[Room] Salon créé: ${roomCode} par ${hostPlayer.name}`);
   });
 
   // Reconnect Existing Session (on page refresh or disconnect recovery)
-  socket.on('reconnect-session', (data: { roomCode: string; playerId: string }) => {
+  socket.on('reconnect-session', (data: { roomCode: string; playerId: string; sessionToken?: string }) => {
     const code = (data.roomCode || '').toUpperCase().trim();
     const room = getRoom(code);
 
@@ -440,7 +512,8 @@ io.on('connection', (socket: Socket) => {
     }
 
     const player = room.gameState.players.find(p => p.id === data.playerId);
-    if (!player) {
+    const expectedSessionToken = room.reconnectTokens.get(data.playerId);
+    if (!player || !expectedSessionToken || !safeTokenEquals(data.sessionToken, expectedSessionToken)) {
       return socket.emit('reconnect-failed', { message: 'Joueur non trouvé dans ce salon.' });
     }
 
@@ -451,6 +524,8 @@ io.on('connection', (socket: Socket) => {
 
     room.sockets.delete(oldSocketId);
     room.sockets.set(socket.id, player);
+    room.reconnectTokens.delete(oldSocketId);
+    room.reconnectTokens.set(socket.id, expectedSessionToken);
     room.emptySince = null;
 
     if (room.hostSocketId === oldSocketId) {
@@ -461,54 +536,24 @@ io.on('connection', (socket: Socket) => {
 
     socket.join(code);
 
-    socket.emit('room-joined', { roomCode: code, player, gameState: room.gameState });
-    io.to(code).emit('game-state-update', room.gameState);
+    socket.emit('room-joined', {
+      roomCode: code,
+      player,
+      gameState: gameStateFor(room, socket.id),
+      generationToken: player.isHost ? room.generationToken : undefined,
+      sessionToken: expectedSessionToken,
+    });
+    emitGameState(room);
     console.log(`[Room] ${player.name} s'est reconnecté avec succès à ${code}`);
   });
 
   // Join Room
-  socket.on('join-room', (data: { roomCode: string; player: Partial<Player>; playerId?: string }) => {
+  socket.on('join-room', (data: { roomCode: string; player: Partial<Player> }) => {
     const code = (data.roomCode || '').toUpperCase().trim();
     const room = getRoom(code);
 
     if (!room) {
       return socket.emit('error-msg', 'Salon introuvable. Vérifiez le code de la salle privée.');
-    }
-
-    // Check if player is rejoining an existing player profile
-    let existingPlayer = data.playerId 
-      ? room.gameState.players.find(p => p.id === data.playerId)
-      : undefined;
-
-    if (!existingPlayer && data.player.name) {
-      existingPlayer = room.gameState.players.find(
-        p => p.name.trim().toLowerCase() === data.player.name?.trim().toLowerCase() && !p.isConnected
-      );
-    }
-
-    if (existingPlayer) {
-      const oldId = existingPlayer.id;
-      existingPlayer.id = socket.id;
-      existingPlayer.isConnected = true;
-      if (data.player.avatarId) existingPlayer.avatarId = data.player.avatarId;
-      if (data.player.color) existingPlayer.color = data.player.color;
-      if (data.player.difficulty) existingPlayer.difficulty = data.player.difficulty;
-
-      room.sockets.delete(oldId);
-      room.sockets.set(socket.id, existingPlayer);
-      room.emptySince = null;
-
-      if (room.hostSocketId === oldId) {
-        room.hostSocketId = socket.id;
-        room.hostDisconnectedAt = null;
-        existingPlayer.isHost = true;
-      }
-
-      socket.join(code);
-      socket.emit('room-joined', { roomCode: code, player: existingPlayer, gameState: room.gameState });
-      io.to(code).emit('game-state-update', room.gameState);
-      console.log(`[Room] ${existingPlayer.name} a réintégré le salon ${code}`);
-      return;
     }
 
     if (room.gameState.players.length >= MAX_PLAYERS_PER_ROOM) {
@@ -533,12 +578,19 @@ io.on('connection', (socket: Socket) => {
     };
 
     room.sockets.set(socket.id, newPlayer);
+    const sessionToken = randomBytes(32).toString('base64url');
+    room.reconnectTokens.set(socket.id, sessionToken);
     room.gameState.players.push(newPlayer);
     room.emptySince = null;
     socket.join(code);
 
-    socket.emit('room-joined', { roomCode: code, player: newPlayer, gameState: room.gameState });
-    io.to(code).emit('game-state-update', room.gameState);
+    socket.emit('room-joined', {
+      roomCode: code,
+      player: newPlayer,
+      gameState: gameStateFor(room, socket.id),
+      sessionToken,
+    });
+    emitGameState(room);
     console.log(`[Room] ${newPlayer.name} a rejoint le salon ${code}`);
   });
 
@@ -571,7 +623,7 @@ io.on('connection', (socket: Socket) => {
     };
 
     room.gameState.players.push(newPlayer);
-    io.to(data.roomCode).emit('game-state-update', room.gameState);
+    emitGameState(room);
   });
 
   socket.on('remove-local-player', (data: { roomCode: string; playerId: string }) => {
@@ -580,7 +632,7 @@ io.on('connection', (socket: Socket) => {
     if (!data.playerId?.startsWith('local_')) return;
 
     room.gameState.players = room.gameState.players.filter(player => player.id !== data.playerId);
-    io.to(data.roomCode).emit('game-state-update', room.gameState);
+    emitGameState(room);
   });
 
   socket.on('toggle-ready', (data: { roomCode: string }) => {
@@ -591,7 +643,7 @@ io.on('connection', (socket: Socket) => {
     if (!player) return;
 
     player.isReady = !player.isReady;
-    io.to(data.roomCode).emit('game-state-update', room.gameState);
+    emitGameState(room);
   });
 
   // Update Settings (Host only)
@@ -602,7 +654,7 @@ io.on('connection', (socket: Socket) => {
     room.settings = { ...room.settings, ...data.settings };
     room.gameState.settings = room.settings;
 
-    io.to(data.roomCode).emit('game-state-update', room.gameState);
+    emitGameState(room);
   });
 
   // Update Player Profile (Avatar, Color, Name, Difficulty)
@@ -619,7 +671,7 @@ io.on('connection', (socket: Socket) => {
       if (data.player.color) p.color = data.player.color;
       if (data.player.difficulty) p.difficulty = data.player.difficulty;
 
-      io.to(data.roomCode).emit('game-state-update', room.gameState);
+      emitGameState(room);
     }
   });
 
@@ -666,7 +718,7 @@ io.on('connection', (socket: Socket) => {
     // Merge into room's active questions pool
     room.gameState.questionsPool = [...data.questions, ...room.gameState.questionsPool];
 
-    io.to(data.roomCode).emit('game-state-update', room.gameState);
+    emitGameState(room);
     console.log(`[Pack IA] ${data.questions.length} questions ajoutées pour "${data.themeName}" dans le salon ${data.roomCode}`);
   });
 
@@ -711,7 +763,7 @@ io.on('connection', (socket: Socket) => {
     room.gameState.possibleMoves = [];
     room.gameState.lastTurnEventMessage = null;
 
-    io.to(data.roomCode).emit('game-state-update', room.gameState);
+    emitGameState(room);
   });
 
   // Helper to check if a socket is authorized to take action for the active player
@@ -752,24 +804,11 @@ io.on('connection', (socket: Socket) => {
     if (!room || room.hostSocketId !== socket.id) return;
     if (room.gameState.phase === 'lobby' || room.gameState.phase === 'game_over') return;
 
-    const now = Date.now();
-    if (room.gameState.isPaused) {
-      const pausedFor = now - (room.gameState.pausedAt ?? now);
-      if (room.gameState.questionStartTime) {
-        room.gameState.questionStartTime += pausedFor;
-      }
-      room.gameState.isPaused = false;
-      room.gameState.pausedAt = null;
-      room.gameState.lastTurnEventMessage = 'La partie reprend !';
-      console.log(`[Room] Partie reprise: ${room.code} (pause de ${Math.round(pausedFor / 1000)} s)`);
-    } else {
-      room.gameState.isPaused = true;
-      room.gameState.pausedAt = now;
-      room.gameState.lastTurnEventMessage = 'Partie en pause.';
-      console.log(`[Room] Partie mise en pause: ${room.code}`);
-    }
+    const wasPaused = room.gameState.isPaused === true;
+    togglePauseState(room.gameState, Date.now());
+    console.log(`[Room] Partie ${wasPaused ? 'reprise' : 'mise en pause'}: ${room.code}`);
 
-    io.to(room.code).emit('game-state-update', room.gameState);
+    emitGameState(room);
     saveRooms(rooms);
   });
 
@@ -799,12 +838,12 @@ io.on('connection', (socket: Socket) => {
 
     // Calculate possible movement destination tile IDs
     const currentTile = board.tiles.find(t => t.id === activePlayer.currentTileId) || board.tiles[0];
-    const possibleMoves = calculateMoves(currentTile.id, dice, board.tiles);
+    const possibleMoves = calculateMoves(currentTile.id, dice, board);
 
     // Compute possible destination tiles; movement will be executed via 'move-player'
     room.gameState.possibleMoves = possibleMoves;
 
-    io.to(data.roomCode).emit('game-state-update', room.gameState);
+    emitGameState(room);
   });
 
   // Move Token to Tile
@@ -839,7 +878,7 @@ io.on('connection', (socket: Socket) => {
       room.gameState.diceValue = null;
       room.gameState.possibleMoves = [];
       room.gameState.lastTurnEventMessage = `🎲 ${activePlayer.name} a atterri sur une case Relancer le dé ! Rejouez tout de suite.`;
-      io.to(data.roomCode).emit('game-state-update', room.gameState);
+      emitGameState(room);
       return;
     }
 
@@ -855,7 +894,7 @@ io.on('connection', (socket: Socket) => {
     room.gameState.phase = 'question';
     room.gameState.questionStartTime = Date.now();
 
-    io.to(data.roomCode).emit('game-state-update', room.gameState);
+    emitGameState(room);
   });
 
   // Submit Question Answer
@@ -866,51 +905,9 @@ io.on('connection', (socket: Socket) => {
     if (!isPlayerAllowedToAnswer(room, socket.id)) return;
     if (!Number.isInteger(data.optionIndex) || data.optionIndex < -1 || data.optionIndex > 3) return;
 
-    const activePlayer = room.gameState.players[room.gameState.activePlayerIndex];
-    const q = room.gameState.currentQuestion;
-    const isCorrect = (data.optionIndex === q.correctAnswerIndex);
-
-    activePlayer.totalAnswersCount++;
-    if (isCorrect) {
-      activePlayer.correctAnswersCount++;
-      activePlayer.score += 100;
-    }
-
-    // Check if player landed on a Camembert / Wedge tile or Hub tile
     const board = BOARD_PRESETS[room.settings.boardType];
-    const tile = board.tiles.find(t => t.id === activePlayer.currentTileId);
-    let earnedWedge: CategoryId | null = null;
-
-    if (isCorrect && (tile?.type === 'camembert' || tile?.isCamembert)) {
-      const cat = tile.categoryId || q.categoryId;
-      if (!activePlayer.wedges.includes(cat)) {
-        activePlayer.wedges.push(cat);
-        earnedWedge = cat;
-      }
-    }
-
-    // Check center hub victory condition
-    let isWinner = false;
-    if (isCorrect && tile?.type === 'hub') {
-      if (activePlayer.wedges.length >= room.settings.wedgesToWin) {
-        isWinner = true;
-        room.gameState.winnerId = activePlayer.id;
-        room.gameState.phase = 'game_over';
-      }
-    }
-
-    room.gameState.lastAnswerResult = {
-      playerId: activePlayer.id,
-      isCorrect,
-      selectedOption: data.optionIndex,
-      earnedWedge
-    };
-
-    if (!isWinner) {
-      room.gameState.phase = 'evaluating';
-    }
-
-    io.to(data.roomCode).emit('game-state-update', room.gameState);
+    resolveAnswer(room.gameState, room.settings, board, data.optionIndex);
+    emitGameState(room);
   });
 
   // Next Turn or Extra Turn
@@ -926,23 +923,8 @@ io.on('connection', (socket: Socket) => {
     }
     if (!isPlayerAllowedToAnswer(room, socket.id)) return;
 
-    const lastResult = room.gameState.lastAnswerResult;
-    // If answer was correct, player gets to roll again! If wrong, next player's turn.
-    if (!lastResult?.isCorrect) {
-      room.gameState.activePlayerIndex = (room.gameState.activePlayerIndex + 1) % room.gameState.players.length;
-      room.gameState.lastTurnEventMessage = null;
-    } else {
-      const activePlayer = room.gameState.players[room.gameState.activePlayerIndex];
-      room.gameState.lastTurnEventMessage = `✨ Bonne réponse ! ${activePlayer?.name || 'Vous'} rejoue(z) !`;
-    }
-
-    room.gameState.phase = 'rolling';
-    room.gameState.diceValue = null;
-    room.gameState.possibleMoves = [];
-    room.gameState.currentQuestion = null;
-    room.gameState.lastAnswerResult = null;
-
-    io.to(data.roomCode).emit('game-state-update', room.gameState);
+    advanceTurn(room.gameState);
+    emitGameState(room);
   });
 
   // Send Emoji Reaction
@@ -1048,7 +1030,7 @@ io.on('connection', (socket: Socket) => {
     socket.leave(code);
     socket.emit('room-left');
     room.emptySince = room.sockets.size === 0 ? Date.now() : null;
-    io.to(code).emit('game-state-update', room.gameState);
+    emitGameState(room);
   });
 
   // Disconnect
@@ -1067,35 +1049,11 @@ io.on('connection', (socket: Socket) => {
         }
         room.emptySince = room.sockets.size === 0 ? Date.now() : null;
 
-        io.to(code).emit('game-state-update', room.gameState);
+        emitGameState(room);
       }
     }
   });
 });
-
-// Calculate tile destinations given dice roll step count (no immediate backtracking)
-function calculateMoves(startTileId: number, steps: number, tiles: any[]): number[] {
-  let paths: number[][] = [[startTileId]];
-
-  for (let s = 0; s < steps; s++) {
-    const nextPaths: number[][] = [];
-    for (const p of paths) {
-      const currentId = p[p.length - 1];
-      const tile = tiles.find(t => t.id === currentId);
-      if (tile && tile.nextTileIds) {
-        for (const nid of tile.nextTileIds) {
-          // Do not immediately reverse direction (backtrack to previous step tile)
-          if (p.length > 1 && nid === p[p.length - 2]) continue;
-          nextPaths.push([...p, nid]);
-        }
-      }
-    }
-    paths = nextPaths;
-  }
-
-  const destinationIds = Array.from(new Set(paths.map(p => p[p.length - 1])));
-  return destinationIds.length > 0 ? destinationIds : [startTileId];
-}
 
 // Randomly shuffle question options so correct answer index is randomized
 function shuffleQuestionOptions(q: Question): Question {
@@ -1188,8 +1146,52 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
+    const assetsPath = path.join(distPath, 'assets');
+    const contentTypes: Record<string, string> = {
+      '.css': 'text/css; charset=utf-8',
+      '.js': 'text/javascript; charset=utf-8',
+      '.json': 'application/json; charset=utf-8',
+      '.svg': 'image/svg+xml',
+    };
+
+    // Vite filenames are content-hashed. Serve the precompressed variant and
+    // cache it for a year; a future deployment gets a new filename.
+    app.get('/assets/*', (req, res, next) => {
+      const relativeAsset = req.path.slice('/assets/'.length);
+      const originalPath = path.resolve(assetsPath, relativeAsset);
+      if (!originalPath.startsWith(`${assetsPath}${path.sep}`)) return next();
+
+      const accepted = req.header('accept-encoding') ?? '';
+      const encoding = accepted.includes('br') ? 'br' : accepted.includes('gzip') ? 'gzip' : null;
+      const compressedPath = encoding === 'br'
+        ? `${originalPath}.br`
+        : encoding === 'gzip'
+          ? `${originalPath}.gz`
+          : originalPath;
+
+      if (!existsSync(compressedPath)) return next();
+      const contentType = contentTypes[path.extname(originalPath)];
+      if (contentType) res.setHeader('Content-Type', contentType);
+      if (encoding) {
+        res.setHeader('Content-Encoding', encoding);
+        res.setHeader('Vary', 'Accept-Encoding');
+      }
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      return res.sendFile(compressedPath);
+    });
+
+    app.use(express.static(distPath, {
+      index: false,
+      setHeaders: (res, filePath) => {
+        const isHashedAsset = filePath.startsWith(`${assetsPath}${path.sep}`);
+        res.setHeader(
+          'Cache-Control',
+          isHashedAsset ? 'public, max-age=31536000, immutable' : 'no-cache',
+        );
+      },
+    }));
     app.get('*', (req, res) => {
+      res.setHeader('Cache-Control', 'no-cache');
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }

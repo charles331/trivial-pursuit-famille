@@ -14,7 +14,7 @@ export const LiveChat: React.FC<LiveChatProps> = ({ onSendEmoji, emojiEvent }) =
   const EMOJI_LIST = ['👏', '🎉', '🎯', '🤔', '😂', '🔥', '🏆', '😱'];
 
   useEffect(() => {
-    if (emojiEvent && emojiEvent.id) {
+    if (document.visibilityState === 'visible' && emojiEvent && emojiEvent.id) {
       const targetId = emojiEvent.id;
       const newFloating = {
         ...emojiEvent,
@@ -37,6 +37,17 @@ export const LiveChat: React.FC<LiveChatProps> = ({ onSendEmoji, emojiEvent }) =
     }
   }, [emojiEvent]);
 
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== 'hidden') return;
+      activeTimersRef.current.forEach(timer => clearTimeout(timer));
+      activeTimersRef.current.clear();
+      setFloatingEmojis([]);
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
   // Clean up all pending timers on unmount
   useEffect(() => {
     return () => {
@@ -55,7 +66,7 @@ export const LiveChat: React.FC<LiveChatProps> = ({ onSendEmoji, emojiEvent }) =
             className="absolute bottom-20 flex flex-col items-center animate-floatUp"
             style={{ left: `${item.x}%` }}
           >
-            <span className="text-4xl filter drop-shadow-md animate-bounce">{item.emoji}</span>
+            <span className="text-4xl">{item.emoji}</span>
             <span className="text-[10px] font-bold bg-slate-900/90 text-white px-2 py-0.5 rounded-full shadow">
               {item.playerName}
             </span>
@@ -64,7 +75,7 @@ export const LiveChat: React.FC<LiveChatProps> = ({ onSendEmoji, emojiEvent }) =
       </div>
 
       {/* Emoji Reactions Toolbar */}
-      <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 p-1.5 bg-slate-900/90 backdrop-blur-md rounded-full shadow-2xl border border-slate-700">
+      <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 p-1.5 bg-slate-900 rounded-full shadow-lg border border-slate-700">
         {EMOJI_LIST.map((emoji) => (
           <button
             key={emoji}
@@ -82,4 +93,3 @@ export const LiveChat: React.FC<LiveChatProps> = ({ onSendEmoji, emojiEvent }) =
     </>
   );
 };
-

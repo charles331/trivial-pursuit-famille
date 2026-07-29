@@ -8,14 +8,16 @@ import { soundManager } from '../utils/sound';
 interface BoardCustomizerProps {
   settings: GameSettings;
   isHost: boolean;
+  generationToken?: string;
   onUpdateSettings: (newSettings: Partial<GameSettings>) => void;
   onAddCustomPack?: (themeName: string, questions: any[]) => void;
-  customPacks?: { name: string; questions: any[] }[];
+  customPacks?: { name: string; questions?: any[]; questionCount?: number }[];
 }
 
 export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
   settings,
   isHost,
+  generationToken,
   onUpdateSettings,
   onAddCustomPack,
   customPacks = []
@@ -58,7 +60,11 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
     try {
       const res = await fetch('/api/generate-pack', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Room-Code': settings.roomCode,
+          'X-Host-Token': generationToken ?? '',
+        },
         body: JSON.stringify({ themeName: customThemeInput.trim(), count: 30 })
       });
 
@@ -369,7 +375,9 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
                   >
                     <span>{isActive ? '⚡' : '📌'}</span>
                     <span>{pack.name}</span>
-                    <span className="opacity-75 text-[10px]">({pack.questions.length} q.)</span>
+                    <span className="opacity-75 text-[10px]">
+                      ({pack.questionCount ?? pack.questions?.length ?? 0} q.)
+                    </span>
                     {isActive && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                   </button>
                 );

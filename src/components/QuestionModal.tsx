@@ -128,11 +128,6 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
         if ((canActiveAnswer || canReaderAnswer) && !lastAnswerResult) {
           const timedAnswer = selectedIdxRef.current ?? -1;
           submitAnswerRef.current(timedAnswer);
-          if (timedAnswer === question.correctAnswerIndex) {
-            soundManager.playCorrect();
-          } else {
-            soundManager.playWrong();
-          }
         }
       } else if (remaining <= 6) {
         soundManager.playTick();
@@ -142,7 +137,6 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
     return () => clearInterval(interval);
   }, [
     question.id,
-    question.correctAnswerIndex,
     effectiveTimerSeconds,
     questionStartTime,
     lastAnswerResult,
@@ -160,13 +154,16 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   const handleConfirmAnswer = () => {
     if (selectedIdx === null || lastAnswerResult) return;
     onSubmitAnswer(selectedIdx);
+  };
 
-    if (selectedIdx === question.correctAnswerIndex) {
+  useEffect(() => {
+    if (!lastAnswerResult) return;
+    if (lastAnswerResult.isCorrect) {
       soundManager.playCorrect();
     } else {
       soundManager.playWrong();
     }
-  };
+  }, [lastAnswerResult?.playerId, lastAnswerResult?.selectedOption]);
 
   useEffect(() => {
     setLocalReaderReady(false);

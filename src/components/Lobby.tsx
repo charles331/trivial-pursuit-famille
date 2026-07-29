@@ -16,6 +16,7 @@ const BoardCustomizer = React.lazy(() =>
 interface LobbyProps {
   gameState: GameState | null;
   currentUserId: string;
+  generationToken?: string;
   codeFromUrl?: string | null;
   onCreateRoom: (playerData: Partial<Player>, isLocal: boolean) => void;
   onJoinRoom: (roomCode: string, playerData: Partial<Player>) => void;
@@ -33,6 +34,7 @@ interface LobbyProps {
 export const Lobby: React.FC<LobbyProps> = ({
   gameState,
   currentUserId,
+  generationToken,
   codeFromUrl,
   onCreateRoom,
   onJoinRoom,
@@ -345,6 +347,7 @@ export const Lobby: React.FC<LobbyProps> = ({
                     <BoardCustomizer
                       settings={gameState.settings}
                       isHost={isHost}
+                      generationToken={generationToken}
                       onUpdateSettings={onUpdateSettings}
                       onAddCustomPack={onAddCustomPack}
                       customPacks={gameState.customPacks}

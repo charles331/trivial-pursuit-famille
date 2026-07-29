@@ -36,6 +36,7 @@ export default function App() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [emojiEvent, setEmojiEvent] = useState<EmojiReaction | null>(null);
   const [showQuestionModal, setShowQuestionModal] = useState<boolean>(false);
+  const [generationToken, setGenerationToken] = useState<string>('');
 
   // Hold the question card back until the 3D pawn has actually hopped onto the
   // destination tile. The delay tracks the dice value, since a 6 takes longer
@@ -56,9 +57,9 @@ export default function App() {
   const codeFromUrl = urlParams.get('code');
 
   // Save session to localStorage and update browser URL
-  const persistSession = (roomCode: string, playerId: string) => {
+  const persistSession = (roomCode: string, playerId: string, sessionToken?: string) => {
     try {
-      localStorage.setItem('tp_fam_session', JSON.stringify({ roomCode, playerId }));
+      localStorage.setItem('tp_fam_session', JSON.stringify({ roomCode, playerId, sessionToken }));
       window.history.replaceState(null, '', `?code=${roomCode}`);
     } catch (err) {
       console.error('Failed to persist session:', err);
@@ -94,18 +95,20 @@ export default function App() {
       }
     });
 
-    newSocket.on('room-created', (data: { roomCode: string; player: Player; gameState: GameState }) => {
+    newSocket.on('room-created', (data: { roomCode: string; player: Player; gameState: GameState; generationToken?: string; sessionToken?: string }) => {
       setGameState(data.gameState);
+      setGenerationToken(data.generationToken ?? '');
       if (data.player?.id) setCurrentUserId(data.player.id);
       setErrorMessage(null);
-      persistSession(data.roomCode, data.player.id);
+      persistSession(data.roomCode, data.player.id, data.sessionToken);
     });
 
-    newSocket.on('room-joined', (data: { roomCode: string; player: Player; gameState: GameState }) => {
+    newSocket.on('room-joined', (data: { roomCode: string; player: Player; gameState: GameState; generationToken?: string; sessionToken?: string }) => {
       setGameState(data.gameState);
+      setGenerationToken(data.generationToken ?? '');
       if (data.player?.id) setCurrentUserId(data.player.id);
       setErrorMessage(null);
-      persistSession(data.roomCode, data.player.id);
+      persistSession(data.roomCode, data.player.id, data.sessionToken);
     });
 
     newSocket.on('game-state-update', (updatedState: GameState) => {
@@ -125,11 +128,13 @@ export default function App() {
     newSocket.on('reconnect-failed', () => {
       clearSession();
       setGameState(null);
+      setGenerationToken('');
     });
 
     newSocket.on('room-closed', (data?: { reason?: string }) => {
       clearSession();
       setGameState(null);
+      setGenerationToken('');
       setCurrentUserId(newSocket.id || '');
       setShowQuestionModal(false);
       setEmojiEvent(null);
@@ -139,6 +144,7 @@ export default function App() {
     newSocket.on('room-left', () => {
       clearSession();
       setGameState(null);
+      setGenerationToken('');
       setCurrentUserId(newSocket.id || '');
       setShowQuestionModal(false);
       setEmojiEvent(null);
@@ -264,6 +270,7 @@ export default function App() {
     }
     clearSession();
     setGameState(null);
+    setGenerationToken('');
     setCurrentUserId(socket?.id || '');
     setErrorMessage(null);
     setEmojiEvent(null);
@@ -277,6 +284,7 @@ export default function App() {
         <Lobby
           gameState={gameState}
           currentUserId={currentUserId}
+          generationToken={generationToken}
           codeFromUrl={codeFromUrl}
           onCreateRoom={handleCreateRoom}
           onJoinRoom={handleJoinRoom}
