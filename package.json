@@ -12,6 +12,7 @@
     "audit:questions": "node --import tsx scripts/audit-questions.ts",
     "test": "node --import tsx --test tests/*.test.ts",
     "analyze:difficulty": "node --import tsx scripts/analyze-difficulty.ts",
+    "assets:brand": "node --import tsx scripts/render-brand-assets.ts",
     "check": "npm run lint && npm test && npm run audit:questions && npm run build"
   },
   "dependencies": {

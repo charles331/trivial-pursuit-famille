@@ -1,7 +1,7 @@
 import express from 'express';
 import path from 'path';
 import { randomBytes, timingSafeEqual } from 'crypto';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { createServer as createViteServer } from 'vite';
@@ -24,6 +24,7 @@ import {
   describeRejections,
 } from './src/server/packAssembly.js';
 import { pickQuestionForPlayer } from './src/server/questionSelection.js';
+import { previewOrigin, withAbsolutePreviewImages } from './src/server/previewMeta.js';
 import { 
   GameState, 
   Player, 
@@ -1129,9 +1130,10 @@ async function startServer() {
         );
       },
     }));
+    const indexTemplate = readFileSync(path.join(distPath, 'index.html'), 'utf-8');
     app.get('*', (req, res) => {
       res.setHeader('Cache-Control', 'no-cache');
-      res.sendFile(path.join(distPath, 'index.html'));
+      res.type('html').send(withAbsolutePreviewImages(indexTemplate, previewOrigin(req)));
     });
   }
 
