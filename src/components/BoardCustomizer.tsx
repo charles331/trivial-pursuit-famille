@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BoardType, CategoryId, GameSettings } from '../types';
 import { CATEGORIES } from '../data/categories';
 import { BOARD_PRESETS } from '../data/boards';
+import { isCardReadAloud } from '../server/turnRoles';
 import { LayoutGrid, Timer, Sparkles, Check, Wand2, RefreshCw } from 'lucide-react';
 import { soundManager } from '../utils/sound';
 
@@ -32,6 +33,10 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
   const isLimitReached = currentGenerationsCount >= MAX_GENERATIONS;
 
   const allCategoryKeys = Object.keys(CATEGORIES) as CategoryId[];
+
+  // Turning the duo on implies the card is read out loud, so the two controls
+  // must not contradict each other in the lobby.
+  const isReadAloud = isCardReadAloud(settings);
 
   const handleCategoryToggle = (catId: CategoryId) => {
     soundManager.playClick();
@@ -249,9 +254,9 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
             <span>📖</span> Mode Lecteur de Carte (Masquer au joueur actif)
           </div>
           <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-            {settings.isReaderMode ? (
+            {isReadAloud ? (
               <span className="text-amber-700 dark:text-amber-300 font-semibold">
-                🎴 <strong>Mode Lecteur Actif :</strong> Un autre joueur lit la carte et voit la bonne réponse. L&apos;écran du joueur actif est masqué.
+                🎴 <strong>Mode Lecteur Actif :</strong> le joueur juste avant celui qui répond lit la carte à voix haute et voit la bonne réponse. L&apos;écran du joueur interrogé est masqué.
               </span>
             ) : (
               <span className="text-slate-600 dark:text-slate-400">
@@ -259,22 +264,27 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
               </span>
             )}
           </p>
+          {settings.enableLiveCamera && (
+            <p className="text-[11px] font-bold text-purple-700 dark:text-purple-300">
+              Activé automatiquement par le duo caméra : c&apos;est le lecteur qui parle.
+            </p>
+          )}
         </div>
 
         <button
           type="button"
-          disabled={!isHost}
+          disabled={!isHost || settings.enableLiveCamera === true}
           onClick={() => {
             soundManager.playClick();
             onUpdateSettings({ isReaderMode: !settings.isReaderMode });
           }}
-          className={`px-4 py-2.5 rounded-xl font-black text-xs transition-all flex items-center gap-1.5 shrink-0 ${
-            settings.isReaderMode
+          className={`px-4 py-2.5 rounded-xl font-black text-xs transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-70 ${
+            isReadAloud
               ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50'
               : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300'
           }`}
         >
-          {settings.isReaderMode ? 'MODE LECTEUR 🎴' : 'MODE DIRECT 📱'}
+          {isReadAloud ? 'MODE LECTEUR 🎴' : 'MODE DIRECT 📱'}
         </button>
       </div>
 
@@ -282,12 +292,12 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
       <div className="p-4 bg-purple-50/80 dark:bg-purple-950/30 border border-purple-300 dark:border-purple-800 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="space-y-1">
           <div className="font-extrabold text-xs sm:text-sm text-purple-900 dark:text-purple-200 flex items-center gap-1.5">
-            <span>🎥</span> Caméra & Micro du Joueur Actif (En direct)
+            <span>🎥</span> Duo Caméra & Micro (Lecteur ↔ Joueur interrogé)
           </div>
           <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
             {settings.enableLiveCamera ? (
               <span className="text-purple-700 dark:text-purple-300 font-semibold">
-                📹 <strong>Caméra Activée :</strong> Chaque joueur donne son accord une fois pour la partie. Son direct démarre ensuite pendant ses tours, avec désactivation possible à tout moment.
+                📹 <strong>Direct Activé :</strong> à chaque question, le joueur interrogé et son lecteur ouvrent caméra et micro dans les deux sens : ils se voient et s&apos;entendent. Les autres suivent la scène. Chacun donne son accord une fois pour la partie et peut couper à tout moment.
               </span>
             ) : (
               <span className="text-slate-600 dark:text-slate-400">

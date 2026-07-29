@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Socket } from 'socket.io-client';
 import { GameState } from '../types';
 import { Camera, ShieldCheck, AlertTriangle } from 'lucide-react';
-import { LiveCameraContext, LiveCameraContextValue } from '../contexts/liveCamera';
+import { LiveCameraContext, LiveCameraContextValue, RemoteParticipant } from '../contexts/liveCamera';
+import { resolveLiveRole, resolveOnAirIds, resolveReaderId } from '../server/turnRoles';
 import {
   BROADCAST_CONSTRAINTS,
   PERMISSION_PROBE_CONSTRAINTS,
@@ -35,45 +36,77 @@ const ICE_SERVERS: RTCConfiguration = {
   ]
 };
 
+/**
+ * The live duo of a question turn.
+ *
+ * Two players are on air: the answerer and the reader who reads their card out
+ * loud. Both capture camera and microphone, and both publish to every other
+ * member of the room, so the duo talk to each other while the rest of the table
+ * watches and listens.
+ *
+ * Only a publisher ever creates an offer. That single rule keeps the handshake
+ * free of glare even though the two publishers subscribe to each other: a peer
+ * connection is fully identified by *which player it carries*, which is why
+ * every signalling message names a `publisherId`.
+ */
 export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: React.ReactNode }> = ({
   socket,
   gameState,
   currentUserId,
   children
 }) => {
-  const activePlayer = gameState.players[gameState.activePlayerIndex];
-  const isActivePlayer = activePlayer?.id === currentUserId;
+  const answerer = gameState.players[gameState.activePlayerIndex];
+  const answererId = answerer?.id ?? null;
+  const readerId = resolveReaderId(gameState.players, gameState.activePlayerIndex);
+  const myRole = resolveLiveRole(gameState.players, gameState.activePlayerIndex, currentUserId);
+  const isOnAir = myRole !== 'spectator';
   const isCameraEnabled = gameState.settings.enableLiveCamera ?? false;
+
+  // The players whose stream we expect to receive: everyone on air but us.
+  const publisherIds = resolveOnAirIds(gameState.players, gameState.activePlayerIndex)
+    .filter(id => id !== currentUserId);
+  // Nobody left to talk to: never light the camera up just to film ourselves.
+  const hasAudience = gameState.players.some(
+    player => player.id !== currentUserId && player.isConnected
+  );
 
   const [isStreaming, setIsStreaming] = useState(false);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
-  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [remoteStreams, setRemoteStreams] = useState<{ playerId: string; stream: MediaStream }[]>([]);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [isRemoteMuted, setIsRemoteMuted] = useState(false);
   const [isAudioBlocked, setIsAudioBlocked] = useState(false);
-  const [isTestMode, setIsTestMode] = useState(false);
   const [showPermissionSetup, setShowPermissionSetup] = useState(false);
   const [isCheckingPermission, setIsCheckingPermission] = useState(false);
   const [permissionSetupError, setPermissionSetupError] = useState<string | null>(null);
   const [sharingPreference, setSharingPreference] = useState<'pending' | 'enabled' | 'disabled'>('pending');
-  // Set when an automatic start failed: the player then needs to tap, because
-  // mobile Safari is far more permissive inside a real user gesture.
+  // Capture is off and only a tap may bring it back. Set when an automatic start
+  // failed — mobile Safari is far more permissive inside a real user gesture —
+  // and when the player stopped their own stream, which means "not for this
+  // question" and must not be undone by the automatic start on the next render.
   const [needsManualStart, setNeedsManualStart] = useState(false);
   const [connectionWarning, setConnectionWarning] = useState<string | null>(null);
 
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
-  const peerConnections = useRef<Map<string, RTCPeerConnection>>(new Map());
-  const pendingCandidates = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
+  /** One <video> per player we receive, keyed on their id. */
+  const remoteVideoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
+  /** Connections where *we* publish, keyed on the viewer. */
+  const outboundConnections = useRef<Map<string, RTCPeerConnection>>(new Map());
+  /** Connections where someone else publishes, keyed on that publisher. */
+  const inboundConnections = useRef<Map<string, RTCPeerConnection>>(new Map());
+  const pendingOutboundCandidates = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
+  const pendingInboundCandidates = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
   const localStreamRef = useRef<MediaStream | null>(null);
-  const remoteStreamRef = useRef<MediaStream | null>(null);
+  const remoteStreamsRef = useRef<Map<string, MediaStream>>(new Map());
   const isStartingStreamRef = useRef(false);
   const streamAttemptRef = useRef(0);
   const isMountedRef = useRef(true);
   const isBroadcastingRef = useRef(false);
   const isVideoOffRef = useRef(false);
+  const isRemoteMutedRef = useRef(false);
+  isRemoteMutedRef.current = isRemoteMuted;
   const socketRef = useRef<Socket | null>(socket);
   socketRef.current = socket;
 
@@ -117,12 +150,47 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
     }
   }, [isCameraEnabled, gameState.phase === 'lobby', gameState.phase === 'game_over', permissionStorageKey, media.isAvailable]);
 
-  // Stop all media tracks safely
-  const stopAllMediaTracks = (options: { notifyPeers?: boolean } = {}) => {
+  const publishRemoteStreams = () => {
+    setRemoteStreams(
+      Array.from(remoteStreamsRef.current, ([playerId, stream]) => ({ playerId, stream }))
+    );
+  };
+
+  const dropRemoteStream = (playerId: string) => {
+    if (!remoteStreamsRef.current.delete(playerId)) return;
+    releaseVideoElement(remoteVideoRefs.current.get(playerId) ?? null);
+    publishRemoteStreams();
+  };
+
+  type ConnectionMap = { current: Map<string, RTCPeerConnection> };
+
+  const closeConnection = (map: ConnectionMap, peerId: string) => {
+    const pc = map.current.get(peerId);
+    if (!pc) return;
+    try {
+      pc.onicecandidate = null;
+      pc.ontrack = null;
+      pc.onconnectionstatechange = null;
+      pc.oniceconnectionstatechange = null;
+      pc.close();
+    } catch (e) {
+      console.error('Error closing peer connection:', e);
+    }
+    map.current.delete(peerId);
+  };
+
+  /**
+   * Releases our own camera and microphone, and every connection we publish on.
+   *
+   * What we *receive* is deliberately untouched: stopping our own camera must
+   * not also cut the other half of the duo off. Tapping "Arrêter" used to drop
+   * everything, so the answerer stopped hearing the player reading their card.
+   */
+  const stopLocalBroadcast = (options: { notifyPeers?: boolean } = {}) => {
     // Invalidate a getUserMedia call that may still be awaiting the browser.
     streamAttemptRef.current += 1;
 
-    // Tell the viewers before dropping everything, otherwise they keep a dead
+    // Tell the receivers before dropping everything, otherwise they keep a dead
     // peer connection alive until ICE eventually times out.
     if (options.notifyPeers && isBroadcastingRef.current && socketRef.current && gameState.roomCode) {
       socketRef.current.emit('webrtc-stop', { roomCode: gameState.roomCode });
@@ -142,43 +210,47 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
 
     // WebKit keeps the capture pipeline (and the orange recording indicator)
     // alive while a <video> still references the stream, even once every track
-    // is stopped. Detaching the elements is what actually powers the camera down.
+    // is stopped. Detaching the element is what actually powers the camera down.
     releaseVideoElement(localVideoRef.current);
-    releaseVideoElement(remoteVideoRef.current);
-    remoteStreamRef.current = null;
     setLocalStream(null);
 
-    // Close all WebRTC peer connections
-    peerConnections.current.forEach(pc => {
-      try {
-        pc.onicecandidate = null;
-        pc.ontrack = null;
-        pc.onconnectionstatechange = null;
-        pc.oniceconnectionstatechange = null;
-        pc.close();
-      } catch (e) {
-        console.error('Error closing peer connection:', e);
-      }
-    });
-    peerConnections.current.clear();
-    pendingCandidates.current.clear();
+    for (const peerId of [...outboundConnections.current.keys()]) {
+      closeConnection(outboundConnections, peerId);
+    }
+    pendingOutboundCandidates.current.clear();
 
-    setRemoteStream(null);
+    setIsStreaming(false);
+    isStartingStreamRef.current = false;
+  };
+
+  /** Ends the whole live session: what we send and what we receive. */
+  const stopAllMediaTracks = (options: { notifyPeers?: boolean } = {}) => {
+    stopLocalBroadcast(options);
+
+    remoteVideoRefs.current.forEach(element => releaseVideoElement(element));
+    remoteStreamsRef.current.clear();
+
+    for (const peerId of [...inboundConnections.current.keys()]) {
+      closeConnection(inboundConnections, peerId);
+    }
+    pendingInboundCandidates.current.clear();
+
+    setRemoteStreams([]);
     setIsAudioBlocked(false);
     // Reset the muted fallback for the next turn. Leaving it sticky meant that a
     // single autoplay rejection (iOS refuses audible playback outside a user
     // gesture) silenced every following turn of the game.
     setIsRemoteMuted(false);
-    setIsStreaming(false);
-    setIsTestMode(false);
+    isRemoteMutedRef.current = false;
     setConnectionWarning(null);
-    isStartingStreamRef.current = false;
   };
 
-  // Cleanup on unmount, phase change away from question, or active player change
+  // Cleanup on unmount, phase change away from question, or role rotation:
+  // the reader and the answerer both change on every turn.
   useEffect(() => {
     if (gameState.phase !== 'question' || !isCameraEnabled) {
       stopAllMediaTracks({ notifyPeers: true });
+      // A refusal is scoped to the turn it happened in: the next one starts clean.
       setNeedsManualStart(false);
     }
   }, [gameState.phase, gameState.activePlayerIndex, isCameraEnabled]);
@@ -191,13 +263,19 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
     };
   }, []);
 
-  // WebRTC socket signaling listeners for viewers and broadcaster
+  // WebRTC socket signaling, for publishers and receivers alike.
   useEffect(() => {
     if (!socket || !isCameraEnabled) return;
 
+    const isPublisher = (playerId: string) => playerId === answererId || playerId === readerId;
+
     // Closes dead peer connections instead of letting them idle with ICE
     // keep-alives, and surfaces the failure so the room is not silently broken.
-    const watchConnectionHealth = (pc: RTCPeerConnection, peerId: string, isViewer: boolean) => {
+    const watchConnectionHealth = (
+      pc: RTCPeerConnection,
+      peerId: string,
+      direction: 'inbound' | 'outbound'
+    ) => {
       const handleState = () => {
         const state = pc.connectionState || pc.iceConnectionState;
         if (state === 'connected' || state === 'completed') {
@@ -206,20 +284,12 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
         }
         if (state !== 'failed' && state !== 'closed') return;
 
-        try {
-          pc.close();
-        } catch {
-          // Already closed.
-        }
-        if (peerConnections.current.get(peerId) === pc) {
-          peerConnections.current.delete(peerId);
-        }
-        pendingCandidates.current.delete(peerId);
+        const map = direction === 'inbound' ? inboundConnections : outboundConnections;
+        if (map.current.get(peerId) === pc) closeConnection(map, peerId);
+        const pending = direction === 'inbound' ? pendingInboundCandidates : pendingOutboundCandidates;
+        pending.current.delete(peerId);
 
-        if (isViewer) {
-          remoteStreamRef.current = null;
-          setRemoteStream(null);
-        }
+        if (direction === 'inbound') dropRemoteStream(peerId);
         setConnectionWarning(
           'Le direct n’a pas pu s’établir entre ces appareils (réseaux différents). La partie continue normalement.'
         );
@@ -229,51 +299,54 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
       pc.oniceconnectionstatechange = handleState;
     };
 
+    /** Accept a publisher's offer: we only ever receive on this connection. */
     const handleOffer = async (data: { senderPlayerId: string; offer: RTCSessionDescriptionInit }) => {
-      // If we are a spectator receiving an offer from active player
-      if (isActivePlayer) return;
+      const publisherId = data.senderPlayerId;
+      // Reject anything that does not come from a player currently on air, and
+      // never answer an offer that claims to carry our own stream.
+      if (publisherId === currentUserId || !isPublisher(publisherId)) return;
 
       try {
-        const previousConnection = peerConnections.current.get(data.senderPlayerId);
-        previousConnection?.close();
+        closeConnection(inboundConnections, publisherId);
 
         const pc = new RTCPeerConnection(ICE_SERVERS);
-        peerConnections.current.set(data.senderPlayerId, pc);
+        inboundConnections.current.set(publisherId, pc);
 
         pc.ontrack = (event) => {
           if (event.streams && event.streams[0]) {
-            remoteStreamRef.current = event.streams[0];
-            setRemoteStream(event.streams[0]);
+            remoteStreamsRef.current.set(publisherId, event.streams[0]);
+            publishRemoteStreams();
             setConnectionWarning(null);
           }
         };
 
         // Without this, a connection that never succeeds (no TURN server and a
         // player on mobile data) keeps sending STUN keep-alives forever and the
-        // viewer just stares at a black frame.
-        watchConnectionHealth(pc, data.senderPlayerId, true);
+        // receiver just stares at a black frame.
+        watchConnectionHealth(pc, publisherId, 'inbound');
 
         pc.onicecandidate = (event) => {
           if (event.candidate) {
             socket.emit('webrtc-candidate', {
               roomCode: gameState.roomCode,
-              targetPlayerId: data.senderPlayerId,
+              targetPlayerId: publisherId,
+              publisherId,
               candidate: event.candidate
             });
           }
         };
 
         await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
-        for (const candidate of pendingCandidates.current.get(data.senderPlayerId) ?? []) {
+        for (const candidate of pendingInboundCandidates.current.get(publisherId) ?? []) {
           await pc.addIceCandidate(new RTCIceCandidate(candidate));
         }
-        pendingCandidates.current.delete(data.senderPlayerId);
+        pendingInboundCandidates.current.delete(publisherId);
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
 
         socket.emit('webrtc-answer', {
           roomCode: gameState.roomCode,
-          targetPlayerId: data.senderPlayerId,
+          targetPlayerId: publisherId,
           answer
         });
       } catch (err) {
@@ -281,52 +354,64 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
       }
     };
 
+    /** A viewer answered one of *our* offers. */
     const handleAnswer = async (data: { senderPlayerId: string; answer: RTCSessionDescriptionInit }) => {
-      const pc = peerConnections.current.get(data.senderPlayerId);
-      if (pc) {
-        try {
-          await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
-          for (const candidate of pendingCandidates.current.get(data.senderPlayerId) ?? []) {
-            await pc.addIceCandidate(new RTCIceCandidate(candidate));
-          }
-          pendingCandidates.current.delete(data.senderPlayerId);
-        } catch (err) {
-          console.error('Error setting remote answer:', err);
+      const pc = outboundConnections.current.get(data.senderPlayerId);
+      if (!pc) return;
+      try {
+        await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+        for (const candidate of pendingOutboundCandidates.current.get(data.senderPlayerId) ?? []) {
+          await pc.addIceCandidate(new RTCIceCandidate(candidate));
         }
+        pendingOutboundCandidates.current.delete(data.senderPlayerId);
+      } catch (err) {
+        console.error('Error setting remote answer:', err);
       }
     };
 
-    const handleCandidate = async (data: { senderPlayerId: string; candidate: RTCIceCandidateInit }) => {
-      const pc = peerConnections.current.get(data.senderPlayerId);
+    const handleCandidate = async (data: {
+      senderPlayerId: string;
+      publisherId: string;
+      candidate: RTCIceCandidateInit;
+    }) => {
+      // `publisherId` says which of the two possible connections with this peer
+      // the candidate belongs to: the one we publish, or the one we receive.
+      const isOurStream = data.publisherId === currentUserId;
+      const peerId = isOurStream ? data.senderPlayerId : data.publisherId;
+      const connections = isOurStream ? outboundConnections : inboundConnections;
+      const pending = isOurStream ? pendingOutboundCandidates : pendingInboundCandidates;
+
+      const pc = connections.current.get(peerId);
       if (pc?.remoteDescription) {
         try {
           await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
         } catch (err) {
           console.error('Error adding ICE candidate:', err);
         }
-      } else {
-        const queued = pendingCandidates.current.get(data.senderPlayerId) ?? [];
-        queued.push(data.candidate);
-        pendingCandidates.current.set(data.senderPlayerId, queued);
+        return;
       }
+
+      const queued = pending.current.get(peerId) ?? [];
+      queued.push(data.candidate);
+      pending.current.set(peerId, queued);
     };
 
     const offerToViewer = async (viewerPlayerId: string) => {
       const stream = localStreamRef.current;
-      if (!isActivePlayer || !stream || viewerPlayerId === currentUserId) return;
+      if (!isOnAir || !stream || viewerPlayerId === currentUserId) return;
 
-      const previousConnection = peerConnections.current.get(viewerPlayerId);
-      previousConnection?.close();
+      closeConnection(outboundConnections, viewerPlayerId);
 
       const pc = new RTCPeerConnection(ICE_SERVERS);
-      peerConnections.current.set(viewerPlayerId, pc);
+      outboundConnections.current.set(viewerPlayerId, pc);
       stream.getTracks().forEach(track => pc.addTrack(track, stream));
-      watchConnectionHealth(pc, viewerPlayerId, false);
+      watchConnectionHealth(pc, viewerPlayerId, 'outbound');
       pc.onicecandidate = (event) => {
         if (event.candidate) {
           socket.emit('webrtc-candidate', {
             roomCode: gameState.roomCode,
             targetPlayerId: viewerPlayerId,
+            publisherId: currentUserId,
             candidate: event.candidate
           });
         }
@@ -345,12 +430,11 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
     };
 
     const handleBroadcasterReady = (data: { senderPlayerId: string }) => {
-      if (!isActivePlayer && data.senderPlayerId === activePlayer?.id) {
-        socket.emit('webrtc-viewer-ready', {
-          roomCode: gameState.roomCode,
-          targetPlayerId: data.senderPlayerId
-        });
-      }
+      if (data.senderPlayerId === currentUserId || !isPublisher(data.senderPlayerId)) return;
+      socket.emit('webrtc-viewer-ready', {
+        roomCode: gameState.roomCode,
+        targetPlayerId: data.senderPlayerId
+      });
     };
 
     const handleViewerReady = (data: { senderPlayerId: string }) => {
@@ -360,12 +444,11 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
     };
 
     const handleStopped = (data: { senderPlayerId: string }) => {
-      const connection = peerConnections.current.get(data.senderPlayerId);
-      connection?.close();
-      peerConnections.current.delete(data.senderPlayerId);
-      if (data.senderPlayerId === activePlayer?.id) {
-        setRemoteStream(null);
-      }
+      closeConnection(inboundConnections, data.senderPlayerId);
+      closeConnection(outboundConnections, data.senderPlayerId);
+      pendingInboundCandidates.current.delete(data.senderPlayerId);
+      pendingOutboundCandidates.current.delete(data.senderPlayerId);
+      dropRemoteStream(data.senderPlayerId);
     };
 
     socket.on('webrtc-offer', handleOffer);
@@ -375,10 +458,13 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
     socket.on('webrtc-broadcaster-ready', handleBroadcasterReady);
     socket.on('webrtc-viewer-ready', handleViewerReady);
 
-    if (!isActivePlayer && activePlayer?.id) {
+    // Subscribe to whoever is already publishing. A publisher that has not
+    // captured yet simply ignores this and re-announces itself with
+    // `webrtc-broadcaster-ready` once its stream is live.
+    for (const publisherId of publisherIds) {
       socket.emit('webrtc-viewer-ready', {
         roomCode: gameState.roomCode,
-        targetPlayerId: activePlayer.id
+        targetPlayerId: publisherId
       });
     }
 
@@ -390,7 +476,9 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
       socket.off('webrtc-broadcaster-ready', handleBroadcasterReady);
       socket.off('webrtc-viewer-ready', handleViewerReady);
     };
-  }, [socket, isCameraEnabled, isActivePlayer, gameState.roomCode, activePlayer?.id]);
+    // `publisherIds` is derived from the two ids below, so listing them is enough.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [socket, isCameraEnabled, isOnAir, currentUserId, gameState.roomCode, answererId, readerId]);
 
   // Callback refs rather than effects keyed on the stream: the <video> elements
   // are remounted when a spotlight is collapsed and expanded again, and an
@@ -406,23 +494,32 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
   const playRemote = (element: HTMLVideoElement) => {
     element
       .play()
-      .then(() => setIsAudioBlocked(false))
+      .then(() => {
+        // Guarded on the fallback flag: with two remote videos, a stream that
+        // starts fine must not clear the warning raised by the other one.
+        if (!element.muted && !isRemoteMutedRef.current) setIsAudioBlocked(false);
+      })
       .catch(() => {
         // iOS refuses to autoplay audible media: fall back to muted playback and
         // offer an explicit "tap to hear" control.
         element.muted = true;
         setIsRemoteMuted(true);
+        isRemoteMutedRef.current = true;
         setIsAudioBlocked(true);
         void element.play().catch(() => undefined);
       });
   };
 
-  const attachRemoteVideo = (element: HTMLVideoElement | null) => {
-    remoteVideoRef.current = element;
-    if (!element) return;
-    const stream = remoteStreamRef.current;
+  const attachRemoteVideo = (playerId: string, element: HTMLVideoElement | null) => {
+    if (!element) {
+      remoteVideoRefs.current.delete(playerId);
+      return;
+    }
+    remoteVideoRefs.current.set(playerId, element);
+    const stream = remoteStreamsRef.current.get(playerId);
     if (stream && element.srcObject !== stream) {
       element.srcObject = stream;
+      element.muted = isRemoteMutedRef.current;
       playRemote(element);
     }
   };
@@ -433,13 +530,17 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
     }
   }, [localStream]);
 
+  // Attach every stream whose <video> was mounted before the track arrived.
   useEffect(() => {
-    const element = remoteVideoRef.current;
-    if (element && remoteStream && element.srcObject !== remoteStream) {
-      element.srcObject = remoteStream;
-      playRemote(element);
+    for (const { playerId, stream } of remoteStreams) {
+      const element = remoteVideoRefs.current.get(playerId);
+      if (element && element.srcObject !== stream) {
+        element.srcObject = stream;
+        element.muted = isRemoteMutedRef.current;
+        playRemote(element);
+      }
     }
-  }, [remoteStream]);
+  }, [remoteStreams]);
 
   // Stop encoding while the game is in the background. iOS already throttles
   // hidden tabs, but an explicitly disabled track shuts the encoder down and is
@@ -479,17 +580,15 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
       localStreamRef.current = stream;
       setLocalStream(stream);
       setIsStreaming(true);
-      setIsTestMode(forTest);
       setNeedsManualStart(false);
       setIsMuted(false);
       setIsVideoOff(false);
       isVideoOffRef.current = false;
 
-      // Connect to all other connected players in room
       if (socket && !forTest) {
         isBroadcastingRef.current = true;
-        // Every viewer answers this announcement with `webrtc-viewer-ready`.
-        // This handshake also covers viewers who reconnect after the stream starts.
+        // Every other member answers this announcement with `webrtc-viewer-ready`.
+        // This handshake also covers players who reconnect after the stream starts.
         socket.emit('webrtc-broadcaster-ready', { roomCode: gameState.roomCode });
       }
     } catch (err: any) {
@@ -546,14 +645,16 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
     }
   };
 
+  /** Stops our own stream for this question, leaving the restart button in place. */
   const handleStopBroadcasting = () => {
-    stopAllMediaTracks({ notifyPeers: true });
-    setNeedsManualStart(false);
+    stopLocalBroadcast({ notifyPeers: true });
+    setNeedsManualStart(true);
   };
 
   const disableSharing = () => {
     rememberSharingPreference('disabled');
-    handleStopBroadcasting();
+    stopLocalBroadcast({ notifyPeers: true });
+    setNeedsManualStart(false);
   };
 
   const enableSharing = async () => {
@@ -577,18 +678,20 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
     }
   };
 
-  /** Retry from a real tap after an automatic start was refused by the browser. */
+  /** Retry from a real tap, after a browser refusal or after "Arrêter". */
   const handleManualStart = () => {
     setNeedsManualStart(false);
     void handleStartBroadcasting(false);
   };
 
-  // Once the player agreed for the game, broadcasting starts automatically on
-  // each of their question turns. Leaving the turn always releases the devices.
+  // Once the player agreed for the game, capture starts automatically on every
+  // turn where they are on air — answering their own card, or reading someone
+  // else's. Leaving the turn always releases the devices.
   useEffect(() => {
     if (
       sharingPreference === 'enabled'
-      && isActivePlayer
+      && isOnAir
+      && hasAudience
       && gameState.phase === 'question'
       && !isStreaming
       && !needsManualStart
@@ -597,7 +700,15 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
     ) {
       void handleStartBroadcasting(false);
     }
-  }, [sharingPreference, isActivePlayer, gameState.phase, isStreaming, needsManualStart, media.isAvailable]);
+  }, [
+    sharingPreference,
+    isOnAir,
+    hasAudience,
+    gameState.phase,
+    isStreaming,
+    needsManualStart,
+    media.isAvailable
+  ]);
 
   const toggleMic = () => {
     if (localStreamRef.current) {
@@ -622,14 +733,39 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
     }
   };
 
+  /** One speaker switch for the whole duo: unmutes everyone we receive. */
   const enableRemoteAudio = () => {
-    if (!remoteVideoRef.current) return;
-    remoteVideoRef.current.muted = false;
+    const elements = [...remoteVideoRefs.current.values()];
+    if (elements.length === 0) return;
     setIsRemoteMuted(false);
-    remoteVideoRef.current.play().then(() => {
-      setIsAudioBlocked(false);
-    }).catch(() => {
-      setIsAudioBlocked(true);
+    isRemoteMutedRef.current = false;
+
+    // `play()` resolves asynchronously, so the verdict has to be awaited: reading
+    // a flag set inside the callbacks would always have reported success.
+    void Promise.all(
+      elements.map(element => {
+        element.muted = false;
+        return element.play().then(
+          () => true,
+          () => {
+            element.muted = true;
+            void element.play().catch(() => undefined);
+            return false;
+          }
+        );
+      })
+    ).then(results => {
+      const blocked = results.some(unlocked => !unlocked);
+      setIsAudioBlocked(blocked);
+      // Staying half-unmuted would leave the speaker button lying about the
+      // actual state, and hide the only control that can fix it.
+      setIsRemoteMuted(blocked);
+      isRemoteMutedRef.current = blocked;
+      if (blocked) {
+        elements.forEach(element => {
+          element.muted = true;
+        });
+      }
     });
   };
 
@@ -638,17 +774,37 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
       enableRemoteAudio();
       return;
     }
-    if (remoteVideoRef.current) remoteVideoRef.current.muted = true;
+    remoteVideoRefs.current.forEach(element => {
+      element.muted = true;
+    });
     setIsRemoteMuted(true);
+    isRemoteMutedRef.current = true;
   };
+
+  // Names and roles are resolved at render time, so a rename or a role rotation
+  // never leaves a stale label attached to a live stream. The reader comes
+  // first: they speak first.
+  const remoteParticipants: RemoteParticipant[] = remoteStreams
+    .filter(entry => entry.playerId === answererId || entry.playerId === readerId)
+    .map(entry => ({
+      playerId: entry.playerId,
+      playerName: gameState.players.find(player => player.id === entry.playerId)?.name ?? 'Joueur',
+      role: entry.playerId === readerId ? ('reader' as const) : ('answerer' as const),
+      stream: entry.stream
+    }))
+    .sort((a, b) => (a.role === b.role ? 0 : a.role === 'reader' ? -1 : 1));
 
   const contextValue: LiveCameraContextValue = {
     isCameraEnabled,
     mediaAvailable: media.isAvailable,
     mediaMessage: media.message,
     sharingPreference,
-    isActivePlayer,
-    activePlayerName: activePlayer?.name,
+    myRole,
+    isOnAir,
+    answererName: answerer?.name,
+    readerName: readerId
+      ? gameState.players.find(player => player.id === readerId)?.name
+      : undefined,
 
     isBroadcasting: isStreaming,
     localStream,
@@ -661,7 +817,7 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
     needsManualStart,
     startBroadcast: handleManualStart,
 
-    remoteStream,
+    remoteParticipants,
     attachRemoteVideo,
     isRemoteMuted,
     toggleRemoteMute,
@@ -699,14 +855,15 @@ export const LiveCameraProvider: React.FC<LiveCameraOverlayProps & { children?: 
             </div>
 
             <p className="text-sm leading-relaxed text-slate-200">
-              Quand ce sera votre tour, les autres joueurs pourront vous voir et vous entendre
-              dans un petit cadre au coin de la carte question.
+              À chaque question, deux joueurs passent en direct : celui qui doit répondre,
+              et le joueur juste avant lui, qui lui lit la carte à voix haute. Vous vous
+              voyez et vous vous entendez tous les deux ; les autres suivent la scène.
             </p>
 
             <div className="my-4 rounded-2xl border border-emerald-500/30 bg-emerald-950/40 p-3 text-xs leading-relaxed text-emerald-100">
               <ShieldCheck className="mr-1 inline h-4 w-4 text-emerald-400" />
-              Ce test ne diffuse rien. Après votre accord, le direct démarrera
-              automatiquement uniquement pendant vos tours. Vous pourrez le couper à tout moment.
+              Ce test ne diffuse rien. Après votre accord, le direct démarrera automatiquement
+              uniquement quand vous répondez ou quand vous lisez. Vous pourrez le couper à tout moment.
             </div>
 
             {permissionSetupError && (

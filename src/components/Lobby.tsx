@@ -164,8 +164,8 @@ export const Lobby: React.FC<LobbyProps> = ({
 
         {/* Leave Lobby Confirmation Modal */}
         {showLeaveLobbyModal && (
-          <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
-            <div className="bg-slate-900 border border-red-500/40 rounded-3xl p-6 max-w-md w-full text-white space-y-5 shadow-2xl">
+          <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-start justify-center overflow-y-auto p-4 animate-fadeIn">
+            <div className="my-auto bg-slate-900 border border-red-500/40 rounded-3xl p-6 max-w-md w-full text-white space-y-5 shadow-2xl">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-red-500/20 border border-red-500/30 flex items-center justify-center text-red-400">
                   <LogOut className="w-6 h-6" />
@@ -387,8 +387,8 @@ export const Lobby: React.FC<LobbyProps> = ({
 
         {/* Modal to add local player on pass & play */}
         {showAddLocalModal && (
-          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-            <form onSubmit={handleAddLocalSubmit} className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center overflow-y-auto p-4">
+            <form onSubmit={handleAddLocalSubmit} className="my-auto bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
               <h3 className="font-black text-lg text-slate-900 dark:text-white flex items-center gap-2">
                 <Plus className="w-5 h-5 text-amber-500" /> Ajouter un Joueur Local
               </h3>

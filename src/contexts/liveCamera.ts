@@ -1,12 +1,26 @@
 import React from 'react';
+import { LiveRole } from '../server/turnRoles';
+
+/** A player whose camera and microphone reach us during the question. */
+export interface RemoteParticipant {
+  playerId: string;
+  playerName: string;
+  /** How this player takes part: they read the card, or they answer it. */
+  role: Exclude<LiveRole, 'spectator'>;
+  stream: MediaStream;
+}
 
 export interface LiveCameraContextValue {
   isCameraEnabled: boolean;
   mediaAvailable: boolean;
   mediaMessage: string | null;
   sharingPreference: 'pending' | 'enabled' | 'disabled';
-  isActivePlayer: boolean;
-  activePlayerName: string | undefined;
+  /** Our own part in the current turn. */
+  myRole: LiveRole;
+  /** True while our camera and microphone are expected to be open. */
+  isOnAir: boolean;
+  answererName: string | undefined;
+  readerName: string | undefined;
   isBroadcasting: boolean;
   localStream: MediaStream | null;
   attachLocalVideo: (element: HTMLVideoElement | null) => void;
@@ -17,8 +31,10 @@ export interface LiveCameraContextValue {
   stopBroadcast: () => void;
   needsManualStart: boolean;
   startBroadcast: () => void;
-  remoteStream: MediaStream | null;
-  attachRemoteVideo: (element: HTMLVideoElement | null) => void;
+  /** Everyone we currently receive, at most the reader and the answerer. */
+  remoteParticipants: RemoteParticipant[];
+  attachRemoteVideo: (playerId: string, element: HTMLVideoElement | null) => void;
+  /** One speaker switch for the whole duo, rather than one per participant. */
   isRemoteMuted: boolean;
   toggleRemoteMute: () => void;
   isAudioBlocked: boolean;
@@ -36,8 +52,10 @@ const DEFAULT_CONTEXT: LiveCameraContextValue = {
   mediaAvailable: false,
   mediaMessage: null,
   sharingPreference: 'disabled',
-  isActivePlayer: false,
-  activePlayerName: undefined,
+  myRole: 'spectator',
+  isOnAir: false,
+  answererName: undefined,
+  readerName: undefined,
   isBroadcasting: false,
   localStream: null,
   attachLocalVideo: NOOP,
@@ -48,7 +66,7 @@ const DEFAULT_CONTEXT: LiveCameraContextValue = {
   stopBroadcast: NOOP,
   needsManualStart: false,
   startBroadcast: NOOP,
-  remoteStream: null,
+  remoteParticipants: [],
   attachRemoteVideo: NOOP,
   isRemoteMuted: false,
   toggleRemoteMute: NOOP,
