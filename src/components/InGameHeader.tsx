@@ -256,7 +256,12 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({
             </h3>
 
             <div className="space-y-2 text-xs text-slate-300 leading-relaxed">
-              <p>1. 🥇 <strong>Le premier joueur est tiré au sort</strong> : chacun lance le dé une fois, le plus haut commence. À égalité, le plus rapide l&apos;emporte.</p>
+              <p>
+                1. 🥇 <strong>Le premier joueur est tiré au sort</strong> : chacun lance le dé une fois, le plus haut commence. À égalité,
+                {gameState.settings.isLocalMode
+                  ? ' le sort tranche.'
+                  : ' le plus rapide l’emporte.'}
+              </p>
               <p>2. 🎲 <strong>Lancez le dé</strong> à votre tour pour avancer sur le plateau.</p>
               <p>3. ❓ <strong>Répondez à la question</strong> de la case où vous atterrissez. Chaque joueur a une difficulté adaptée à son âge.</p>
               <p>4. 🍰 <strong>Gagnez des camemberts</strong> en répondant correctement sur une case Camembert.</p>

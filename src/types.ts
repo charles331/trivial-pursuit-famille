@@ -107,21 +107,27 @@ export type GamePhase =
 export interface FirstPlayerRoll {
   playerId: string;
   value: number;
-  /** Temps de réaction, mesuré depuis le moment où ce joueur a pu lancer. */
+  /**
+   * Temps de réaction depuis l'ouverture du tirage. Il départage les égalités
+   * en ligne, où tout le monde lance en même temps. En pass & play, où l'on se
+   * passe l'appareil, il ne mesure rien d'utile : il n'y est ni affiché ni
+   * utilisé.
+   */
   elapsedMs: number;
-  /** Ordre d'arrivée au serveur, qui départage deux temps identiques. */
+  /** Tirage au sort, qui départage les égalités en pass & play. */
+  tieBreaker: number;
+  /** Ordre d'arrivée au serveur, dernier recours de départage. */
   order: number;
 }
 
 /**
- * Tirage au sort d'ouverture : chaque joueur lance le dé une seule fois, le plus
- * haut ouvre la partie et, à égalité, le plus rapide l'emporte.
+ * Tirage au sort d'ouverture : chaque joueur lance le dé une seule fois et le
+ * plus haut ouvre la partie. Les égalités se départagent à la vitesse en ligne,
+ * au hasard en pass & play.
  */
 export interface FirstPlayerDraw {
-  /** Ouverture du tirage : origine des temps de réaction en mode en ligne. */
+  /** Ouverture du tirage : origine des temps de réaction. */
   startedAt: number;
-  /** Dernier lancer enregistré : origine des temps en pass & play. */
-  lastRollAt: number | null;
   rolls: FirstPlayerRoll[];
   /** Renseigné une fois le tirage tranché. */
   winnerId: string | null;

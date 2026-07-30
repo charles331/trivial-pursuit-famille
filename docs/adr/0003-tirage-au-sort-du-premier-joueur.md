@@ -17,27 +17,33 @@ premières cases camembert avant les autres. Cet avantage revenait donc toujours
 Une phase de jeu s’intercale entre le salon et le premier tour :
 `lobby → first_player_roll → rolling`.
 
-Chaque joueur y lance le dé **une seule fois**. Le plus haut résultat ouvre la
-partie ; à égalité, c’est le lancer **le plus rapide** qui l’emporte, et si deux
-lancers sont identiques jusqu’au dixième de seconde, le premier arrivé au
-serveur tranche. Seul le point de départ du tour de table bouge : l’ordre des
-joueurs, lui, ne change pas.
-
-### « Le plus rapide » se mesure par joueur
-
-Le temps de réaction est compté à partir du moment où le joueur a réellement pu
-lancer, ce qui n’est pas le même instant selon le mode de jeu :
-
-- **en ligne**, tout le monde lance en même temps : l’origine est l’ouverture du
-  tirage ;
-- **en pass & play**, les joueurs se passent le même appareil : l’origine est le
-  lancer précédent. Avec une origine commune, le premier à saisir le téléphone
-  aurait gagné toutes les égalités par construction.
+Chaque joueur y lance le dé **une seule fois**, et le plus haut résultat ouvre la
+partie. Seul le point de départ du tour de table bouge : l’ordre des joueurs,
+lui, ne change pas.
 
 L’organisateur lance pour chaque joueur local à son tour, dans l’ordre de la
-table ; en ligne, chacun lance pour lui-même. Le chronomètre affiché à l’écran
-est indicatif : celui qui fait foi est mesuré sur le serveur, à la réception du
-lancer.
+table ; en ligne, chacun lance pour lui-même.
+
+### Les égalités se départagent différemment selon le mode
+
+Reste à trancher les égalités, et la réponse dépend de la façon dont on lance :
+
+- **en ligne**, tout le monde lance en même temps depuis son propre appareil.
+  Le temps de réaction est une vraie course : le plus rapide l’emporte. Il est
+  compté depuis l’ouverture du tirage, sur l’horloge du serveur ; le chronomètre
+  affiché à l’écran n’est qu’indicatif.
+- **en pass & play**, les joueurs se passent le même téléphone et lancent chacun
+  leur tour. Le chronomètre du suivant tourne pendant qu’on lui tend l’appareil :
+  il mesure la transmission, pas un réflexe, et pénalise mécaniquement tous ceux
+  qui ne lancent pas en premier. Le sort tranche donc à sa place, par un tirage
+  aléatoire attaché à chaque lancer.
+
+Si deux lancers restent à égalité même après ce départage, le premier arrivé au
+serveur l’emporte.
+
+En pass & play, aucun temps n’est affiché — ni le chronomètre pendant le lancer,
+ni la durée dans le tableau des lancers. Montrer une mesure qui ne décide de
+rien inviterait à contester le résultat.
 
 ### Le tirage ne peut pas bloquer la partie
 
@@ -59,10 +65,12 @@ Une partie **solo** saute le tirage : il n’y a rien à départager.
 ## Conséquences
 
 - Le dé du tirage est lancé par le serveur, comme celui du jeu : le client ne
-  choisit ni sa valeur ni son horodatage. Un second lancer est refusé, ce qui
-  interdit de relancer jusqu’à obtenir le 6 qui arrange.
-- `GameState` porte un `firstPlayerDraw` (lancers, temps, vainqueur) qui reste
-  disponible après le tirage : il alimente le bandeau du premier tour, qui
+  choisit ni sa valeur, ni son horodatage, ni son tirage de départage. Un second
+  lancer est refusé, ce qui interdit de relancer jusqu’à obtenir le 6 qui
+  arrange.
+- `GameState` porte un `firstPlayerDraw` (lancers, temps, hasard, vainqueur) qui
+  reste disponible après le tirage : il alimente le bandeau du premier tour, qui
   explique en une phrase pourquoi ce joueur commence.
-- La règle est écrite là où on la cherche : dans le salon avant de lancer, sur
-  l’écran du tirage, et dans les règles du jeu accessibles en partie.
+- La règle est écrite là où on la cherche — dans le salon avant de lancer, sur
+  l’écran du tirage, et dans les règles du jeu accessibles en partie — et elle
+  est formulée selon le mode de la partie, puisque le départage en dépend.

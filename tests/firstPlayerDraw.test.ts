@@ -10,6 +10,7 @@ import {
   settleFirstPlayerDraw,
   transferFirstPlayerRoll,
 } from '../src/server/firstPlayerDraw';
+import { FirstPlayerRoll } from '../src/types';
 import { createGameState, createPlayer } from './fixtures';
 
 function drawState(playerIds: string[], isLocalMode = false) {
@@ -59,9 +60,9 @@ test('a tie is won by the fastest roll', () => {
 });
 
 test('an exact tie on both value and time falls back on who reached the server first', () => {
-  const rolls = [
-    { playerId: 'ada', value: 4, elapsedMs: 800, order: 1 },
-    { playerId: 'host', value: 4, elapsedMs: 800, order: 0 },
+  const rolls: FirstPlayerRoll[] = [
+    { playerId: 'ada', value: 4, elapsedMs: 800, tieBreaker: 0.5, order: 1 },
+    { playerId: 'host', value: 4, elapsedMs: 800, tieBreaker: 0.5, order: 0 },
   ];
 
   assert.equal(rankFirstPlayerRolls(rolls)[0].playerId, 'host');
@@ -98,16 +99,41 @@ test('reaction time is measured from the draw start when everyone rolls at once'
   assert.equal(state.firstPlayerDraw?.rolls[1].elapsedMs, 1800);
 });
 
-test('in pass & play each player is timed from the previous roll, not from the draw start', () => {
+test('in pass & play a tie is settled by chance, never by the clock', () => {
+  // Le chronomètre du second joueur tourne pendant qu'on lui passe l'appareil :
+  // s'il départageait, celui qui lance en premier gagnerait toutes les égalités.
   const state = drawState(['host', 'ada'], true);
 
-  recordFirstPlayerRoll(state, 'host', 3, 2500); // 1,5 s après l'ouverture
-  recordFirstPlayerRoll(state, 'ada', 3, 2800); // 0,3 s après avoir reçu l'appareil
+  recordFirstPlayerRoll(state, 'host', 3, 2000, 0.9); // le plus rapide…
+  recordFirstPlayerRoll(state, 'ada', 3, 9000, 0.1); // …mais le sort choisit Ada
   settleFirstPlayerDraw(state);
 
-  assert.equal(state.firstPlayerDraw?.rolls[0].elapsedMs, 1500);
-  assert.equal(state.firstPlayerDraw?.rolls[1].elapsedMs, 300);
-  assert.equal(state.firstPlayerDraw?.winnerId, 'ada', 'le second joueur a été le plus rapide');
+  assert.equal(state.firstPlayerDraw?.winnerId, 'ada');
+  assert.match(describeFirstPlayerDraw(state), /le sort l’a désigné/);
+});
+
+test('in pass & play the highest roll still wins outright, whatever the draw', () => {
+  const state = drawState(['host', 'ada'], true);
+
+  recordFirstPlayerRoll(state, 'host', 6, 2000, 0.99);
+  recordFirstPlayerRoll(state, 'ada', 5, 2200, 0.01);
+  settleFirstPlayerDraw(state);
+
+  assert.equal(state.firstPlayerDraw?.winnerId, 'host');
+});
+
+test('the pass & play tie-break does not favour the player who rolls first', () => {
+  // Sans injecter le hasard : sur 400 égalités, les deux joueurs doivent gagner.
+  const winners = new Set<string>();
+  for (let round = 0; round < 400; round += 1) {
+    const state = drawState(['host', 'ada'], true);
+    recordFirstPlayerRoll(state, 'host', 4, 2000);
+    recordFirstPlayerRoll(state, 'ada', 4, 8000);
+    settleFirstPlayerDraw(state);
+    winners.add(state.firstPlayerDraw?.winnerId ?? '');
+  }
+
+  assert.deepEqual([...winners].sort(), ['ada', 'host']);
 });
 
 test('a disconnected player is no longer awaited', () => {
