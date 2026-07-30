@@ -93,14 +93,39 @@ export interface GameSettings {
   enableLiveCamera?: boolean; // Live camera & mic spotlight during question turn
 }
 
-export type GamePhase = 
+export type GamePhase =
   | 'lobby'
+  | 'first_player_roll'
   | 'rolling'
   | 'moving'
   | 'question'
   | 'evaluating'
   | 'turn_end'
   | 'game_over';
+
+/** Le lancer unique d'un joueur dans le tirage qui désigne le premier à jouer. */
+export interface FirstPlayerRoll {
+  playerId: string;
+  value: number;
+  /** Temps de réaction, mesuré depuis le moment où ce joueur a pu lancer. */
+  elapsedMs: number;
+  /** Ordre d'arrivée au serveur, qui départage deux temps identiques. */
+  order: number;
+}
+
+/**
+ * Tirage au sort d'ouverture : chaque joueur lance le dé une seule fois, le plus
+ * haut ouvre la partie et, à égalité, le plus rapide l'emporte.
+ */
+export interface FirstPlayerDraw {
+  /** Ouverture du tirage : origine des temps de réaction en mode en ligne. */
+  startedAt: number;
+  /** Dernier lancer enregistré : origine des temps en pass & play. */
+  lastRollAt: number | null;
+  rolls: FirstPlayerRoll[];
+  /** Renseigné une fois le tirage tranché. */
+  winnerId: string | null;
+}
 
 export interface GameState {
   roomCode: string;
@@ -120,6 +145,8 @@ export interface GameState {
     earnedWedge: CategoryId | null;
   } | null;
   winnerId: string | null;
+  /** Tirage d'ouverture, absent tant que la partie n'a pas été lancée. */
+  firstPlayerDraw?: FirstPlayerDraw | null;
   questionsPool: Question[];
   usedQuestionIds: string[];
   customPacks?: { name: string; questions: Question[] }[];

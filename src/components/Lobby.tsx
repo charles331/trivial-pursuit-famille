@@ -376,6 +376,11 @@ export const Lobby: React.FC<LobbyProps> = ({
                   <Play className="w-6 h-6 fill-slate-950 stroke-none" />
                   {!gameState.settings.isLocalMode && !everyoneReady ? 'EN ATTENTE DES JOUEURS' : 'DÉMARRER LA PARTIE'}
                 </button>
+                {gameState.players.length > 1 && (
+                  <p className="text-center text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                    🎲 Le premier joueur sera tiré au sort : un lancer de dé chacun, le plus haut commence.
+                  </p>
+                )}
               </div>
             ) : (
               <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl text-center text-slate-600 dark:text-slate-300 font-semibold text-sm">
