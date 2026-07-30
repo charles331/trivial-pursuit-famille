@@ -4,7 +4,7 @@ import { Crown, Dices, Hourglass, SkipForward, Smartphone, Timer, Trophy } from 
 import { FirstPlayerRoll, GameState } from '../types';
 import { AVATARS } from '../data/avatars';
 import { Dice3D } from './Dice3D';
-import { isExpectedToRoll, pendingRollers, rankFirstPlayerRolls } from '../server/firstPlayerDraw';
+import { isExpectedToRoll, pendingRollers, rankDrawRolls, tieBreakOf } from '../server/firstPlayerDraw';
 
 interface FirstPlayerDrawProps {
   gameState: GameState;
@@ -38,6 +38,9 @@ export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
   const rolls = useMemo(() => draw?.rolls ?? [], [draw?.rolls]);
   const isLocalMode = gameState.settings.isLocalMode === true;
   const winnerId = draw?.winnerId ?? null;
+  // En pass & play, le chronomètre mesurerait le temps de se passer l'appareil :
+  // il n'est ni affiché ni utilisé, et les égalités se jouent au sort.
+  const showsTiming = tieBreakOf(gameState) === 'speed';
 
   const [isTumbling, setIsTumbling] = useState(false);
   const [hasRequestedRoll, setHasRequestedRoll] = useState(false);
@@ -100,11 +103,12 @@ export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
   }, [isLocalMode, recentRoll?.order, winnerId]);
 
   /**
-   * Chronomètre indicatif. Il repart quand le tour de lancer change, et compte
-   * depuis l'affichage local : l'horloge qui fait foi est celle du serveur.
+   * Chronomètre indicatif, réservé aux parties en ligne où la vitesse départage.
+   * Il compte depuis l'affichage local : l'horloge qui fait foi est celle du
+   * serveur.
    */
   useEffect(() => {
-    if (winnerId || !isMyTurnToRoll) {
+    if (!showsTiming || winnerId || !isMyTurnToRoll) {
       setChronoMs(0);
       return;
     }
@@ -112,7 +116,7 @@ export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
     const startedAt = Date.now();
     const ticker = setInterval(() => setChronoMs(Date.now() - startedAt), 100);
     return () => clearInterval(ticker);
-  }, [winnerId, isMyTurnToRoll, localTurnPlayer?.id, rolls.length]);
+  }, [showsTiming, winnerId, isMyTurnToRoll, localTurnPlayer?.id, rolls.length]);
 
   // La sortie de secours de l'organisateur n'apparaît qu'après une vraie attente.
   useEffect(() => {
@@ -142,7 +146,7 @@ export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
     }, 2500);
   };
 
-  const ranked = useMemo(() => rankFirstPlayerRolls(rolls), [rolls]);
+  const ranked = useMemo(() => rankDrawRolls(gameState), [rolls, showsTiming]);
   const rankOf = (playerId: string) => ranked.findIndex(roll => roll.playerId === playerId);
   const winner = winnerId ? gameState.players.find(player => player.id === winnerId) ?? null : null;
   const winnerRoll = winnerId ? rollsByPlayer.get(winnerId) ?? null : null;
@@ -179,8 +183,17 @@ export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
           </div>
           <h2 className="mt-1.5 text-xl font-black text-white sm:text-2xl">{headline()}</h2>
           <p className="mt-1.5 text-[11px] font-medium leading-relaxed text-slate-300 sm:text-xs">
-            Un seul lancer chacun. Le plus haut score ouvre la partie ; en cas d’égalité,
-            c’est le lancer le plus rapide qui l’emporte.
+            {showsTiming ? (
+              <>
+                Un seul lancer chacun. Le plus haut score ouvre la partie ; en cas d’égalité,
+                c’est le lancer le plus rapide qui l’emporte.
+              </>
+            ) : (
+              <>
+                Un seul lancer chacun, à tour de rôle. Le plus haut score ouvre la partie ;
+                en cas d’égalité, le sort tranche.
+              </>
+            )}
           </p>
         </div>
 
@@ -205,18 +218,22 @@ export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
                   size={78}
                   compact
                 />
-                <div className="mt-1 flex items-center justify-center gap-1.5 text-[11px] font-bold text-slate-400">
-                  <Timer className="h-3.5 w-3.5 text-amber-400" />
-                  Temps de réaction : {formatSeconds(chronoMs)}
-                </div>
+                {showsTiming && (
+                  <div className="mt-1 flex items-center justify-center gap-1.5 text-[11px] font-bold text-slate-400">
+                    <Timer className="h-3.5 w-3.5 text-amber-400" />
+                    Temps de réaction : {formatSeconds(chronoMs)}
+                  </div>
+                )}
               </>
             ) : (
               <div className="flex flex-col items-center gap-2 py-6 text-center">
                 <Hourglass className="h-8 w-8 animate-pulse text-amber-400" />
                 <p className="text-sm font-bold text-slate-200">
-                  {myRoll
+                  {!myRoll
+                    ? 'Le tirage est en cours.'
+                    : showsTiming
                     ? `Vous avez fait ${myRoll.value} en ${formatSeconds(myRoll.elapsedMs)}.`
-                    : 'Le tirage est en cours.'}
+                    : `Vous avez fait ${myRoll.value}.`}
                 </p>
                 <p className="text-[11px] font-medium text-slate-400">
                   {pending.length} joueur{pending.length > 1 ? 's' : ''} doi
@@ -265,7 +282,9 @@ export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
                       </div>
                       <div className="text-[11px] font-medium text-slate-400">
                         {roll
-                          ? `Lancé en ${formatSeconds(roll.elapsedMs)}`
+                          ? showsTiming
+                            ? `Lancé en ${formatSeconds(roll.elapsedMs)}`
+                            : 'A lancé'
                           : isAway
                           ? 'Déconnecté — hors tirage'
                           : 'N’a pas encore lancé'}
@@ -318,11 +337,16 @@ export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
                   {winner.name} sort un <strong className="text-amber-300">{winnerRoll.value}</strong> et
                   ouvre la partie.
                 </>
-              ) : (
+              ) : showsTiming ? (
                 <>
                   Égalité à <strong className="text-amber-300">{winnerRoll.value}</strong> :{' '}
                   {winner.name} l’emporte grâce à son lancer en{' '}
                   <strong className="text-amber-300">{formatSeconds(winnerRoll.elapsedMs)}</strong>.
+                </>
+              ) : (
+                <>
+                  Égalité à <strong className="text-amber-300">{winnerRoll.value}</strong> :{' '}
+                  le sort a désigné <strong className="text-amber-300">{winner.name}</strong>.
                 </>
               )}
             </p>
