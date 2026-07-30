@@ -643,7 +643,7 @@ const GASTRONOMIE_ROWS: AdultCard[] = [
   ['Quel alcool normand est distillé à partir de cidre ?',
     ['Le calvados', 'Le pommeau', 'Le poiré', 'Le chouchen'],
     'Le trou normand, verre servi au milieu du repas, tire son nom de cette eau-de-vie.'],
-  ['Quel vin blanc liquoreux du Bordelais est produit à Sauternes ?',
+  ['Quel vin blanc liquoreux est produit au sud de Bordeaux, dans la vallée du Ciron ?',
     ['Le sauternes', 'Le monbazillac', 'Le jurançon', 'Le coteaux-du-layon'],
     'Un champignon, la pourriture noble, concentre le sucre des raisins avant la vendange.'],
   ['Quelle méthode de vinification donne les vins effervescents de Champagne ?',

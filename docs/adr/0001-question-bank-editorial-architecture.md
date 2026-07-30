@@ -26,6 +26,28 @@ Une carte jouable respecte désormais les règles suivantes :
 8. aucun format « quelle association question–réponse est correcte ? ».
 9. aucun préfixe décoratif (« Question flash », « Défi express ») ne permet de
    compter deux fois le même fait.
+10. l’énoncé ne donne pas sa réponse — voir ci-dessous.
+
+### L’énoncé ne donne pas sa réponse
+
+Une carte doit se gagner en sachant, pas en lisant. Le premier contrôle
+n’attrapait que la citation littérale suivie d’une assertion (« … est X »), et
+laissait donc passer la forme la plus courante du défaut : « Quel film de 1966
+montre une bataille d’Alger… ? » pour *La Bataille d’Alger*. L’article change,
+la phrase exacte n’apparaît nulle part, et pourtant le joueur n’a rien à savoir.
+
+Ce qui compte n’est pas qu’un mot de la réponse figure dans la question — face à
+quatre marches, « Quelle marche de Gandhi… ? » ne désigne personne — mais que
+l’énoncé reprenne ce qui **distingue** la bonne réponse des trois autres. Et
+seulement elle : nommer deux candidats (« entre le lièvre et la tortue ») oblige
+toujours à choisir, et reste donc permis.
+
+Trois détails décident de la justesse du contrôle : les pluriels s’apparient
+d’un choix à l’autre (« plante » et « plantes »), les accents séparent des mots
+que le joueur lit comme différents (« maïs » n’est pas la conjonction « mais »),
+et les mots vides des énoncés ne s’appliquent pas aux réponses — « sous » ou
+« même » ne disent rien dans une question mais font toute la réponse dans « Sous
+la terre ».
 
 Les cartes rédigées et relues restent la seule source de vérité du niveau
 adulte. `src/data/adultExpansion.ts` ne complète plus ce niveau à partir de

@@ -5,6 +5,7 @@ import {
   MAX_BARE_NUMBER_RATIO,
   MAX_SKELETON_REUSE,
   comparableAnswer,
+  echoesCorrectAnswer,
   hasDecorativePrefix,
   hasGrammarHintAroundBlank,
   isArtificialFillIn,
@@ -86,6 +87,13 @@ for (const question of QUESTIONS_DATABASE) {
     || question.correctAnswerIndex > 3
   ) {
     errors.push(`Bonne réponse invalide : ${question.id}`);
+  }
+
+  // Une carte dont l'énoncé reprend ce qui distingue la bonne réponse se joue
+  // sans rien savoir. Le contrôle vaut à tous les niveaux : les cartes enfant
+  // sont les premières à tomber dans « Quel fruit garnit la tarte aux pommes ? ».
+  if (echoesCorrectAnswer(question.question, question.options, question.correctAnswerIndex)) {
+    editorialError(`Énoncé qui donne la bonne réponse`, question.id);
   }
 
   // Le niveau ado ne doit jamais être complété en recopiant la banque enfant :

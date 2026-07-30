@@ -51,7 +51,7 @@ const FACTS: Fact[] = [
   ['Quelle émission scientifique française a expliqué le monde à coups de maquettes et de camion ?', 'C’est pas sorcier', 'E = M6', 'Il était une fois la vie', 'Archimède', 'Fred, Jamy et Sabine ont tourné près de six cents épisodes entre 1993 et 2014.'],
   ['Quelle émission satirique de Canal+ mettait en scène des marionnettes de personnalités ?', 'Les Guignols de l’info', 'Groland', 'Le Bébête Show', 'Nulle part ailleurs', 'La marionnette de Johnny Hallyday, transformée en vendeur de voitures, est restée célèbre.'],
   ['Quelle chaîne publique belge francophone diffuse La Une et La Deux ?', 'La RTBF', 'La VRT', 'RTL-TVI', 'BX1', 'Elle est financée par la Fédération Wallonie-Bruxelles ; son équivalent néerlandophone est la VRT.'],
-  ['Quel journal télévisé belge est présenté depuis Bruxelles sur RTL-TVI ?', 'Le RTL info', 'Le Journal de 20 heures', 'Le Soir info', 'Le 19/45', 'RTL-TVI est la principale chaîne privée en Belgique francophone.'],
+  ['Quel journal télévisé est diffusé depuis Bruxelles par la principale chaîne privée francophone ?', 'Le RTL info', 'Le Journal de 20 heures', 'Le Soir info', 'Le 19/45', 'Lancé en 1987, il rivalise chaque soir avec le journal de la RTBF.'],
   ['Quelle opération de solidarité annuelle mobilise la RTBF au profit de la recherche contre le cancer ?', 'Le Télévie', 'Cap 48', 'Viva for Life', 'Les Restos du cœur', 'Lancée en 1989, elle a récolté plus de deux cents millions d’euros depuis sa création.'],
 
   // ---- Jeux de société et jeux vidéo grand public -------------------------

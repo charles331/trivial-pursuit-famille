@@ -652,7 +652,7 @@ export const GEOGRAPHIE_QUESTIONS: Question[] = [
   {
     id: "geo_073",
     categoryId: "geographie",
-    question: "Quelle ville est la capitale de la région française où l'on trouve Marseille et Nice ?",
+    question: "Quelle ville est la préfecture de la région Provence-Alpes-Côte d’Azur ?",
     options: ["Bordeaux", "Strasbourg", "Marseille", "Rennes"],
     correctAnswerIndex: 2,
     difficulty: "enfant",
@@ -1210,7 +1210,7 @@ export const GEOGRAPHIE_QUESTIONS: Question[] = [
   {
     id: "geo_135",
     categoryId: "geographie",
-    question: "Quel plat de pommes de terre frites est une grande spécialité de la Belgique ?",
+    question: "Quelle spécialité belge est faite de bâtonnets de pommes de terre cuits dans l’huile ?",
     options: ["Les frites", "La purée", "Les chips", "Le gratin"],
     correctAnswerIndex: 0,
     difficulty: "enfant",
@@ -1345,7 +1345,7 @@ export const GEOGRAPHIE_QUESTIONS: Question[] = [
   {
     id: "geo_150",
     categoryId: "geographie",
-    question: "Quel pays est traversé à la fois par l'équateur et porte le nom de cette ligne en espagnol ?",
+    question: "Quel pays d’Amérique du Sud a pour capitale Quito ?",
     options: ["Le Guatemala", "La Bolivie", "Le Paraguay", "L'Équateur"],
     correctAnswerIndex: 3,
     difficulty: "ado",
@@ -1633,11 +1633,11 @@ export const GEOGRAPHIE_QUESTIONS: Question[] = [
   {
     id: "geo_182",
     categoryId: "geographie",
-    question: "Quelle province belge a pour chef-lieu la ville de Liège ?",
+    question: "Quelle province wallonne comprend les cantons de l’Est, où l’allemand est langue officielle ?",
     options: ["Le Hainaut", "Le Brabant wallon", "Le Luxembourg", "La province de Liège"],
     correctAnswerIndex: 3,
     difficulty: "ado",
-    explanation: "Le saviez-vous ? La province de Liège comprend les cantons de l'Est, où l'allemand est langue officielle."
+    explanation: "Le saviez-vous ? Son chef-lieu, sur la Meuse, fut longtemps la capitale d’une principauté épiscopale."
   },
   {
     id: "geo_183",
@@ -2398,7 +2398,7 @@ export const GEOGRAPHIE_QUESTIONS: Question[] = [
   {
     id: "geo_267",
     categoryId: "geographie",
-    question: "Quel plat régional à base de moules est associé à la Belgique, souvent servi avec des frites ?",
+    question: "Quel plat belge associe des coquillages noirs cuits à la marmite et des pommes de terre ?",
     options: ["La paella", "La bouillabaisse", "Le waterzooi", "Les moules-frites"],
     correctAnswerIndex: 3,
     difficulty: "ado",

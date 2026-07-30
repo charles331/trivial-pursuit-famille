@@ -65,7 +65,7 @@ const FACTS: Fact[] = [
   ['Quel peintre viennois a couvert « Le Baiser » de feuilles d’or ?', 'Gustav Klimt', 'Egon Schiele', 'Oskar Kokoschka', 'Alfons Mucha', 'Son père était graveur et ciseleur sur or, un métier dont il a gardé le goût des surfaces précieuses.'],
   ['Quelle estampe japonaise d’Hokusai montre une vague immense devant le mont Fuji ?', 'La Grande Vague de Kanagawa', 'Le Pont d’Ohashi sous la pluie', 'Les Cinquante-trois Stations', 'Le Pavillon d’or', 'Elle a beaucoup circulé en Europe et marqué durablement les impressionnistes.'],
   ['Dans quelle ville néerlandaise Vermeer a-t-il vécu et peint presque toute son œuvre ?', 'Delft', 'Amsterdam', 'Haarlem', 'Utrecht', 'On ne lui connaît qu’une trentaine de tableaux, ce qui en fait l’un des peintres majeurs les moins prolifiques.'],
-  ['Quel musée bruxellois conserve la plus grande collection d’œuvres de René Magritte ?', 'Le musée Magritte', 'Le musée Horta', 'Le musée du Cinquantenaire', 'Le musée Wiertz', 'Installé place Royale depuis 2009, il réunit plus de deux cents pièces de l’artiste.'],
+  ['Quel musée bruxellois est consacré au plus célèbre peintre surréaliste belge ?', 'Le musée Magritte', 'Le musée Horta', 'Le musée du Cinquantenaire', 'Le musée Wiertz', 'Installé place Royale depuis 2009, il réunit plus de deux cents pièces de l’artiste.'],
 ];
 
 export const ART_BD_LITTERATURE_ADULTE: Question[] = FACTS.map(

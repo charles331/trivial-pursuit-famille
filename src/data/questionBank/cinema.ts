@@ -517,7 +517,7 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_058",
     categoryId: "cinema",
-    question: "Comment appelle-t-on une salle de cinéma en plein air ?",
+    question: "Où regarde-t-on un film assis dans sa voiture ou sur l’herbe, sous les étoiles ?",
     options: ["Un cinéma de plein air", "Un studio", "Un théâtre", "Un planétarium"],
     correctAnswerIndex: 0,
     difficulty: "enfant",
@@ -1048,7 +1048,7 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_117",
     categoryId: "cinema",
-    question: "Comment s'appelle l'affiche qui annonce un film devant le cinéma ?",
+    question: "Comment appelle-t-on l’image imprimée qui annonce un long-métrage à l’entrée d’une salle ?",
     options: ["L'affiche du film", "Le générique", "La bande originale", "Le storyboard"],
     correctAnswerIndex: 0,
     difficulty: "enfant",

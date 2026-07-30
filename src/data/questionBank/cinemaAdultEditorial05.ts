@@ -25,7 +25,7 @@ const FACTS: Fact[] = [
   ['Quel faux documentaire belge de 1992 suit un tueur en série et son équipe de tournage ?', 'C\'est arrivé près de chez vous', 'Calvaire', 'Les Barons', 'Bullhead', 'Réalisé par trois étudiants avec un budget minuscule, il est devenu un film culte en Belgique.'],
   ['Quel film de Mira Nair suit le mariage arrangé d’Aditi à Delhi ?', 'Le Mariage des moussons', 'Salaam Bombay!', 'Un nom pour un autre', 'Mississippi Masala', 'Le Mariage des moussons remporta le Lion d’or à Venise en 2001.'],
   ['Quel réalisateur iranien a signé « Une séparation » ?', 'Asghar Farhadi', 'Jafar Panahi', 'Mohsen Makhmalbaf', 'Majid Majidi', 'Une séparation reçut l’Ours d’or à Berlin puis l’Oscar du meilleur film international.'],
-  ['Quel film de Jafar Panahi se déroule presque entièrement dans un taxi à Téhéran ?', 'Taxi Téhéran', 'Hors jeu', 'Le Cercle', 'Ceci n’est pas un film', 'Panahi conduit lui-même le taxi et dialogue avec des passagers jouant entre fiction et documentaire.'],
+  ['Quel film de Jafar Panahi se déroule presque entièrement au volant, dans la capitale iranienne ?', 'Taxi Téhéran', 'Hors jeu', 'Le Cercle', 'Ceci n’est pas un film', 'Panahi conduit lui-même le taxi et dialogue avec des passagers jouant entre fiction et documentaire.'],
   ['Quel réalisateur québécois a signé « Les Invasions barbares », Oscar du meilleur film étranger ?', 'Denys Arcand', 'Xavier Dolan', 'Jean-Marc Vallée', 'Philippe Falardeau', 'C\'était la suite du Déclin de l\'empire américain, tourné dix-sept ans plus tôt.'],
   ['Quel réalisateur québécois a tourné « Mommy » avant ses trente ans ?', 'Xavier Dolan', 'Denys Arcand', 'Denis Villeneuve', 'Jean-Marc Vallée', 'Le film est tourné dans un format carré, qui s\'élargit brièvement lors d\'une scène de liberté.'],
   ['Quel film de Clouzot suit quatre chauffeurs transportant de la nitroglycérine ?', 'Le Salaire de la peur', 'Les Diaboliques', 'Manon', 'La Vérité', 'Palme d\'or et Ours d\'or en 1953, il fut tourné dans le sud de la France pour figurer l\'Amérique du Sud.'],
@@ -44,7 +44,7 @@ const FACTS: Fact[] = [
   ['Quel film d’Ari Folman mêle animation et souvenirs de la guerre du Liban ?', 'Valse avec Bachir', 'Flee', 'Persepolis', 'Le Congrès', 'Valse avec Bachir reconstruit une mémoire traumatique avant de basculer vers des images documentaires.'],
   ['Quel film animé danois suit un réfugié afghan racontant son parcours ?', 'Flee', 'Another Day of Life', 'Josep', 'La Traversée', 'Flee de Jonas Poher Rasmussen combine témoignage, animation et images d’archives.'],
   ['Quel film de Charlie Kaufman utilise des marionnettes imprimées en 3D ?', 'Anomalisa', 'Synecdoche, New York', 'Je pense à la fin', 'Human Nature', 'Anomalisa fut coréalisé avec Duke Johnson et animé en stop motion.'],
-  ['Quel film de Wes Anderson met en scène des chiens exilés sur une île japonaise ?', 'L’Île aux chiens', 'Fantastic Mr. Fox', 'Asteroid City', 'La Vie aquatique', 'L’Île aux chiens est un film en stop motion sorti en 2018.'],
+  ['Quel film en stop motion de Wes Anderson se déroule dans un Japon futuriste imaginaire ?', 'L’Île aux chiens', 'Fantastic Mr. Fox', 'Asteroid City', 'La Vie aquatique', 'Les animaux bannis sur une décharge insulaire sont doublés en anglais, les humains parlant japonais sans traduction.'],
 ];
 
 function rotate(values: string[], offset: number): string[] {
