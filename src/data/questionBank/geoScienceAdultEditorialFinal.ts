@@ -46,7 +46,7 @@ Quel fleuve traverse la Géorgie et l’Azerbaïdjan avant d’atteindre la Casp
 Sur les deux rives de quel fleuve la ville de Mossoul s’étend-elle ?|Le Tigre|L’Euphrate|L’Oronte|Le Jourdain|Les ruines de Ninive, capitale assyrienne, se trouvent sur la rive opposée à la vieille ville.
 Combien de cours d’eau ont donné son nom à la région du Pendjab ?|Cinq|Trois|Sept|Neuf|Pendjab signifie « cinq eaux » en persan ; la Ravi, qui arrose Lahore, en fait partie.
 Quel détroit sépare l’Espagne du Maroc ?|Le détroit de Gibraltar|Le Bosphore|Le détroit de Messine|Le Pas-de-Calais|À son point le plus étroit, Europe et Afrique ne sont séparées que par environ quatorze kilomètres.
-Quel passage maritime sépare la Sicile de la Tunisie ?|Le canal de Sicile|Le canal d’Otrante|Le détroit de Bonifacio|Le détroit de Messine|Le canal de Sicile relie les bassins oriental et occidental de la Méditerranée.
+Quel passage maritime sépare la Tunisie de la plus grande île italienne ?|Le canal de Sicile|Le canal d’Otrante|Le détroit de Bonifacio|Le détroit de Messine|Le canal de Sicile relie les bassins oriental et occidental de la Méditerranée.
 Quel détroit sépare la Crimée de la péninsule de Taman ?|Le détroit de Kertch|Le Bosphore|Les Dardanelles|Le canal de Corinthe|Il commande l’accès à la mer d’Azov, la mer la moins profonde du monde.
 Comment appelait-on les Dardanelles dans l’Antiquité grecque ?|L’Hellespont|Le Pont-Euxin|Le Propontide|Le Chersonèse|Ce passage vers la mer Égée fut le théâtre de la sanglante campagne de 1915.
 Quelle part du pétrole transporté par mer franchit le détroit d’Ormuz ?|Environ un cinquième|Environ la moitié|Environ un centième|La quasi-totalité|Sa largeur navigable réduite en fait le point de passage le plus stratégique du commerce pétrolier.
@@ -97,7 +97,7 @@ Quelle mer sépare l’Afrique de la péninsule Arabique ?|La mer Rouge|La mer d
 Quelle mer borde le Pakistan au sud ?|La mer d’Arabie|La mer Rouge|La mer d’Andaman|La mer de Chine|Karachi est le principal port pakistanais sur cette mer.
 Quelle mer borde le Bangladesh au sud ?|Le golfe du Bengale|La mer d’Arabie|La mer d’Andaman|Le golfe de Thaïlande|Le Gange et le Brahmapoutre forment un immense delta sur ce golfe.
 Quelle mer sépare Sumatra de la péninsule Malaise ?|Le détroit de Malacca|La mer de Java|La mer de Banda|Le golfe de Thaïlande|Ce couloir maritime relie l’océan Indien à la mer de Chine méridionale.
-Quelle mer borde la côte nord de Java ?|La mer de Java|La mer de Banda|La mer de Timor|La mer des Célèbes|La mer de Java, peu profonde, appartient au plateau continental de la Sonde.
+Quelle mer sépare Bornéo de la plus peuplée des îles indonésiennes ?|La mer de Java|La mer de Banda|La mer de Timor|La mer des Célèbes|La mer de Java, peu profonde, appartient au plateau continental de la Sonde.
 De quel navigateur la mer située entre l’Australie et la Nouvelle-Zélande porte-t-elle le nom ?|Abel Tasman|James Cook|Willem Janszoon|Matthew Flinders|Ce Néerlandais l’a franchie en 1642 et a laissé son nom à la mer comme à la Tasmanie.
 Quelle mer borde le nord de l’Australie et le sud de la Nouvelle-Guinée ?|La mer d’Arafura|La mer de Tasman|La mer de Corail|La mer de Bismarck|La mer d’Arafura recouvre un plateau continental relativement peu profond.
 `);
@@ -160,7 +160,7 @@ Quel minéral définit la valeur 1 sur l’échelle de Mohs ?|Le talc|Le gypse|L
 Quelle roche magmatique se forme par refroidissement lent en profondeur ?|Le granite|Le basalte|L’obsidienne|La pierre ponce|Le refroidissement lent permet la croissance de cristaux visibles dans le granite.
 Quelle roche volcanique vitreuse résulte d’un refroidissement très rapide ?|L’obsidienne|Le granite|Le gneiss|Le calcaire|L’obsidienne se forme lorsque la lave refroidit trop vite pour cristalliser.
 Quelle onde sismique arrive la première sur un sismographe ?|L’onde P|L’onde S|L’onde de Love|L’onde de Rayleigh|Plus rapide, elle précède l’onde S : l’écart entre les deux donne la distance de l’épicentre.
-Quelle échelle moderne mesure la magnitude d’un séisme à partir de son moment sismique ?|La magnitude de moment|L’échelle de Beaufort|L’échelle de Saffir-Simpson|L’échelle de Mohs|Elle évite la saturation de l’ancienne magnitude de Richter pour les très grands séismes.
+Quelle échelle moderne évalue un séisme d’après l’énergie réellement libérée par la rupture ?|La magnitude de moment|L’échelle de Beaufort|L’échelle de Saffir-Simpson|L’échelle de Mohs|Elle évite la saturation de l’ancienne magnitude de Richter pour les très grands séismes.
 Quel nuage en forme d’enclume atteint souvent la tropopause ?|Le cumulonimbus|Le cirrus|Le stratus|L’altocumulus|Ses puissants courants ascendants peuvent produire grêle, éclairs et fortes précipitations.
 Quelle échelle classe la force du vent d’après ses effets observés ?|L’échelle de Beaufort|L’échelle de Mercalli|L’échelle de Mohs|L’échelle de pH|Elle va traditionnellement de 0 pour le calme à 12 pour l’ouragan.
 Quel gaz est le principal responsable naturel de l’effet de serre terrestre ?|La vapeur d’eau|Le méthane|L’ozone|Le protoxyde d’azote|La vapeur d’eau contribue fortement à l’effet de serre naturel et agit surtout comme rétroaction climatique.

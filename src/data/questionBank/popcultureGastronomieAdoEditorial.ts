@@ -267,7 +267,7 @@ const GASTRONOMIE_ROWS: TeenCard[] = [
   ['Que donne le blé une fois moulu très finement ?',
     ['De la farine', 'De la semoule', 'Du son', 'De l\'amidon pur'],
     'La semoule est une mouture plus grossière du même grain ; le son est son enveloppe.'],
-  ['Quelle céréale sert de base au riz cantonais, au risotto et au sushi ?',
+  ['Quelle céréale sert de base au risotto italien et aux sushis japonais ?',
     ['Le riz', 'Le blé', 'L\'orge', 'Le millet'],
     'C\'est l\'aliment de base de plus de la moitié de l\'humanité, cultivé surtout en Asie.'],
   ['Quel produit obtient-on en battant longuement de la crème ?',

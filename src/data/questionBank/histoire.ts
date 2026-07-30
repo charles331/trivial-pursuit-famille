@@ -2290,7 +2290,7 @@ export const HISTOIRE_QUESTIONS: Question[] = [
   {
     id: "his_255",
     categoryId: "histoire",
-    question: "Quel ouvrage inauguré en 1994 relie la France et l'Angleterre sous la mer ?",
+    question: "Quel ouvrage ferroviaire inauguré en 1994 relie la France et l’Angleterre ?",
     options: ["Le pont de la Manche", "Le tunnel sous la Manche", "Le viaduc de Calais", "Le tunnel du Mont-Blanc"],
     correctAnswerIndex: 1,
     difficulty: "ado",

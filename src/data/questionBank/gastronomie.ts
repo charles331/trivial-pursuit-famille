@@ -814,7 +814,7 @@ export const GASTRONOMIE_QUESTIONS: Question[] = [
   {
     id: "gas_091",
     categoryId: "gastronomie",
-    question: "Quel fruit garnit la tarte aux pommes ?",
+    question: "Quel fruit du verger, rouge ou vert, se croque à l’automne et se cuit en compote ?",
     options: ["La pomme", "La banane", "L'ananas", "Le melon"],
     correctAnswerIndex: 0,
     difficulty: "enfant",

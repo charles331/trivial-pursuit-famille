@@ -77,7 +77,7 @@ const pop: Draft[] = [
   ["Dans quel roman de Susanna Clarke un homme explore-t-il une Maison infinie remplie de statues ?", "Piranèse", "Jonathan Strange & Mr Norrell", "L'Océan au bout du chemin", "La Bibliothèque de Mount Char", "Ses journaux décrivent marées, vestibules et rencontres avec l'Autre."],
   ["Quelle artiste a publié l'album « Fetch the Bolt Cutters » ?", "Fiona Apple", "PJ Harvey", "St. Vincent", "Joanna Newsom", "Enregistré en grande partie chez elle, l'album de 2020 utilise abondamment percussions et objets domestiques."],
   ["De quelle ville anglaise vient la scène trip-hop de Portishead et Massive Attack ?", "Bristol", "Manchester", "Sheffield", "Liverpool", "Le genre y est né du croisement du hip-hop, du dub et du son des studios locaux."],
-  ["Quel duo américain a publié l'album expérimental « Clipping. » en 2014 ?", "clipping.", "Run the Jewels", "Death Grips", "Shabazz Palaces", "Daveed Diggs rappe sur les productions bruitistes de William Hutson et Jonathan Snipes."],
+  ["Quel groupe américain de rap expérimental compte Daveed Diggs au micro ?", "clipping.", "Run the Jewels", "Death Grips", "Shabazz Palaces", "Daveed Diggs rappe sur les productions bruitistes de William Hutson et Jonathan Snipes."],
   ["Quel podcast de fiction suit une technicienne enquêtant sur la disparition des habitants d'une ville ?", "Limetown", "Homecoming", "The Black Tapes", "Alice Isn't Dead", "Lia Haddock recherche ce qui est arrivé à plus de trois cents personnes disparues sans trace."],
 ];
 

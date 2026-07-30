@@ -1831,7 +1831,7 @@ export const SPORTS_QUESTIONS: Question[] = [
   {
     id: "spo_204",
     categoryId: "sports",
-    question: "Comment s'appelle le grand tournoi de rugby qui oppose chaque année six nations européennes ?",
+    question: "Quelle compétition annuelle de rugby oppose les principales équipes européennes depuis 1883 ?",
     options: ["Le Tournoi des Six Nations", "La Champions Cup", "Le Rugby Championship", "La Coupe d'Europe des nations"],
     correctAnswerIndex: 0,
     difficulty: "ado",

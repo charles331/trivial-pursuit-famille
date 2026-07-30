@@ -5,7 +5,7 @@ type Fact = [string, string, string, string, string, string];
 const GEOGRAPHY: Fact[] = [
   ['Quelle capitale européenne est traversée par la rivière Liffey ?', 'Dublin', 'Édimbourg', 'Cardiff', 'Belfast', 'La Liffey divise le centre de Dublin avant de se jeter dans la baie de Dublin.'],
   ['Quel pays possède l’exclave de Kaliningrad sur la mer Baltique ?', 'La Russie', 'La Pologne', 'La Lituanie', 'La Biélorussie', 'Kaliningrad est séparée du reste de la Russie par la Lituanie et la Biélorussie.'],
-  ['Quelle chaîne montagneuse forme l’axe principal de la Corse ?', 'Le massif corse', 'Les Apennins', 'Les Alpes ligures', 'Le Massif central', 'Le relief montagneux corse culmine au Monte Cinto, à 2 706 mètres.'],
+  ['Quel massif forme l’épine dorsale d’une grande île méditerranéenne française ?', 'Le massif corse', 'Les Apennins', 'Les Alpes ligures', 'Le Massif central', 'Le relief montagneux corse culmine au Monte Cinto, à 2 706 mètres.'],
   ['Quel fleuve traverse Cologne et Düsseldorf ?', 'Le Rhin', 'L’Elbe', 'Le Danube', 'Le Weser', 'Ces deux villes allemandes se sont développées sur les rives du Rhin.'],
   ['Quelle capitale est située au bord du golfe de Finlande ?', 'Helsinki', 'Vilnius', 'Varsovie', 'Minsk', 'Helsinki occupe une péninsule et de nombreuses îles sur la Baltique.'],
   ['Dans quel pays se trouve le lac de Bled ?', 'La Slovénie', 'La Croatie', 'L’Autriche', 'La Slovaquie', 'Ce lac glaciaire se situe au pied des Alpes juliennes, dans le nord-ouest slovène.'],
@@ -21,7 +21,7 @@ const GEOGRAPHY: Fact[] = [
   ['Quel pays africain possède une côte à la fois sur la Méditerranée et sur l’Atlantique ?', 'Le Maroc', 'L’Algérie', 'La Tunisie', 'La Libye', 'Le Maroc donne sur l’Atlantique à l’ouest et la Méditerranée au nord.'],
   ['Quelle métropole ouest-africaine s’étend autour de la lagune Ébrié ?', 'Abidjan', 'Lomé', 'Cotonou', 'Freetown', 'Plusieurs quartiers d’Abidjan occupent des îles et presqu’îles autour de la lagune Ébrié.'],
   ['Quel pays est traversé par le fleuve Sénégal sans posséder la ville de Saint-Louis du Sénégal ?', 'La Mauritanie', 'Le Mali', 'La Guinée', 'La Gambie', 'Le fleuve Sénégal marque une longue partie de la frontière entre le Sénégal et la Mauritanie.'],
-  ['Quel lac est partagé par le Malawi, le Mozambique et la Tanzanie ?', 'Le lac Malawi', 'Le lac Victoria', 'Le lac Albert', 'Le lac Kivu', 'Le lac Malawi, aussi appelé lac Nyasa, appartient au système du Rift est-africain.'],
+  ['Quel lac du Rift est-africain sépare la Tanzanie du Mozambique, au sud du lac Tanganyika ?', 'Le lac Malawi', 'Le lac Victoria', 'Le lac Albert', 'Le lac Kivu', 'Le lac Malawi, aussi appelé lac Nyasa, appartient au système du Rift est-africain.'],
   ['Dans quel pays se trouvent les chutes Victoria, partagées avec la Zambie ?', 'Le Zimbabwe', 'Le Botswana', 'L’Angola', 'La Namibie', 'Les chutes se forment sur le Zambèze, à la frontière entre Zambie et Zimbabwe.'],
   ['Quel archipel constitue un État indépendant au large du Sénégal ?', 'Le Cap-Vert', 'Les Canaries', 'Madère', 'São Tomé-et-Príncipe', 'Les dix îles volcaniques du Cap-Vert se trouvent dans l’Atlantique, à l’ouest de la presqu’île du même nom.'],
   ['Quelle capitale du Mali est traversée par le fleuve Niger ?', 'Bamako', 'Niamey', 'Ouagadougou', 'Dakar', 'Le Niger traverse Bamako avant de poursuivre sa grande boucle vers le nord-est puis le golfe de Guinée.'],

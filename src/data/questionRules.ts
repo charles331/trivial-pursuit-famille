@@ -71,6 +71,68 @@ export function leaksCorrectAnswer(question: string, correctAnswer: string): boo
   ].some((assertion) => prompt.includes(assertion));
 }
 
+const ANSWER_ARTICLES = new Set([
+  'le', 'la', 'les', 'l', 'un', 'une', 'des', 'du', 'de', 'd', 'au', 'aux', 'et',
+]);
+
+/**
+ * Comme `normalize`, mais les accents restent : ils distinguent des mots que le
+ * joueur lit comme différents. Sans eux, « maïs » se confondrait avec la
+ * conjonction « mais » et « Demon Slayer » avec « démon ».
+ */
+function simplify(value: string): string {
+  return value.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+}
+
+/**
+ * Ce qu'il reste d'une réponse une fois retirés articles et liaisons, au
+ * singulier pour que « plante » et « plantes » se reconnaissent d'un choix à
+ * l'autre. Les mots vides des énoncés ne s'appliquent pas ici : « sous » ou
+ * « même » ne disent rien dans une question, mais font toute la réponse dans
+ * « Sous la terre » ou « La même plante ».
+ */
+function answerWords(answer: string): string[] {
+  return simplify(answer)
+    .split(' ')
+    .filter((word) => word.length >= 3 && !ANSWER_ARTICLES.has(normalize(word)))
+    .map((word) => word.replace(/s$/, ''));
+}
+
+function isEchoedInQuestion(question: string, word: string): boolean {
+  const prompt = ` ${simplify(question)} `;
+  return prompt.includes(` ${word} `) || prompt.includes(` ${word}s `);
+}
+
+/**
+ * L'énoncé donne-t-il la bonne réponse par simple ressemblance de mots ?
+ *
+ * `leaksCorrectAnswer` n'attrape que la citation littérale suivie d'une
+ * assertion. Elle laissait passer la forme la plus courante du problème :
+ * « Quel film de 1966 montre une bataille d'Alger… ? » pour « La Bataille
+ * d'Alger ». L'article change, la phrase exacte n'apparaît pas, et pourtant la
+ * carte se joue sans rien savoir.
+ *
+ * Ce qui compte n'est pas qu'un mot de la réponse soit présent — « Quelle
+ * marche de Gandhi… ? » face à quatre marches ne trahit rien — mais que
+ * l'énoncé reprenne ce qui **distingue** la bonne réponse des trois autres. Et
+ * seulement elle : nommer deux candidats (« entre le lièvre et la tortue »)
+ * oblige toujours à choisir.
+ */
+export function echoesCorrectAnswer(question: string, options: string[], correctIndex: number): boolean {
+  if (options.length !== 4) return false;
+
+  const wordsPerOption = options.map(answerWords);
+  const echoesOption = (index: number): boolean => {
+    const others = new Set(wordsPerOption.filter((_, other) => other !== index).flat());
+    const discriminating = wordsPerOption[index].filter((word) => !others.has(word));
+    return discriminating.length > 0
+      && discriminating.every((word) => isEchoedInQuestion(question, word));
+  };
+
+  if (!echoesOption(correctIndex)) return false;
+  return options.every((_, index) => index === correctIndex || !echoesOption(index));
+}
+
 export function isArtificialFillIn(question: string): boolean {
   return (
     /\b(?:compl[eè]te|compl[eé]tez|compl[eè]te-t-il|manque)\b.{0,45}\b(?:fait|phrase|affirmation|citation)\b/i.test(question)
@@ -251,6 +313,9 @@ export function editorialRejectionReason(card: QuestionCandidate): string | null
 
   const correctAnswer = card.options[card.correctAnswerIndex]?.trim() ?? '';
   if (leaksCorrectAnswer(question, correctAnswer)) return 'bonne réponse révélée dans l’énoncé';
+  if (echoesCorrectAnswer(question, card.options, card.correctAnswerIndex)) {
+    return 'énoncé qui donne la bonne réponse';
+  }
   if (merelyRestatesQuestion({ question, explanation: card.explanation }, correctAnswer)) {
     return 'explication non informative';
   }
