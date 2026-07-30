@@ -19,6 +19,9 @@ import { questionRevealDelayMs, usePrefersReducedMotion } from './utils/motion';
 const VictoryModal = React.lazy(() =>
   import('./components/VictoryModal').then(module => ({ default: module.VictoryModal }))
 );
+const FirstPlayerDraw = React.lazy(() =>
+  import('./components/FirstPlayerDraw').then(module => ({ default: module.FirstPlayerDraw }))
+);
 const LiveCameraProvider = React.lazy(() =>
   import('./components/LiveCameraOverlay').then(module => ({ default: module.LiveCameraProvider }))
 );
@@ -38,6 +41,10 @@ export default function App() {
   const [emojiEvent, setEmojiEvent] = useState<EmojiReaction | null>(null);
   const [showQuestionModal, setShowQuestionModal] = useState<boolean>(false);
   const [generationToken, setGenerationToken] = useState<string>('');
+  // Le verdict du tirage d'ouverture reste affiché après la bascule en « rolling »,
+  // le temps que la table voie qui commence et pourquoi.
+  const [showDrawResult, setShowDrawResult] = useState<boolean>(false);
+  const wasDrawingRef = useRef<boolean>(false);
 
   // Hold the question card back until the 3D pawn has actually hopped onto the
   // destination tile. The delay tracks the dice value, since a 6 takes longer
@@ -52,6 +59,26 @@ export default function App() {
       setShowQuestionModal(false);
     }
   }, [gameState?.phase, gameState?.currentQuestion?.id, gameState?.diceValue, reducedMotion]);
+
+  // Le tirage bascule en « rolling » dès qu'il est tranché : on garde l'écran du
+  // tirage quelques secondes de plus pour annoncer le vainqueur, sauf si la page
+  // a été rechargée après coup — auquel cas il n'y a plus rien à annoncer.
+  useEffect(() => {
+    if (gameState?.phase === 'first_player_roll') {
+      wasDrawingRef.current = true;
+      setShowDrawResult(false);
+      return;
+    }
+
+    if (wasDrawingRef.current && gameState?.firstPlayerDraw?.winnerId) {
+      wasDrawingRef.current = false;
+      setShowDrawResult(true);
+      const timer = setTimeout(() => setShowDrawResult(false), 7000);
+      return () => clearTimeout(timer);
+    }
+
+    wasDrawingRef.current = false;
+  }, [gameState?.phase, gameState?.firstPlayerDraw?.winnerId]);
 
   // Extract URL parameter for join link
   const urlParams = new URLSearchParams(window.location.search);
@@ -219,6 +246,18 @@ export default function App() {
     }
   };
 
+  const handleRollFirstPlayer = React.useCallback((playerId?: string) => {
+    if (socket && gameState) {
+      socket.emit('roll-first-player', { roomCode: gameState.roomCode, playerId });
+    }
+  }, [socket, gameState?.roomCode]);
+
+  const handleEndFirstPlayerDraw = React.useCallback(() => {
+    if (socket && gameState) {
+      socket.emit('end-first-player-roll', { roomCode: gameState.roomCode });
+    }
+  }, [socket, gameState?.roomCode]);
+
   const handleRollDice = React.useCallback(() => {
     if (socket && gameState) {
       socket.emit('roll-dice', { roomCode: gameState.roomCode });
@@ -303,6 +342,39 @@ export default function App() {
     );
   }
 
+  const isHostPlayer = gameState.players.find(player => player.id === currentUserId)?.isHost ?? false;
+
+  // Tirage du premier joueur : plateau et questions n'ont rien à faire à l'écran
+  // tant que la table ne sait pas qui ouvre la partie.
+  if (gameState.phase === 'first_player_roll' || showDrawResult) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+        <InGameHeader
+          gameState={gameState}
+          onLeaveGame={handleLeaveGame}
+          onTogglePause={handleTogglePause}
+          isHost={isHostPlayer}
+        />
+        <React.Suspense
+          fallback={
+            <div className="flex flex-1 items-center justify-center text-sm font-bold text-slate-300">
+              Préparation du tirage…
+            </div>
+          }
+        >
+          <FirstPlayerDraw
+            gameState={gameState}
+            currentUserId={currentUserId}
+            isHost={isHostPlayer}
+            onRollFirstPlayer={handleRollFirstPlayer}
+            onEndDraw={handleEndFirstPlayerDraw}
+            onContinue={() => setShowDrawResult(false)}
+          />
+        </React.Suspense>
+      </div>
+    );
+  }
+
   const activePlayer = gameState.players[gameState.activePlayerIndex] || gameState.players[0];
   const isMyTurn = activePlayer?.id === currentUserId || gameState.settings.isLocalMode || (activePlayer?.id?.startsWith('local_') ?? false);
   // Once a full-screen card covers the board there is no reason to keep its
@@ -321,7 +393,7 @@ export default function App() {
         gameState={gameState}
         onLeaveGame={handleLeaveGame}
         onTogglePause={handleTogglePause}
-        isHost={gameState.players.find(p => p.id === currentUserId)?.isHost ?? false}
+        isHost={isHostPlayer}
       />
 
       {/* Main Game Stage */}

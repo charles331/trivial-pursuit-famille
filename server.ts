@@ -16,6 +16,15 @@ import {
 } from './src/data/questionRules.js';
 import { checkStore, loadRooms, startRoomPersistence, saveRooms, ROOM_STORE_PATH } from './roomStore.js';
 import { advanceTurn, calculateMoves, resolveAnswer, togglePauseState } from './src/server/gameEngine.js';
+import {
+  beginFirstPlayerDraw,
+  pendingRollers,
+  purgeFirstPlayerRoll,
+  recordFirstPlayerRoll,
+  settleFirstPlayerDraw,
+  skipFirstPlayerDraw,
+  transferFirstPlayerRoll,
+} from './src/server/firstPlayerDraw.js';
 import { createGameStateView } from './src/server/gameStateView.js';
 import { isCardReadAloud, resolveOnAirIds, resolveReaderId } from './src/server/turnRoles.js';
 import {
@@ -382,6 +391,10 @@ function removeSocketFromRoom(room: Room, socketId: string): void {
     } else if (playerIndex < room.gameState.activePlayerIndex) {
       room.gameState.activePlayerIndex -= 1;
     }
+    // Un départ pendant le tirage retire le lancer du partant, et peut suffire à
+    // départager ceux qui restent.
+    purgeFirstPlayerRoll(room.gameState, socketId);
+    settleFirstPlayerDraw(room.gameState);
   }
 }
 
@@ -543,6 +556,9 @@ io.on('connection', (socket: Socket) => {
     const oldSocketId = player.id;
     player.id = socket.id;
     player.isConnected = true;
+    // Le lancer du tirage suit le joueur : il n'a pas à relancer après un
+    // simple rafraîchissement de page.
+    transferFirstPlayerRoll(room.gameState, oldSocketId, socket.id);
 
     room.sockets.delete(oldSocketId);
     room.sockets.set(socket.id, player);
@@ -779,13 +795,73 @@ io.on('connection', (socket: Socket) => {
     room.gameState.questionsPool = shuffled([...customQuestions, ...QUESTIONS_DATABASE]);
     room.gameState.usedQuestionIds = [];
 
-    room.gameState.phase = 'rolling';
-    room.gameState.activePlayerIndex = 0;
-    room.gameState.diceValue = null;
-    room.gameState.possibleMoves = [];
-    room.gameState.lastTurnEventMessage = null;
+    // Le premier joueur n'est plus l'organisateur d'office : tout le monde
+    // lance le dé une fois et le meilleur lancer ouvre la partie. Une partie
+    // solo n'a évidemment rien à départager.
+    if (room.gameState.players.length === 1) {
+      skipFirstPlayerDraw(room.gameState);
+    } else {
+      beginFirstPlayerDraw(room.gameState, Date.now());
+    }
 
     emitGameState(room);
+    saveRooms(rooms);
+  });
+
+  /**
+   * Qui lance, et pour qui.
+   *
+   * En ligne, chacun lance pour lui-même. En pass & play, l'appareil est unique :
+   * l'organisateur lance pour chaque joueur à son tour, dans l'ordre de la table.
+   */
+  function resolveFirstPlayerRoller(room: Room, socketId: string, requestedId?: string): Player | null {
+    const pending = pendingRollers(room.gameState);
+    if (pending.length === 0) return null;
+
+    const roller = room.settings.isLocalMode
+      ? room.hostSocketId === socketId ? pending[0] : null
+      : pending.find(player => player.id === socketId) ?? null;
+
+    // Le client annonce pour qui il croit lancer. S'il se trompe — parce que la
+    // partie a avancé entre-temps, ou parce qu'il vise quelqu'un d'autre — mieux
+    // vaut refuser que d'attribuer le lancer au voisin.
+    if (!roller || (requestedId && requestedId !== roller.id)) return null;
+    return roller;
+  }
+
+  // Tirage du premier joueur : un seul lancer par joueur.
+  socket.on('roll-first-player', (data: { roomCode: string; playerId?: string }) => {
+    const room = getRoom(data.roomCode);
+    if (!room || room.gameState.phase !== 'first_player_roll') return;
+    if (isPaused(room)) return;
+
+    const roller = resolveFirstPlayerRoller(room, socket.id, data.playerId);
+    if (!roller) return;
+
+    const dice = Math.floor(Math.random() * 6) + 1;
+    if (!recordFirstPlayerRoll(room.gameState, roller.id, dice, Date.now())) return;
+
+    settleFirstPlayerDraw(room.gameState);
+    emitGameState(room);
+    saveRooms(rooms);
+  });
+
+  /**
+   * Départage sans attendre les joueurs manquants. Réservée à l'organisateur,
+   * cette sortie de secours évite qu'un joueur parti chercher un verre bloque
+   * indéfiniment le lancement de la partie.
+   */
+  socket.on('end-first-player-roll', (data: { roomCode: string }) => {
+    const room = getRoom(data.roomCode);
+    if (!room || room.hostSocketId !== socket.id) return;
+    if (room.gameState.phase !== 'first_player_roll') return;
+
+    if (!settleFirstPlayerDraw(room.gameState, { force: true })) {
+      return socket.emit('error-msg', 'Il faut au moins un lancer pour désigner le premier joueur.');
+    }
+
+    emitGameState(room);
+    saveRooms(rooms);
   });
 
   // Helper to check if a socket is authorized to take action for the active player
@@ -1080,6 +1156,9 @@ io.on('connection', (socket: Socket) => {
         const p = room.gameState.players.find(pl => pl.id === socket.id);
         if (p) {
           p.isConnected = false;
+          // On n'attend plus le lancer d'un absent : si les présents ont tous
+          // lancé, le tirage se tranche tout de suite.
+          settleFirstPlayerDraw(room.gameState);
         }
 
         if (room.hostSocketId === socket.id) {
