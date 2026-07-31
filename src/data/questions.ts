@@ -8,6 +8,7 @@ import { HISTOIRE_ADULTE_EDITORIAL_04 } from './questionBank/histoireAdultEditor
 import { HISTOIRE_ADULTE_EDITORIAL_05 } from './questionBank/histoireAdultEditorial05';
 import { HISTOIRE_ADULTE_EDITORIAL_06 } from './questionBank/histoireAdultEditorial06';
 import { HISTOIRE_ADULTE_EDITORIAL_07 } from './questionBank/histoireAdultEditorial07';
+import { HISTOIRE_GRAND_PUBLIC_ADULTE } from './questionBank/histoireGrandPublicAdultEditorial';
 import { GEOGRAPHIE_QUESTIONS } from './questionBank/geographie';
 import {
   ADULT_QUALITY_GEOGRAPHY,
@@ -41,6 +42,7 @@ import {
   POPCULTURE_ADULTE_EDITORIAL_FINAL,
 } from './questionBank/cinemaPopAdultEditorialFinal';
 import { CINEMA_POP_ADULT_EDITORIAL_FINAL_02 } from './questionBank/cinemaPopAdultEditorialFinal02';
+import { CINEMA_GRAND_PUBLIC_ADULTE } from './questionBank/cinemaGrandPublicAdultEditorial';
 import { SCIENCES_QUESTIONS } from './questionBank/sciences';
 import { ART_QUESTIONS } from './questionBank/art';
 import { ART_ADULTE_EDITORIAL } from './questionBank/artAdultEditorial';
@@ -77,11 +79,13 @@ import { GASTRONOMIE_ADULT_CURATED_FINAL } from './questionBank/gastronomieAdult
 import { ADULT_KNOWLEDGE_SUPPLEMENT } from './questionBank/adultKnowledgeSupplement';
 import { MUSIQUE_CLASSIQUE_ADULTE } from './questionBank/musiqueClassiqueAdultEditorial';
 import { POPCULTURE_FRANCOPHONE_ADULTE } from './questionBank/popcultureFrancophoneAdultEditorial';
+import { POPCULTURE_GRAND_PUBLIC_ADULTE } from './questionBank/popcultureGrandPublicAdultEditorial';
 import { GASTRONOMIE_FRANCOPHONE_ADULTE } from './questionBank/gastronomieFrancophoneAdultEditorial';
 import { SPORTS_FRANCOPHONE_ADULTE } from './questionBank/sportsFrancophoneAdultEditorial';
 import { SERIES_TV_ADULTE } from './questionBank/seriesTvAdultEditorial';
 import { ART_BD_LITTERATURE_ADULTE } from './questionBank/artBdLitteratureAdultEditorial';
 import { ART_GRAND_PUBLIC_ADULTE } from './questionBank/artGrandPublicAdultEditorial';
+import { ART_GRAND_PUBLIC_ADULTE_02 } from './questionBank/artGrandPublicAdultEditorial02';
 import { SCIENCES_ADO_EDITORIAL } from './questionBank/sciencesAdoEditorial';
 import { SCIENCES_GRAND_PUBLIC_ADULTE } from './questionBank/sciencesGrandPublicAdultEditorial';
 import {
@@ -99,6 +103,7 @@ const CURATED_QUESTIONS: Question[] = [
   ...HISTOIRE_ADULTE_EDITORIAL_05,
   ...HISTOIRE_ADULTE_EDITORIAL_06,
   ...HISTOIRE_ADULTE_EDITORIAL_07,
+  ...HISTOIRE_GRAND_PUBLIC_ADULTE,
   ...GEOGRAPHIE_QUESTIONS,
   ...ADULT_QUALITY_GEOGRAPHY,
   ...GEOGRAPHIE_ADULTE_EDITORIAL_02,
@@ -125,6 +130,7 @@ const CURATED_QUESTIONS: Question[] = [
   ...ART_QUESTIONS,
   ...ART_BD_LITTERATURE_ADULTE,
   ...ART_GRAND_PUBLIC_ADULTE,
+  ...ART_GRAND_PUBLIC_ADULTE_02,
   ...ART_ADULTE_EDITORIAL,
   ...ART_ADULTE_EDITORIAL_02,
   ...ART_ADULTE_EDITORIAL_03,
@@ -145,6 +151,7 @@ const CURATED_QUESTIONS: Question[] = [
   ...POPCULTURE_QUESTIONS,
   ...MUSIQUE_CLASSIQUE_ADULTE,
   ...POPCULTURE_FRANCOPHONE_ADULTE,
+  ...POPCULTURE_GRAND_PUBLIC_ADULTE,
   ...POPCULTURE_ADO_EDITORIAL,
   ...POPCULTURE_ADULT_EDITORIAL,
   ...POPCULTURE_ADULT_EDITORIAL_02,
@@ -154,6 +161,7 @@ const CURATED_QUESTIONS: Question[] = [
   ...POPCULTURE_ADULT_EDITORIAL_06,
   ...POPCULTURE_ADULTE_EDITORIAL_FINAL,
   ...CINEMA_POP_ADULT_EDITORIAL_FINAL_02,
+  ...CINEMA_GRAND_PUBLIC_ADULTE,
   ...GASTRONOMIE_QUESTIONS,
   ...GASTRONOMIE_ADO_EDITORIAL,
   ...GASTRONOMIE_FRANCOPHONE_ADULTE,

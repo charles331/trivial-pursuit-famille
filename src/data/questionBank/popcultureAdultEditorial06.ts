@@ -2,9 +2,7 @@ import { Question } from '../../types';
 type Q=[string,[string,string,string,string],string];
 const D:Q[]=[
 ["Quel roman de Douglas Adams commence par la destruction de la Terre pour une voie express hyperspatiale ?",["Le Guide du voyageur galactique","Dirk Gently","Restaurant at the End of the Universe","Mostly Harmless"],"Arthur Dent échappe à la destruction grâce à son ami extraterrestre Ford Prefect."],
-["Quel auteur a imaginé la Culture, civilisation post-rareté dirigée avec des intelligences artificielles ?",["Iain M. Banks","Alastair Reynolds","Peter F. Hamilton","Dan Simmons"],"Les romans de la Culture explorent notamment l'interventionnisme d'une société utopique."],
 ["Quel roman d'Ursula K. Le Guin se déroule sur la planète hivernale Gethen ?",["La Main gauche de la nuit","Les Dépossédés","Le Nom du monde est forêt","Rocannon"],"L'envoyé Genly Ai tente de convaincre les nations de Gethen de rejoindre l'Ekumen."],
-["Quel auteur a écrit la trilogie de fantasy La Terre fracturée ?",["N. K. Jemisin","Nnedi Okorafor","Octavia E. Butler","Nalo Hopkinson"],"Les trois volumes ont chacun reçu le prix Hugo du meilleur roman."],
 ["Quel roman d'Octavia E. Butler suit une femme noire transportée dans une plantation esclavagiste ?",["Liens de sang","Parabole du semeur","Aube","La Survivante"],"Dana est ramenée à plusieurs reprises dans le Maryland du début du XIXe siècle."],
 ["Quel écrivain chinois a signé Le Problème à trois corps ?",["Liu Cixin","Chen Qiufan","Hao Jingfang","Ken Liu"],"Le roman ouvre une trilogie consacrée au premier contact avec la civilisation trisolarienne."],
 ["Quel roman de Susanna Clarke met en scène deux magiciens dans l'Angleterre napoléonienne ?",["Jonathan Strange & Mr Norrell","Piranèse","La Tour de Babylone","Stardust"],"La magie réapparaît en Angleterre sur fond de rivalité, de guerre et de pactes féeriques."],

@@ -33,6 +33,8 @@ const TARGETS = {
   templateReuse: 8,
   /** Part maximale de cartes dont les 4 options sont des nombres nus. */
   bareNumberRate: 0.05,
+  /** Part maximale de cartes « qui a fait cette œuvre ? », dont la réponse est un nom. */
+  authorAttributionRate: 0.1,
 };
 
 function deaccent(value: string): string {
@@ -438,6 +440,86 @@ for (const difficulty of DIFFICULTIES) {
     }
   });
   console.log(`${difficulty.padEnd(8)}${overlaps.join(', ') || 'rien de notable'}`);
+}
+
+// ---------------------------------------------------------------------------
+// 11. Cartes d'attribution d'une œuvre à son auteur
+// ---------------------------------------------------------------------------
+section('11. Attribution d\'une œuvre à son auteur (niveau adulte)');
+console.log('« Quel réalisateur a signé ce film ? » n\'a qu\'une seule façon de se');
+console.log('gagner : connaître le nom. Quatre noms inconnus, et la carte se subit au');
+console.log('lieu de se jouer. Le moule échappe au contrôle 4 : chaque énoncé');
+console.log('reformule légèrement le même geste.');
+console.log('Sont comptées les cartes qui réclament un rôle de créateur — auteur,');
+console.log('dessinateur, compositeur, architecte, studio — et dont la réponse est un');
+console.log('nom. Un personnage ou une marque en réponse ne compte pas.');
+console.log(`\nCible : ≤ ${Math.round(100 * TARGETS.authorAttributionRate)}% des cartes adultes par catégorie.`);
+console.log('');
+
+/**
+ * « Qui a fait cette œuvre ? », sous toutes ses variantes.
+ *
+ * Ce contrôle a été faux deux fois avant d'être juste, et les deux erreurs
+ * valent d'être notées. La première version listait des verbes — « réalisé,
+ * signé, peint, écrit » — et annonçait 104 cartes d'attribution en art : elle
+ * ratait « qui a créé », « quel est l'auteur de », « à quel artiste doit-on ».
+ * La deuxième comptait toute carte dont la réponse est un nom propre, et
+ * gonflait le compte de l'inverse : Blacksad, Bob Morane, Michel Vaillant,
+ * Pokémon, Motown ou Spotify sont des personnages et des marques, pas des
+ * auteurs.
+ *
+ * Le critère juste tient aux deux bouts : l'énoncé réclame **un rôle de
+ * créateur** — auteur, dessinateur, compositeur, architecte, mangaka, studio —
+ * et la bonne réponse est **un nom**, pas un titre précédé d'un article.
+ */
+const ASKS_FOR_CREATOR = /\b(?:qui\s+(?:a|est|fut|grava|con[çc]ut|dessina|cr[éeè]a|composa|[ée]crivit|illustra|sculpta|peignit|r[ée]alisa|imagina|inventa|fonda)|quel(?:le)?s?\s+(?:auteur|autrice|cr[éeè]at|artiste|peintre|sculpt|architecte|[ée]crivain|romanci|dessinat|sc[ée]nariste|compositeur|compositrice|mangaka|po[èe]te|dramaturge|chor[ée]graphe|photographe|couturi|designer|graveur|illustrat|verrier|cin[ée]aste|r[ée]alisat|metteur|studio|artisan|graphiste|styliste|orf[èe]vre)|[àa] quel(?:le)? (?:artiste|auteur|peintre|cr[ée]ateur))/i;
+
+/** Une réponse-patronyme : un nom propre, pas un titre précédé d'un article. */
+function looksLikePersonName(answer: string): boolean {
+  const trimmed = answer.trim();
+  return /^[A-ZÀ-Ý]/.test(trimmed) && !/^(le |la |les |l’|l'|un |une |des |du |de |au )/i.test(trimmed);
+}
+
+for (const categoryId of CATEGORIES) {
+  const rows = rowsOf(categoryId, 'adulte');
+  const attribution = rows.filter(
+    (question) => ASKS_FOR_CREATOR.test(question.question) && looksLikePersonName(answerOf(question)),
+  );
+  console.log(
+    `${categoryId.padEnd(15)}${String(attribution.length).padStart(4)}/${rows.length}`
+      + `  ${pct(attribution.length, rows.length).padStart(5)}`
+      + ` ${flag(attribution.length, rows.length, TARGETS.authorAttributionRate)}`,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 12. Cartes qui demandent de nommer une personne
+// ---------------------------------------------------------------------------
+section('12. « Nommez la personne » (niveau adulte)');
+console.log('La famille de la section 11 étendue aux autres rôles : roi, explorateur,');
+console.log('savant, dirigeant, militante, sportif. Une carte n\'est pas fautive parce');
+console.log('que sa réponse est un nom — « Quel explorateur remonta le Saint-Laurent ? »');
+console.log('se gagne très bien face à trois inconnus et un Jacques Cartier. Ce que la');
+console.log('colonne « hors du jeu » compte, c\'est le cas où le nom attendu n\'apparaît');
+console.log('nulle part ailleurs dans le corpus : personne à table ne peut le produire.');
+console.log('');
+
+const ASKS_FOR_ROLE = /\bquel(?:le)?s?\s+(?:explorat|navigat|conquistador|roi\b|reine|empereur|imp[ée]ratrice|tsar|sultan|pharaon|pape|g[ée]n[ée]ral|mar[ée]chal|amiral|chef\b|savant|scientifique|physicien|chimiste|biologiste|m[ée]decin|astronome|math[ée]maticien|inventeur|philosophe|[ée]conomiste|pr[ée]sident|chancelier|ministre|dirigeant|souverain|r[ée]sistant|aviat|alpiniste|militant|sportif|joueur|coureur|cycliste|nageur|athl[èe]te|pilote|boxeur|footballeur|l[ée]gislateur)/i;
+
+for (const categoryId of CATEGORIES) {
+  const rows = rowsOf(categoryId, 'adulte');
+  const named = rows.filter(
+    (question) => (ASKS_FOR_ROLE.test(question.question) || ASKS_FOR_CREATOR.test(question.question))
+      && looksLikePersonName(answerOf(question)),
+  );
+  const outside = named.filter((question) => {
+    const words = contentWords(answerOf(question));
+    return words.length > 0 && words.every((word) => !familyLexicon.has(word));
+  });
+  console.log(
+    `${categoryId.padEnd(15)}${String(named.length).padStart(4)}/${rows.length}`
+      + `   hors du jeu : ${String(outside.length).padStart(3)}`,
+  );
 }
 
 console.log('\nDiagnostic terminé. Les repères « << » signalent un écart à la cible.');

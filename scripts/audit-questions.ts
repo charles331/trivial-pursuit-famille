@@ -13,6 +13,7 @@ import {
   leaksCorrectAnswer,
   merelyRestatesQuestion,
   normalize,
+  quotesAnswerProperName,
   paraphrasesSameFact,
   questionSkeleton,
   stripDecorativePrefix,
@@ -94,6 +95,13 @@ for (const question of QUESTIONS_DATABASE) {
   // sont les premières à tomber dans « Quel fruit garnit la tarte aux pommes ? ».
   if (echoesCorrectAnswer(question.question, question.options, question.correctAnswerIndex)) {
     editorialError(`Énoncé qui donne la bonne réponse`, question.id);
+  }
+
+  // Un mot de remplissage dans la réponse suffisait à passer le contrôle
+  // ci-dessus : « près de la rivière Ebola » pour « la maladie à virus Ebola ».
+  // Le nom propre qui nomme la réponse ne peut pas figurer dans l'énoncé.
+  if (quotesAnswerProperName(question.question, question.options, question.correctAnswerIndex)) {
+    editorialError(`Nom propre de la bonne réponse cité dans l'énoncé`, question.id);
   }
 
   // Le niveau ado ne doit jamais être complété en recopiant la banque enfant :
@@ -273,6 +281,7 @@ if (errors.length > 0) {
       + ` choix ≤ ${MAX_ADULT_OPTION_LENGTH} caractères.`,
   );
   console.log(`Moules : aucun énoncé adulte réutilisé plus de ${MAX_SKELETON_REUSE} fois par catégorie.`);
+  console.log('Énoncés : aucun ne cite le nom propre qui désigne sa bonne réponse.');
   console.log('Niveaux : aucune carte enfant recopiée au niveau ado ou adulte.');
   console.log(`Volume adulte : exactement ${ADULT_EDITORIAL_TARGET_PER_CATEGORY} cartes relues par catégorie.`);
 }

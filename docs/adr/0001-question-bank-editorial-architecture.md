@@ -49,6 +49,21 @@ et les mots vides des énoncés ne s’appliquent pas aux réponses — « sous 
 « même » ne disent rien dans une question mais font toute la réponse dans « Sous
 la terre ».
 
+Ce contrôle exige que **tous** les mots distinctifs de la réponse soient repris.
+Un seul mot de remplissage suffisait donc à le contourner : « Quelle épidémie
+fut identifiée en 1976 près de la rivière Ebola ? » pour *La maladie à virus
+Ebola* — « virus » manquant à l’énoncé, la carte passait, alors qu’elle ne
+demande rien à personne. Un second contrôle, `quotesAnswerProperName`, ferme
+cette porte : le nom propre qui **nomme** la réponse ne peut pas figurer dans
+l’énoncé.
+
+Ce nom, c’est le dernier nom propre de la réponse. Un prénom partagé ne désigne
+personne — « Qui joue Daniel Plainview ? » ne donne pas *Daniel Day-Lewis* —
+tandis que citer l’œuvre dont on interroge le contenu reste permis : « Que
+devient Simba à la fin du dessin animé ? » attend un rôle, pas un titre. Le
+contrôle est donc volontairement incomplet : un nom identifiant placé ailleurs
+qu’en fin de réponse lui échappe encore, et se rattrape à la relecture.
+
 Les cartes rédigées et relues restent la seule source de vérité du niveau
 adulte. `src/data/adultExpansion.ts` ne complète plus ce niveau à partir de
 cartes enfant ou ado. Les positions des bonnes réponses sont équilibrées de
@@ -107,7 +122,8 @@ L’audit doit échouer si une catégorie ne contient pas exactement 400 cartes
 adultes relues, si leurs bonnes réponses ne sont pas également réparties entre
 A, B, C et D, en cas d’identifiant dupliqué, fait adulte répété, promotion
 enfant/ado, préfixe artificiel, choix dupliqué, index invalide, carte adulte
-trop longue ou retour du format d’association.
+trop longue, énoncé citant le nom propre de sa bonne réponse, ou retour du format
+d’association.
 
 ## Guide pour les futurs agents
 
@@ -120,7 +136,15 @@ Pour ajouter ou remplacer des cartes :
 5. varier les époques, pays, disciplines et représentations ;
 6. éviter un biais exclusivement français : inclure Belgique, Europe et monde ;
 7. vérifier tout fait nouveau auprès d’une source fiable avant de l’intégrer ;
-8. ne jamais gonfler le volume avec des cartes vrai/faux ou des associations.
+8. ne jamais gonfler le volume avec des cartes vrai/faux ou des associations ;
+9. se demander comment la carte se gagne. « Qui a réalisé ce film ? », « Qui a
+   peint ce tableau ? » n’ont qu’une porte : connaître le nom. Un film se devine
+   par son sujet, une réplique par son film ; un patronyme ne se déduit de rien.
+   Cette famille est donc bornée : `npm run analyze:difficulty` en mesure la part
+   par catégorie (section 11, cible ≤ 10 % des cartes adultes). Elle échappe au
+   contrôle des moules, car « Quel cinéaste a réalisé _ ? » et « Qui a réalisé
+   _ ? » comptent pour deux moules alors que la table entend deux fois la même
+   question.
 
 Les cartes à trou générées depuis les anecdotes sont interdites. Toute
 amélioration future doit remplacer une carte à volume constant, avec quatre

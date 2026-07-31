@@ -2857,7 +2857,7 @@ export const GEOGRAPHIE_QUESTIONS: Question[] = [
   {
     id: "geo_318",
     categoryId: "geographie",
-    question: "Quelle mer d'Asie du Sud-Est est bordée par le Vietnam, les Philippines et la Chine, objet de vives tensions territoriales ?",
+    question: "Quelle mer d'Asie du Sud-Est bordée par le Vietnam et les Philippines fait l'objet de vives tensions ?",
     options: ["La mer de Java", "La mer des Célèbes", "La mer de Chine méridionale", "La mer de Sulu"],
     correctAnswerIndex: 2,
     difficulty: "adulte",

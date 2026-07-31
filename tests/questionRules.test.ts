@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { echoesCorrectAnswer, editorialRejectionReason } from '../src/data/questionRules';
+import {
+  echoesCorrectAnswer,
+  editorialRejectionReason,
+  quotesAnswerProperName,
+} from '../src/data/questionRules';
 
 /** Raccourci de lecture : la bonne réponse est toujours le premier choix. */
 function echoes(question: string, correct: string, ...wrong: [string, string, string]): boolean {
@@ -98,5 +102,81 @@ test('the editorial contract rejects a card that gives its answer away', () => {
       explanation: 'La tarte aux pommes figure déjà dans des recettes du Moyen Âge.',
     }),
     'énoncé qui donne la bonne réponse',
+  );
+});
+
+/** Raccourci de lecture : la bonne réponse est toujours le premier choix. */
+function quotesName(question: string, correct: string, ...wrong: [string, string, string]): boolean {
+  return quotesAnswerProperName(question, [correct, ...wrong], 0);
+}
+
+test('a filler word in the answer no longer hides a quoted proper name', () => {
+  // « virus » n'apparaît pas dans l'énoncé, ce qui suffisait à passer
+  // echoesCorrectAnswer alors que « Ebola » donne la carte.
+  assert.equal(
+    quotesName(
+      'Quelle épidémie fut identifiée pour la première fois en 1976 près de la rivière Ebola ?',
+      'La maladie à virus Ebola',
+      'La fièvre jaune', 'La fièvre de Lassa', 'La maladie de Marburg',
+    ),
+    true,
+  );
+});
+
+test('a proper name shared with another option gives nothing away', () => {
+  assert.equal(
+    quotesName(
+      'Quelle maladie doit son nom à la ville allemande de Marburg ?',
+      'La maladie de Marburg',
+      'La maladie à virus Ebola', 'La fièvre de Marburg-Lassa', 'La variole de Marburg',
+    ),
+    false,
+  );
+});
+
+test('a shared first name does not designate a person', () => {
+  // « Daniel » ne distingue rien : c'est le nom de famille qui nomme la réponse.
+  assert.equal(
+    quotesName(
+      'Qui joue Daniel Plainview dans There Will Be Blood ?',
+      'Daniel Day-Lewis',
+      'Joaquin Phoenix', 'Christian Bale', 'Sean Penn',
+    ),
+    false,
+  );
+});
+
+test('naming the work whose content is asked about stays allowed', () => {
+  assert.equal(
+    quotesName(
+      'Que devient Simba à la fin du dessin animé de Disney ?',
+      'Le roi de la Terre des Lions',
+      'Un explorateur', 'Un chasseur', 'Un chef hyène',
+    ),
+    false,
+  );
+});
+
+test('a capital at the start of a sentence is not a proper name', () => {
+  // « Quand » ouvre l'énoncé comme la réponse : ce n'est pas un nom propre.
+  assert.equal(
+    quotesName(
+      'Quand un arbitre accorde-t-il un avantage au football ?',
+      'Quand poursuivre le jeu profite à l’équipe lésée',
+      'Quand la faute est involontaire', 'Quand le ballon sort', 'Quand le gardien sort de sa surface',
+    ),
+    false,
+  );
+});
+
+test('the editorial contract rejects a card that quotes its answer’s name', () => {
+  assert.equal(
+    editorialRejectionReason({
+      question: 'Quelle épidémie fut identifiée en 1976 près de la rivière Ebola ?',
+      options: ['La maladie à virus Ebola', 'La fièvre jaune', 'La fièvre de Lassa', 'La maladie de Marburg'],
+      correctAnswerIndex: 0,
+      explanation: 'Deux flambées presque simultanées eurent lieu au Soudan et au Zaïre en 1976.',
+    }),
+    'nom propre de la bonne réponse cité dans l’énoncé',
   );
 });

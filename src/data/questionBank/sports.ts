@@ -1507,7 +1507,7 @@ export const SPORTS_QUESTIONS: Question[] = [
   {
     id: "spo_168",
     categoryId: "sports",
-    question: "Quel est le surnom du basketteur LeBron James ?",
+    question: "Quel surnom royal les fans donnent-ils au meilleur marqueur de l'histoire de la NBA ?",
     options: ["The Rocket", "King James", "Air LeBron", "The Beast"],
     correctAnswerIndex: 1,
     difficulty: "ado",

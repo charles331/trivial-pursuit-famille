@@ -673,7 +673,7 @@ const GASTRONOMIE_ROWS: AdultCard[] = [
   ['Quel lambic belge est aromatisé aux cerises ?',
     ['La kriek', 'La faro', 'La framboise seule', 'La gueuze pure'],
     'Les cerises, souvent des schaarbeekse, macèrent plusieurs mois dans le lambic avant l\'embouteillage.'],
-  ['Quelle spécialité belge est un pain d\'épices dur de la région de Dinant ?',
+  ['Quelle spécialité belge est un pain d\'épices dur de la vallée de la Meuse ?',
     ['La couque de Dinant', 'Le speculoos', 'Le pain à la grecque', 'La craquelin'],
     'Faite de farine et de miel sans levure, elle se casse plutôt qu\'elle ne se coupe.'],
   ['Quel biscuit bruxellois plat et caramélisé se vend en longues bandes ?',

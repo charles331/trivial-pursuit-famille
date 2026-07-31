@@ -895,9 +895,9 @@ export const POPCULTURE_QUESTIONS: Question[] = [
   {
     id: "pop_100",
     categoryId: "popculture",
-    question: "Au jeu de cartes Uno, que doit-on crier quand il ne nous reste qu'une carte ?",
-    options: ["Gagné !", "Stop !", "Carte !", "Uno !"],
-    correctAnswerIndex: 3,
+    question: "Dans quel jeu de cartes doit-on crier son nom lorsqu'il ne reste qu'une seule carte en main ?",
+    options: ["Le Rami", "La Bataille", "Le Uno", "Le Mille Bornes"],
+    correctAnswerIndex: 2,
     difficulty: "enfant",
     explanation: "\"Uno\" veut dire \"un\" en espagnol et en italien."
   },
