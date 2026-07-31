@@ -647,17 +647,108 @@ passe.
 ### 9.4 Un onzième indicateur au diagnostic
 
 `npm run analyze:difficulty` mesure désormais la part de cartes d'attribution
-par catégorie (section 11, cible ≤ 10 %). Le cinéma revient dans la cible ; la
-mesure rend visible ce qui reste :
+par catégorie (section 11, cible ≤ 10 %).
 
-| Catégorie | Cartes d'attribution | Part |
+> **Chiffres corrigés.** La première version de cet indicateur listait les
+> verbes « réalisé, signé, peint, écrit » et annonçait art 104, popculture 62,
+> cinéma 40. Elle ratait « qui a créé », « quel est l'auteur de », « à quel
+> artiste doit-on », « de quel artiste _ est-il l'œuvre », « qui a conçu ».
+> Le détecteur repose maintenant sur le bon critère — la carte réclame un geste
+> de création **et** sa bonne réponse est un nom de personne — et les vrais
+> chiffres, avant la passe de la section 10, étaient : art **257 / 400**,
+> popculture **111 / 400**, cinéma **66 / 400**.
+
+Le diagnostic ne bloque pas. Il rend visible ce qui reste après la passe
+décrite en section 10.
+
+
+---
+
+## 10. Passe « qui a peint ceci » sur Art & Littérature
+
+Suite directe de la section 9 : la même remarque de table vaut pour l'art, et la
+mesure corrigée a montré un problème d'une autre ampleur.
+
+### 10.1 Deux cartes d'art sur trois attendaient un patronyme
+
+| Catégorie | Cartes réclamant un nom d'auteur | Part |
 |---|---:|---:|
-| art | 104 / 400 | 26 % |
-| popculture | 62 / 400 | 16 % |
-| cinema | 40 / 400 | 10 % |
+| art | 257 / 400 | 64 % |
+| popculture | 111 / 400 | 28 % |
+| cinema | 66 / 400 | 17 % |
 
-Le diagnostic ne bloque pas : descendre l'art à la même cible demande d'écrire
-une soixantaine de cartes de peinture, de littérature et de BD franco-belge, ce
-qui rejoint la proposition 8 restée ouverte. C'est le prochain chantier
-naturel — la remarque de table portait sur le cinéma, mais « qui a peint ceci,
-qui a écrit cela » se joue exactement de la même façon.
+231 noms distincts pour 257 cartes : la catégorie est un annuaire. Et sur ces
+231 noms, **18 seulement** apparaissent quelque part aux niveaux enfant ou ado —
+tout le reste est à produire de mémoire, sans aucun appui dans le jeu.
+
+Les familles qui portaient le plus ce défaut sont celles que la section 8.5
+signalait déjà comme surdimensionnées : la danse (chorégraphes), le design et la
+typographie (dessinateurs de caractères, ébénistes, orfèvres), l'art
+contemporain, et les artistes belges très spécialisés.
+
+### 10.2 Ce qui a été fait
+
+61 cartes remplacées, à volume constant, choisies sur un seul critère : la
+réponse n'était pas citable par le foyer. Chorégraphes (Nijinska, Balanchine,
+Graham, Cunningham, Ailey, Roland Petit, Kylián, Akram Khan, Cherkaoui,
+Vandekeybus), typographes et designers (Garamont, Miedinger, Johnston, Saul
+Bass, Milton Glaser, Harry Beck, Riesener, Puiforcat, Gallé, Lalique, Rietveld,
+Breuer), art contemporain (Kosuth, Flavin, Judd, Pistoletto, Broodthaers,
+Panamarenko, Gormley, Kapoor, Tinguely, Op de Beeck, De Bruyckere, Jan Fabre,
+Wim Delvoye, Francis Alÿs, Dotremont, Robert Frank), Belges pointus (Khnopff,
+Spilliaert, Minne, Meunier, Permeke, Tuymans, Grimonprez), sculpture (Phidias,
+Donatello, Cellini, Giambologna, Carpeaux, Rude, Brâncuși, Moore) et
+architecture (Palladio, Soufflot, Barry, Paxton, Mackintosh, Mies van der Rohe,
+Utzon, Piano et Rogers, Adrian Smith).
+
+Deux principes de remplacement, dans
+`src/data/questionBank/artGrandPublicAdultEditorial02.ts` :
+
+1. **retourner la carte** quand le sujet est célèbre et que seul son auteur est
+   inconnu. Le Crystal Palace, l'Opéra de Sydney, le Centre Pompidou, le Burj
+   Khalifa, le palais de Westminster, Helvetica, « I ♥ NY », Cloud Gate et la
+   fontaine Stravinsky remplacent Paxton, Utzon, Piano et Rogers, Adrian Smith,
+   Barry, Miedinger, Glaser, Kapoor et Tinguely ;
+2. **changer de sujet et de format** sinon : regarder un tableau (les sourcils
+   de la Joconde, le chapeau melon de Magritte, le ciel du Cri, le lapis-lazuli,
+   le marbre de Carrare), reconnaître un personnage de roman (Dantès, Tartuffe,
+   Gervaise, Sancho Pança, Raskolnikov, Candide) ou de bande dessinée (Olrik,
+   De Mesmaeker, Quick et Flupke, le Loch Lomond de Haddock), nommer une
+   technique, un métier de musée ou une forme poétique (l'alexandrin, l'incipit,
+   le haïku, le cartel, les réserves, le catalogue raisonné).
+
+Comme pour le cinéma, chaque remplaçante a été confrontée à tout le corpus :
+trois sujets d'abord retenus ont été écartés parce que le fait était déjà posé
+(le Prado et Les Ménines, la définition de la fresque, une troisième carte sur
+la chapelle Sixtine).
+
+### 10.3 Mesures avant / après
+
+| Indicateur | Avant | Après |
+|---|---:|---:|
+| Cartes réclamant un nom d'auteur — art | 257 / 400 | **201 / 400** |
+| Réponses inconnues du foyer — art | 29 % | **28 %** |
+
+Volumes inchangés : 400 cartes adultes par catégorie, 5 360 au total.
+
+### 10.4 Ce que cette passe ne règle pas
+
+**La monotonie du format reste entière.** 201 cartes d'art sur 400 demandent
+toujours un nom d'auteur, contre 66 en cinéma après la passe précédente. Les
+noms qui restent sont ceux qu'un foyer peut produire — Léonard, Rembrandt,
+Monet, Van Gogh, Picasso, Magritte, Rubens, Hergé, Franquin, Chanel, Simenon —
+mais entendre cinquante fois « qui a peint ceci ? » reste lassant même quand on
+répond. Descendre à la cible de 10 % demanderait de réécrire environ 160 cartes
+supplémentaires, c'est-à-dire de refaire la catégorie : c'est un arbitrage
+éditorial à trancher, pas un correctif.
+
+**L'indicateur de notoriété bouge à peine** (29 → 28 %), et c'est normal : il
+mesure le recouvrement lexical avec les banques enfant et ado, pas la
+familiarité réelle. « Le Crystal Palace », « les sourcils » ou « le chapeau
+melon » n'apparaissent nulle part aux niveaux jeunes et sont pourtant à portée
+d'un adulte, là où « Bronislava Nijinska » ne l'était pas. Le progrès de cette
+passe se lit dans la nature des réponses, pas dans ce pourcentage.
+
+**Pop Culture & Musique n'a pas été touchée** : 111 cartes sur 400 y réclament
+un nom d'auteur, soit 28 %. Le même travail y est à faire, à une échelle
+intermédiaire entre le cinéma et l'art.

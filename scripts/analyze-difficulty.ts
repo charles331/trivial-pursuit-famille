@@ -450,17 +450,34 @@ console.log('« Quel réalisateur a signé ce film ? » n\'a qu\'une seule faço
 console.log('gagner : connaître le nom. Quatre noms inconnus, et la carte se subit au');
 console.log('lieu de se jouer. Le moule échappe au contrôle 4 : chaque énoncé');
 console.log('reformule légèrement le même geste.');
+console.log('Sont comptées toutes les cartes qui réclament un nom d\'auteur, quel que');
+console.log('soit le verbe employé — créé, conçu, signé, gravé, « doit-on ».');
 console.log(`\nCible : ≤ ${Math.round(100 * TARGETS.authorAttributionRate)}% des cartes adultes par catégorie.`);
 console.log('');
 
-/** « Qui a réalisé / peint / écrit / composé cette œuvre ? », sous ses variantes. */
-const ATTRIBUTION_VERB = /\b(?:qui|quel|quelle)\b[^?]*\b(?:a |ont |signa|r[ée]alisa|peignit|composa|[ée]crivit)[^?]*\b(?:r[ée]alis[ée]|sign[ée]|tourn[ée]|peint|[ée]crit|compos[ée]|dessin[ée]|sculpt[ée])/i;
-const ATTRIBUTION_ROLE = /\bquel(?:le)?s? (?:r[ée]alisateur|r[ée]alisatrice|cin[ée]aste|metteur en sc[èe]ne|peintre|[ée]crivain|romancier|compositeur|compositrice|auteur|architecte|dessinateur|sculpteur)/i;
+/**
+ * « Qui a fait cette œuvre ? », sous toutes ses variantes.
+ *
+ * Une première version de ce contrôle listait les verbes « réalisé, signé,
+ * peint, écrit » et annonçait 104 cartes d'attribution en art. Elle en ratait
+ * plus de la moitié : « qui a créé », « quel est l'auteur de », « à quel artiste
+ * doit-on », « de quel artiste _ est-il l'œuvre », « qui a conçu », « qui grava
+ * ». Le vrai critère n'est pas le verbe mais la forme de la réponse : la carte
+ * appartient à cette famille quand elle demande un métier ou un geste de
+ * création **et** que la bonne réponse est un nom propre de personne.
+ */
+const CREATION_CUE = /\b(?:cr[éeè]|con[çc]u|dessin|grav|illustr|peint|sculpt|[ée]crit|[ée]criv|compos|r[ée]alis|sign|auteur|autrice|architecte|peintre|sculpteur|sculptrice|[ée]crivain|romanci|dessinateur|dessinatrice|artiste|chor[ée]graphe|photographe|couturi|po[èe]te|dramaturge|graveur|designer|cin[ée]aste|fonda|imagin|invent|conce|doit-on)/i;
+
+/** Une réponse-patronyme : un nom propre, pas un titre précédé d'un article. */
+function looksLikePersonName(answer: string): boolean {
+  const trimmed = answer.trim();
+  return /^[A-ZÀ-Ý]/.test(trimmed) && !/^(le |la |les |l’|l'|un |une |des |du |de |au )/i.test(trimmed);
+}
 
 for (const categoryId of CATEGORIES) {
   const rows = rowsOf(categoryId, 'adulte');
   const attribution = rows.filter(
-    (question) => ATTRIBUTION_VERB.test(question.question) || ATTRIBUTION_ROLE.test(question.question),
+    (question) => CREATION_CUE.test(question.question) && looksLikePersonName(answerOf(question)),
   );
   console.log(
     `${categoryId.padEnd(15)}${String(attribution.length).padStart(4)}/${rows.length}`
