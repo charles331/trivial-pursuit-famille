@@ -13,6 +13,10 @@ interface AvatarPickerProps {
   selectedColor: string;
   difficulty: DifficultyLevel;
   onUpdate: (data: { name?: string; avatarId?: string; color?: string; difficulty?: DifficultyLevel }) => void;
+  /** Masque le champ prénom quand il est déjà affiché ailleurs (écran d'accueil). */
+  showName?: boolean;
+  /** Retire le cadre propre du bloc pour l'imbriquer dans un panneau existant. */
+  embedded?: boolean;
 }
 
 const ICON_MAP: Record<string, React.FC<{ className?: string }>> = {
@@ -25,7 +29,9 @@ export const AvatarPicker: React.FC<AvatarPickerProps> = ({
   avatarId,
   selectedColor,
   difficulty,
-  onUpdate
+  onUpdate,
+  showName = true,
+  embedded = false
 }) => {
   const currentAvatar = AVATARS.find(a => a.id === avatarId) || AVATARS[0];
   const [localName, setLocalName] = React.useState(playerName);
@@ -61,23 +67,31 @@ export const AvatarPicker: React.FC<AvatarPickerProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-lg border border-slate-200 dark:border-slate-800 space-y-5">
+    <div
+      className={
+        embedded
+          ? 'p-4 space-y-5'
+          : 'bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-lg border border-slate-200 dark:border-slate-800 space-y-5'
+      }
+    >
       {/* Name Input */}
-      <div>
-        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-          Nom du Joueur / Surnom
-        </label>
-        <input
-          type="text"
-          value={localName}
-          onFocus={() => { isFocusedRef.current = true; }}
-          onChange={(e) => handleNameInputChange(e.target.value)}
-          onBlur={handleNameBlur}
-          placeholder="Ex: Papa, Mamie, Thomas..."
-          maxLength={18}
-          className="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-amber-500 text-base"
-        />
-      </div>
+      {showName && (
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
+            Nom du Joueur / Surnom
+          </label>
+          <input
+            type="text"
+            value={localName}
+            onFocus={() => { isFocusedRef.current = true; }}
+            onChange={(e) => handleNameInputChange(e.target.value)}
+            onBlur={handleNameBlur}
+            placeholder="Ex: Papa, Mamie, Thomas..."
+            maxLength={18}
+            className="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-amber-500 text-base"
+          />
+        </div>
+      )}
 
       {/* Avatar Grid */}
       <div>
