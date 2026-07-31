@@ -27,6 +27,7 @@ import {
   MoveRight
 } from 'lucide-react';
 import { soundManager } from '../utils/sound';
+import { isCardReadAloud } from '../server/turnRoles';
 import { EASE_OUT_SOFT, readableInk, useMediaQuery, usePrefersReducedMotion, withAlpha } from '../utils/motion';
 
 interface GameCanvasBoardProps {
@@ -286,6 +287,8 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
   const [boardPx, setBoardPx] = useState(0);
 
   const prevDiceValRef = useRef<number | null>(null);
+  const prevPhaseRef = useRef<GameState['phase'] | null>(null);
+  const prevActiveIndexRef = useRef<number | null>(null);
   const resultPauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rollGuardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const boardBoxRef = useRef<HTMLDivElement | null>(null);
@@ -352,13 +355,28 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
   // ------------------------------------------------------------- turn plumbing
   // Reset roll guard state whenever phase returns to rolling or player turn switches
   useEffect(() => {
-    setShowTurnIntro(true);
+    const cameFromPhase = prevPhaseRef.current;
+    const playerChanged = prevActiveIndexRef.current !== gameState.activePlayerIndex;
+    prevPhaseRef.current = gameState.phase;
+    prevActiveIndexRef.current = gameState.activePlayerIndex;
+
     setPreviewTileId(null);
     if (rollGuardTimerRef.current) {
       clearTimeout(rollGuardTimerRef.current);
       rollGuardTimerRef.current = null;
     }
     if (gameState.phase === 'rolling') {
+      // L'écran « passez l'appareil » n'a de sens que si l'appareil doit
+      // changer de mains : nouveau joueur, ou retour de l'appareil après une
+      // carte lue à voix haute par le voisin (mode lecteur). Une case
+      // Re-lance ou une bonne réponse sans lecteur gardent le même joueur et
+      // le même appareil : le lui redemander serait une interruption.
+      setShowTurnIntro(
+        playerChanged
+        || cameFromPhase === null
+        || cameFromPhase === 'first_player_roll'
+        || (cameFromPhase === 'evaluating' && isCardReadAloud(gameState.settings))
+      );
       // This must be React state rather than a ref: a correct answer can return
       // to "rolling" without changing the active player, and refs do not render
       // the newly enabled die/button on their own.
@@ -821,7 +839,9 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
               <div className="flex items-center gap-3 rounded-3xl border border-amber-400/70 bg-slate-950/85 px-5 py-3 shadow-2xl backdrop-blur-md">
                 <Dices className="h-6 w-6 text-amber-400" />
                 <span className="text-sm font-bold text-slate-200">
-                  Vous avancez de{' '}
+                  {/* Le flash s'affiche sur tous les appareils : « vous » n'est
+                      juste que sur celui du joueur qui a lancé. */}
+                  {isMyTurn ? 'Vous avancez de' : `${activePlayer?.name} avance de`}{' '}
                   <strong className="text-3xl font-black text-amber-300">{showingResultPause}</strong>
                 </span>
               </div>
