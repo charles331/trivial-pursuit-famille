@@ -19,7 +19,6 @@ const DATA: Q[] = [
   ["Quel journal belge publie historiquement Le Chat de Philippe Geluck ?", ["Le Soir", "La Libre Belgique", "L'Écho", "Le Vif"], 0, "Le personnage apparaît dans Le Soir à partir de mars 1983."],
   ["Quel chanteur nigérian est l'une des figures fondatrices de l'afrobeat ?", ["Fela Kuti", "Burna Boy", "Wizkid", "King Sunny Adé"], 0, "Fela Kuti mêlait jazz, funk et traditions ouest-africaines à des textes politiques."],
   ["Quel jeu belge a été développé par Larian Studios et élu jeu de l'année 2023 ?", ["Baldur's Gate 3", "Divinity: Original Sin 2", "Cyberpunk 2077", "Diablo IV"], 0, "Le studio gantois Larian a développé Baldur's Gate 3 à partir des règles de Donjons et Dragons."],
-  ["Quel auteur a scénarisé la BD Les Cités obscures avec François Schuiten ?", ["Benoît Peeters", "Pierre Christin", "Jean Dufaux", "Raoul Cauvin"], 0, "Peeters et Schuiten développent depuis 1983 un univers architectural parallèle."],
   ["Quel album de Kate Bush contient « Wuthering Heights » ?", ["The Kick Inside", "Hounds of Love", "Never for Ever", "The Dreaming"], 0, "Kate Bush avait 19 ans lorsque son premier album The Kick Inside est paru en 1978."],
   ["Dans quel jeu contrôle-t-on une oie semant le désordre dans un village anglais ?", ["Untitled Goose Game", "Goat Simulator", "Donut County", "A Short Hike"], 0, "Le studio australien House House a conçu ce jeu d'infiltration comique."],
   ["Quel créateur belge est à l'origine de la série de BD Thorgal avec Grzegorz Rosiński ?", ["Jean Van Hamme", "Jean Dufaux", "Yves Sente", "Raoul Cauvin"], 0, "Jean Van Hamme scénarise le premier album de Thorgal, publié en 1980."],
@@ -37,7 +36,6 @@ const DATA: Q[] = [
   ["Quel héros de BD créé par Morris tire plus vite que son ombre ?", ["Lucky Luke", "Jerry Spring", "Blueberry", "Chick Bill"], 0, "Morris crée Lucky Luke en 1946; René Goscinny en scénarisera de nombreux albums."],
   ["Quelle chanteuse capverdienne a popularisé la morna dans le monde ?", ["Cesária Évora", "Mayra Andrade", "Lura", "Sara Tavares"], 0, "Cesária Évora était surnommée la « diva aux pieds nus »."],
   ["Quel jeu de rôle japonais suit les Voleurs fantômes de cœurs ?", ["Persona 5", "Final Fantasy XV", "Xenoblade Chronicles", "NieR: Automata"], 0, "Les héros de Persona 5 explorent des palais nés des désirs corrompus d'adultes."],
-  ["Quel auteur-dessinateur a créé Calvin et Hobbes ?", ["Bill Watterson", "Gary Larson", "Charles Schulz", "Jim Davis"], 0, "Bill Watterson a publié le comic strip de 1985 à 1995 puis l'a volontairement arrêté."],
   ["Quel album d'Angèle contient « Balance ton quoi » ?", ["Brol", "Nonante-Cinq", "Multitude", "QALF"], 0, "Brol, premier album d'Angèle, est sorti en 2018 et a connu une réédition intitulée Brol La Suite."],
 ];
 

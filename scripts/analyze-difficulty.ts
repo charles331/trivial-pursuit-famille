@@ -450,23 +450,29 @@ console.log('« Quel réalisateur a signé ce film ? » n\'a qu\'une seule faço
 console.log('gagner : connaître le nom. Quatre noms inconnus, et la carte se subit au');
 console.log('lieu de se jouer. Le moule échappe au contrôle 4 : chaque énoncé');
 console.log('reformule légèrement le même geste.');
-console.log('Sont comptées toutes les cartes qui réclament un nom d\'auteur, quel que');
-console.log('soit le verbe employé — créé, conçu, signé, gravé, « doit-on ».');
+console.log('Sont comptées les cartes qui réclament un rôle de créateur — auteur,');
+console.log('dessinateur, compositeur, architecte, studio — et dont la réponse est un');
+console.log('nom. Un personnage ou une marque en réponse ne compte pas.');
 console.log(`\nCible : ≤ ${Math.round(100 * TARGETS.authorAttributionRate)}% des cartes adultes par catégorie.`);
 console.log('');
 
 /**
  * « Qui a fait cette œuvre ? », sous toutes ses variantes.
  *
- * Une première version de ce contrôle listait les verbes « réalisé, signé,
- * peint, écrit » et annonçait 104 cartes d'attribution en art. Elle en ratait
- * plus de la moitié : « qui a créé », « quel est l'auteur de », « à quel artiste
- * doit-on », « de quel artiste _ est-il l'œuvre », « qui a conçu », « qui grava
- * ». Le vrai critère n'est pas le verbe mais la forme de la réponse : la carte
- * appartient à cette famille quand elle demande un métier ou un geste de
- * création **et** que la bonne réponse est un nom propre de personne.
+ * Ce contrôle a été faux deux fois avant d'être juste, et les deux erreurs
+ * valent d'être notées. La première version listait des verbes — « réalisé,
+ * signé, peint, écrit » — et annonçait 104 cartes d'attribution en art : elle
+ * ratait « qui a créé », « quel est l'auteur de », « à quel artiste doit-on ».
+ * La deuxième comptait toute carte dont la réponse est un nom propre, et
+ * gonflait le compte de l'inverse : Blacksad, Bob Morane, Michel Vaillant,
+ * Pokémon, Motown ou Spotify sont des personnages et des marques, pas des
+ * auteurs.
+ *
+ * Le critère juste tient aux deux bouts : l'énoncé réclame **un rôle de
+ * créateur** — auteur, dessinateur, compositeur, architecte, mangaka, studio —
+ * et la bonne réponse est **un nom**, pas un titre précédé d'un article.
  */
-const CREATION_CUE = /\b(?:cr[éeè]|con[çc]u|dessin|grav|illustr|peint|sculpt|[ée]crit|[ée]criv|compos|r[ée]alis|sign|auteur|autrice|architecte|peintre|sculpteur|sculptrice|[ée]crivain|romanci|dessinateur|dessinatrice|artiste|chor[ée]graphe|photographe|couturi|po[èe]te|dramaturge|graveur|designer|cin[ée]aste|fonda|imagin|invent|conce|doit-on)/i;
+const ASKS_FOR_CREATOR = /\b(?:qui\s+(?:a|est|fut|grava|con[çc]ut|dessina|cr[éeè]a|composa|[ée]crivit|illustra|sculpta|peignit|r[ée]alisa|imagina|inventa|fonda)|quel(?:le)?s?\s+(?:auteur|autrice|cr[éeè]at|artiste|peintre|sculpt|architecte|[ée]crivain|romanci|dessinat|sc[ée]nariste|compositeur|compositrice|mangaka|po[èe]te|dramaturge|chor[ée]graphe|photographe|couturi|designer|graveur|illustrat|verrier|cin[ée]aste|r[ée]alisat|metteur|studio|artisan|graphiste|styliste|orf[èe]vre)|[àa] quel(?:le)? (?:artiste|auteur|peintre|cr[ée]ateur))/i;
 
 /** Une réponse-patronyme : un nom propre, pas un titre précédé d'un article. */
 function looksLikePersonName(answer: string): boolean {
@@ -477,7 +483,7 @@ function looksLikePersonName(answer: string): boolean {
 for (const categoryId of CATEGORIES) {
   const rows = rowsOf(categoryId, 'adulte');
   const attribution = rows.filter(
-    (question) => CREATION_CUE.test(question.question) && looksLikePersonName(answerOf(question)),
+    (question) => ASKS_FOR_CREATOR.test(question.question) && looksLikePersonName(answerOf(question)),
   );
   console.log(
     `${categoryId.padEnd(15)}${String(attribution.length).padStart(4)}/${rows.length}`

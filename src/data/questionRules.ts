@@ -144,6 +144,10 @@ const FUNCTION_WORDS = new Set([
   'quel', 'quelle', 'quels', 'quelles', 'qui', 'que', 'quoi', 'comment',
   'combien', 'pourquoi', 'quand', 'lorsque', 'lequel', 'laquelle', 'depuis',
   'the', 'and', 'of', 'for', 'from', 'with',
+  // Une majuscule de titre ne fait pas un nom propre d'un pronom ni d'un
+  // adverbe : « Non, je ne regrette rien », « Il est cinq heures ».
+  'non', 'oui', 'ne', 'pas', 'plus', 'rien', 'tout', 'je', 'tu', 'il', 'elle',
+  'nous', 'vous', 'ils', 'elles', 'on', 'mon', 'ton', 'notre', 'votre',
 ]);
 
 /**

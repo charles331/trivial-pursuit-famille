@@ -7,8 +7,10 @@ import { Question } from '../../types';
  * Après la passe menée sur le cinéma, la mesure a été refaite avec un
  * détecteur correct — le premier ne voyait que « qui a peint / réalisé / signé »
  * et ratait « qui a créé », « quel est l’auteur de », « à quel artiste doit-on ».
- * La catégorie ne comptait donc pas 104 cartes d’attribution mais **257 sur
- * 400** : deux cartes d’art sur trois attendent un patronyme.
+ * La catégorie ne comptait donc pas 104 cartes d’attribution mais **249 sur
+ * 400** : près de deux cartes d’art sur trois attendent un patronyme. (Une
+ * mesure intermédiaire a annoncé 257 : elle comptait aussi des cartes dont la
+ * réponse est un personnage ou une marque, pas un auteur.)
  *
  * Une réponse-patronyme n’a qu’une porte : la connaître. Encore faut-il
  * qu’elle soit citable. 61 cartes attendaient Bronislava Nijinska, Jiří Kylián,
@@ -33,8 +35,8 @@ import { Question } from '../../types';
  * Delvaux, Ensor, Rubens, Horta, Hergé, Franquin, Peyo, Chanel, Dior,
  * Saint Laurent, Simenon, Hugo, Dumas, Verne.
  *
- * Le reliquat reste important : 201 cartes de la catégorie attendent encore un
- * nom d’auteur, contre 66 en cinéma. La monotonie du format est un chantier
+ * Le reliquat reste important : 192 cartes de la catégorie attendent encore un
+ * nom d’auteur, contre 53 en cinéma. La monotonie du format est un chantier
  * distinct de celui de la notoriété — voir la section 10 de
  * `docs/analyse-niveaux-difficulte.md`.
  */

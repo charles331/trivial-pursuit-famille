@@ -649,14 +649,18 @@ passe.
 `npm run analyze:difficulty` mesure désormais la part de cartes d'attribution
 par catégorie (section 11, cible ≤ 10 %).
 
-> **Chiffres corrigés.** La première version de cet indicateur listait les
-> verbes « réalisé, signé, peint, écrit » et annonçait art 104, popculture 62,
-> cinéma 40. Elle ratait « qui a créé », « quel est l'auteur de », « à quel
-> artiste doit-on », « de quel artiste _ est-il l'œuvre », « qui a conçu ».
-> Le détecteur repose maintenant sur le bon critère — la carte réclame un geste
-> de création **et** sa bonne réponse est un nom de personne — et les vrais
-> chiffres, avant la passe de la section 10, étaient : art **257 / 400**,
-> popculture **111 / 400**, cinéma **66 / 400**.
+> **Chiffres corrigés deux fois.** La première version de cet indicateur
+> listait des verbes — « réalisé, signé, peint, écrit » — et annonçait art 104,
+> popculture 62, cinéma 40 : elle ratait « qui a créé », « quel est l'auteur
+> de », « à quel artiste doit-on », « qui a conçu ». La deuxième comptait toute
+> carte dont la réponse est un nom propre, et se trompait dans l'autre sens :
+> Blacksad, Bob Morane, Michel Vaillant, Pokémon, Motown et Spotify sont des
+> personnages et des marques, pas des auteurs.
+>
+> Le critère définitif tient aux deux bouts : l'énoncé réclame **un rôle de
+> créateur** et la réponse est **un nom**. Mesuré ainsi, l'état du corpus avant
+> les trois passes était : art **249 / 400**, cinéma **119 / 400**,
+> popculture **90 / 400**.
 
 Le diagnostic ne bloque pas. Il rend visible ce qui reste après la passe
 décrite en section 10.
@@ -673,11 +677,11 @@ mesure corrigée a montré un problème d'une autre ampleur.
 
 | Catégorie | Cartes réclamant un nom d'auteur | Part |
 |---|---:|---:|
-| art | 257 / 400 | 64 % |
-| popculture | 111 / 400 | 28 % |
-| cinema | 66 / 400 | 17 % |
+| art | 249 / 400 | 62 % |
+| cinema | 119 / 400 | 30 % |
+| popculture | 90 / 400 | 23 % |
 
-231 noms distincts pour 257 cartes : la catégorie est un annuaire. Et sur ces
+231 noms distincts : la catégorie est un annuaire. Et sur ces
 231 noms, **18 seulement** apparaissent quelque part aux niveaux enfant ou ado —
 tout le reste est à produire de mémoire, sans aucun appui dans le jeu.
 
@@ -726,15 +730,15 @@ la chapelle Sixtine).
 
 | Indicateur | Avant | Après |
 |---|---:|---:|
-| Cartes réclamant un nom d'auteur — art | 257 / 400 | **201 / 400** |
+| Cartes réclamant un nom d'auteur — art | 249 / 400 | **192 / 400** |
 | Réponses inconnues du foyer — art | 29 % | **28 %** |
 
 Volumes inchangés : 400 cartes adultes par catégorie, 5 360 au total.
 
 ### 10.4 Ce que cette passe ne règle pas
 
-**La monotonie du format reste entière.** 201 cartes d'art sur 400 demandent
-toujours un nom d'auteur, contre 66 en cinéma après la passe précédente. Les
+**La monotonie du format reste entière.** 192 cartes d'art sur 400 demandent
+toujours un nom d'auteur, contre 53 en cinéma après la passe précédente. Les
 noms qui restent sont ceux qu'un foyer peut produire — Léonard, Rembrandt,
 Monet, Van Gogh, Picasso, Magritte, Rubens, Hergé, Franquin, Chanel, Simenon —
 mais entendre cinquante fois « qui a peint ceci ? » reste lassant même quand on
@@ -749,6 +753,79 @@ melon » n'apparaissent nulle part aux niveaux jeunes et sont pourtant à porté
 d'un adulte, là où « Bronislava Nijinska » ne l'était pas. Le progrès de cette
 passe se lit dans la nature des réponses, pas dans ce pourcentage.
 
-**Pop Culture & Musique n'a pas été touchée** : 111 cartes sur 400 y réclament
-un nom d'auteur, soit 28 %. Le même travail y est à faire, à une échelle
-intermédiaire entre le cinéma et l'art.
+**Pop Culture & Musique n'a pas été touchée par cette passe** : 90 cartes sur
+400 y réclament un nom d'auteur. C'est l'objet de la section 11.
+
+
+---
+
+## 11. Passe « qui a composé, qui a dessiné » sur Pop Culture & Musique
+
+Troisième et dernière passe de la série, la plus petite des trois — et c'est la
+saturation de la catégorie qui l'explique.
+
+### 11.1 90 cartes, dont la moitié jouable
+
+Sur les 90 cartes qui réclament un nom de créateur, une bonne moitié attend un
+nom qu'un foyer produit sans peine : Hergé, Franquin, Goscinny, Simenon, Maurice
+Leblanc, Jean Van Hamme, Gainsbourg, Cabrel, Michel Berger, Bowie, Prince,
+Sandra Kim, Angèle. Ces cartes ne posent aucun problème et n'ont pas été
+touchées.
+
+Les autres tombaient dans deux pièges :
+
+- **le créateur invisible** : Bill Watterson pour Calvin et Hobbes, Quino pour
+  Mafalda, Katsuhiro Ōtomo, Naoki Urasawa, Grant Morrison, Frank Miller, Mike
+  Mignola, Bryan Lee O'Malley, Iain M. Banks, N. K. Jemisin ;
+- **le compositeur célèbre associé à une œuvre qui ne l'est pas** : Purcell et
+  « Didon et Énée », Rameau et « Les Indes galantes », Schumann et « Scènes
+  d'enfants », Liszt et « Les Préludes », Smetana et « Má vlast », Bartók et
+  « Le Mandarin merveilleux », Bellini et « Norma », Mascagni et « Cavalleria
+  rusticana », Berg et « Wozzeck », Philip Glass et « Einstein on the Beach ».
+  Le nom est connu, le titre ne l'est pas : la carte se joue au hasard.
+
+### 11.2 Ce qui a été fait
+
+29 cartes remplacées, dans
+`src/data/questionBank/popcultureGrandPublicAdultEditorial.ts`. Les
+remplaçantes restent sur le terrain de la catégorie mais changent de point
+d'entrée : le titre d'une chanson plutôt que son auteur (« Non, je ne regrette
+rien », « Il est cinq heures, Paris s'éveille », « Comme d'habitude » devenue
+« My Way »), un surnom (« le Taulier »), un emblème (la langue des Rolling
+Stones), un chiffre (les quatre-vingt-huit touches du piano, les quatre cordes
+du violon), une console (la Game Boy), un jeu (Catane, Pictionary, le Yam's, le
+Taboo, Doom, SimCity, Yu-Gi-Oh!), une récompense (les Grammy, les Victoires de
+la musique), et l'ancrage belge que la catégorie mérite (Brel né à Bruxelles,
+Adamo, Lara Fabian, l'harmonica de Toots Thielemans).
+
+Deux cartes écrites pour cette passe ont été jetées après vérification : le duo
+Vaya Con Dios et la new beat belge étaient déjà posés ailleurs dans la
+catégorie. La recherche par mot-clé les avait manqués à cause d'une majuscule.
+
+### 11.3 Bilan des trois passes
+
+| Catégorie | Cartes réclamant un nom de créateur, avant | après |
+|---|---:|---:|
+| cinema | 119 / 400 | **53 / 400** |
+| art | 249 / 400 | **192 / 400** |
+| popculture | 90 / 400 | **62 / 400** |
+
+158 cartes réécrites au total, à volume constant : 68 en cinéma, 61 en art,
+29 en pop culture.
+
+### 11.4 Pourquoi cette passe est la plus petite
+
+Pop Culture & Musique est déjà très fournie en chanson francophone, en bande
+dessinée franco-belge, en jeux vidéo et en jeux de société. Chercher des sujets
+grand public encore libres y devient difficile : sur une trentaine de candidats
+retenus au départ, la moitié étaient déjà posés — Aznavour, Adamo côté Arno,
+Nirvana, U2, Daft Punk, Beyoncé, Ed Sheeran, PlayStation, FIFA, Animal
+Crossing, Guitar Hero, Candy Crush, Cluedo, Time's Up, Yoko Tsuno, YouTube,
+l'e-sport, Queen et « Bohemian Rhapsody ».
+
+Descendre les trois catégories à la cible de 10 % demanderait donc autre chose
+qu'une passe de remplacement : ouvrir des territoires que le jeu ne couvre pas
+encore, ou assumer que « qui a fait cette œuvre ? » reste une question
+légitime quand la réponse est un nom que le foyer connaît. C'est un arbitrage
+éditorial, pas un correctif — et il vaut d'être tranché avant la prochaine
+session de test.

@@ -37,12 +37,10 @@ const CINEMA_FACTS: Fact[] = [
 
 const POP_FACTS: Fact[] = [
   ['Qui chante « Paper Planes » ?', 'M.I.A.', 'Santigold', 'Neneh Cherry', 'FKA twigs', 'Paper Planes figure sur l’album Kala et échantillonne Straight to Hell de The Clash.'],
-  ['Quelle artiste a publié l’album « Ctrl » ?', 'SZA', 'Solange', 'H.E.R.', 'Janelle Monáe', 'Ctrl, premier album studio de SZA, est sorti en 2017.'],
   ['Quel groupe sud-coréen a publié l’album « Map of the Soul: 7 » ?', 'BTS', 'EXO', 'Seventeen', 'Stray Kids', 'BTS a sorti Map of the Soul: 7 en février 2020.'],
   ['Quelle chanteuse béninoise a enregistré l’album « Djin Djin » ?', 'Angélique Kidjo', 'Oumou Sangaré', 'Rokia Traoré', 'Fatoumata Diawara', 'Djin Djin reçut un Grammy et réunit plusieurs invités internationaux.'],
   ['Quel duo malien de chanteurs aveugles s’est fait connaître avec l’album Dimanche à Bamako ?', 'Amadou & Mariam', 'Tinariwen', 'Songhoy Blues', 'Tamikrest', 'Le duo est notamment connu pour l’album Dimanche à Bamako produit par Manu Chao.'],
   ['Quel artiste portoricain a publié « Un Verano Sin Ti » ?', 'Bad Bunny', 'Rauw Alejandro', 'J Balvin', 'Residente', 'L’album de Bad Bunny mêle reggaeton, dembow et influences caribéennes.'],
-  ['Quelle musicienne américaine a composé l’album visuel « Dirty Computer » ?', 'Janelle Monáe', 'St. Vincent', 'Solange', 'Fiona Apple', 'Dirty Computer fut accompagné en 2018 d’un film narratif qualifié d’emotion picture.'],
   ['Quel drame britannique met en scène le policier corrompu Tony Gates dans sa première saison ?', 'Line of Duty', 'Bodyguard', 'Happy Valley', 'Luther', 'La première enquête de l’unité AC-12 vise le chef d’équipe Tony Gates.'],
   ['Quel drame islandais commence par un torse retrouvé dans un fjord ?', 'Trapped', 'The Valhalla Murders', 'Katla', 'Blackport', 'Trapped suit le policier Andri Ólafsson dans une ville isolée par une tempête.'],
   ['Quelle série espagnole suit la famille De la Mora et sa boutique de fleurs ?', 'La Casa de las Flores', 'Valeria', 'Paquita Salas', 'Les Demoiselles du téléphone', 'La comédie noire mexicaine créée par Manolo Caro révèle les secrets de la famille De la Mora.'],
