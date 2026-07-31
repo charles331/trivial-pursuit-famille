@@ -13,6 +13,50 @@ const BoardCustomizer = React.lazy(() =>
   import('./BoardCustomizer').then(module => ({ default: module.BoardCustomizer }))
 );
 
+/**
+ * Dernier profil utilisé sur cet appareil, retenu d'une partie à l'autre pour
+ * ne pas le ressaisir. C'est purement local au navigateur : rien n'est envoyé
+ * au serveur, et chaque appareil garde le sien.
+ */
+const PROFILE_STORAGE_KEY = 'tp_fam_profile';
+
+interface StoredProfile {
+  name: string;
+  avatarId: string;
+  color: string;
+  difficulty: DifficultyLevel;
+}
+
+// Au tout premier passage, le prénom reste vide (placeholder) plutôt que « Joueur 1 ».
+const DEFAULT_PROFILE: StoredProfile = { name: '', avatarId: 'lion', color: '#EF4444', difficulty: 'adulte' };
+
+function loadStoredProfile(): StoredProfile {
+  if (typeof window === 'undefined') return DEFAULT_PROFILE;
+  try {
+    const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
+    if (!raw) return DEFAULT_PROFILE;
+    const parsed = JSON.parse(raw) as Partial<StoredProfile> | null;
+    return {
+      name: typeof parsed?.name === 'string' ? parsed.name : DEFAULT_PROFILE.name,
+      avatarId: typeof parsed?.avatarId === 'string' ? parsed.avatarId : DEFAULT_PROFILE.avatarId,
+      color: typeof parsed?.color === 'string' ? parsed.color : DEFAULT_PROFILE.color,
+      difficulty: parsed?.difficulty === 'enfant' || parsed?.difficulty === 'ado' || parsed?.difficulty === 'adulte'
+        ? parsed.difficulty
+        : DEFAULT_PROFILE.difficulty,
+    };
+  } catch {
+    return DEFAULT_PROFILE;
+  }
+}
+
+function saveStoredProfile(profile: StoredProfile): void {
+  try {
+    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+  } catch {
+    // Un stockage indisponible (navigation privée, quota) ne doit pas bloquer le jeu.
+  }
+}
+
 interface LobbyProps {
   gameState: GameState | null;
   currentUserId: string;
@@ -57,11 +101,11 @@ export const Lobby: React.FC<LobbyProps> = ({
   // n'est pas nécessaire pour comprendre l'écran ni pour se lancer.
   const [showProfileSetup, setShowProfileSetup] = useState(false);
 
-  // Default Player Form State
-  const [playerName, setPlayerName] = useState('Joueur 1');
-  const [avatarId, setAvatarId] = useState('lion');
-  const [color, setColor] = useState('#EF4444');
-  const [difficulty, setDifficulty] = useState<DifficultyLevel>('adulte');
+  // Profil pré-rempli avec le dernier utilisé sur cet appareil (vide au premier passage).
+  const [playerName, setPlayerName] = useState(() => loadStoredProfile().name);
+  const [avatarId, setAvatarId] = useState(() => loadStoredProfile().avatarId);
+  const [color, setColor] = useState(() => loadStoredProfile().color);
+  const [difficulty, setDifficulty] = useState<DifficultyLevel>(() => loadStoredProfile().difficulty);
 
   // Local Pass & Play Add Player Form State
   const [showAddLocalModal, setShowAddLocalModal] = useState(false);
@@ -78,6 +122,7 @@ export const Lobby: React.FC<LobbyProps> = ({
 
   const handleCreateOnline = (isLocal = false) => {
     soundManager.playClick();
+    saveStoredProfile({ name: playerName, avatarId, color, difficulty });
     onCreateRoom({ name: playerName, avatarId, color, difficulty }, isLocal);
   };
 
@@ -85,6 +130,7 @@ export const Lobby: React.FC<LobbyProps> = ({
     e?.preventDefault();
     if (!joinCodeInput.trim()) return;
     soundManager.playClick();
+    saveStoredProfile({ name: playerName, avatarId, color, difficulty });
     onJoinRoom(joinCodeInput.trim(), { name: playerName, avatarId, color, difficulty });
   };
 
