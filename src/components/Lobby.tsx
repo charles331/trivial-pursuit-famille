@@ -100,6 +100,15 @@ export const Lobby: React.FC<LobbyProps> = ({
   // Sur l'accueil, la personnalisation d'avatar est repliée par défaut : elle
   // n'est pas nécessaire pour comprendre l'écran ni pour se lancer.
   const [showProfileSetup, setShowProfileSetup] = useState(false);
+  // Un profil est-il déjà mémorisé sur cet appareil ? Conditionne le lien « oublier ».
+  const [hasSavedProfile, setHasSavedProfile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return localStorage.getItem(PROFILE_STORAGE_KEY) !== null;
+    } catch {
+      return false;
+    }
+  });
 
   // Profil pré-rempli avec le dernier utilisé sur cet appareil (vide au premier passage).
   const [playerName, setPlayerName] = useState(() => loadStoredProfile().name);
@@ -123,6 +132,7 @@ export const Lobby: React.FC<LobbyProps> = ({
   const handleCreateOnline = (isLocal = false) => {
     soundManager.playClick();
     saveStoredProfile({ name: playerName, avatarId, color, difficulty });
+    setHasSavedProfile(true);
     onCreateRoom({ name: playerName, avatarId, color, difficulty }, isLocal);
   };
 
@@ -131,7 +141,22 @@ export const Lobby: React.FC<LobbyProps> = ({
     if (!joinCodeInput.trim()) return;
     soundManager.playClick();
     saveStoredProfile({ name: playerName, avatarId, color, difficulty });
+    setHasSavedProfile(true);
     onJoinRoom(joinCodeInput.trim(), { name: playerName, avatarId, color, difficulty });
+  };
+
+  // Efface le profil retenu localement : le champ repart vide, comme au tout premier passage.
+  const handleForgetProfile = () => {
+    try {
+      localStorage.removeItem(PROFILE_STORAGE_KEY);
+    } catch {
+      // Stockage indisponible : rien à effacer.
+    }
+    setPlayerName('');
+    setAvatarId(DEFAULT_PROFILE.avatarId);
+    setColor(DEFAULT_PROFILE.color);
+    setDifficulty(DEFAULT_PROFILE.difficulty);
+    setHasSavedProfile(false);
   };
 
   const handleAddLocalSubmit = (e: React.FormEvent) => {
@@ -561,6 +586,19 @@ export const Lobby: React.FC<LobbyProps> = ({
             maxLength={18}
             className="w-full px-4 py-3 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-amber-500 text-base"
           />
+          {/* Mention discrète : le profil ne quitte pas l'appareil, et on peut l'oublier. */}
+          <p className="mt-1 flex items-center justify-between gap-2 px-1 text-[10px] leading-tight text-slate-400 dark:text-slate-500">
+            <span>🔒 Gardé sur cet appareil, rien n’est envoyé en ligne.</span>
+            {hasSavedProfile && (
+              <button
+                type="button"
+                onClick={handleForgetProfile}
+                className="shrink-0 font-semibold underline decoration-dotted underline-offset-2 hover:text-slate-600 dark:hover:text-slate-300"
+              >
+                Oublier
+              </button>
+            )}
+          </p>
         </div>
 
         {/* Code du salon, seulement pour rejoindre */}
