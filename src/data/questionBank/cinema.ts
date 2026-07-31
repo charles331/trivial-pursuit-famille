@@ -656,7 +656,7 @@ export const CINEMA_QUESTIONS: Question[] = [
     options: ["Du saxophone", "Du piano", "De la guitare", "De la batterie"],
     correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "Lisa est la plus intelligente de la famille Simpson."
+    explanation: "Lisa a même droit à un solo de saxophone dans le générique d’ouverture de la série."
   },
   {
     id: "cin_074",

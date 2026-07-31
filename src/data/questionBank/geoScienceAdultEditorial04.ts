@@ -13,7 +13,7 @@ const GEOGRAPHY: Fact[] = [
   ['Quelle rivière traverse la ville belge de Malines ?', 'La Dyle', 'La Lys', 'La Sambre', 'La Vesdre', 'La Dyle traverse Malines avant de contribuer, avec la Nèthe, à la formation du Rupel.'],
   ['Quel désert couvre une grande partie du Botswana ?', 'Le Kalahari', 'Le Namib', 'Le Sahara', 'Le Danakil', 'Le Kalahari est un vaste bassin sableux semi-aride partagé avec la Namibie et l’Afrique du Sud.'],
   ['Quel fleuve forme une partie de la frontière entre la Zambie et le Zimbabwe ?', 'Le Zambèze', 'Le Limpopo', 'L’Orange', 'Le Congo', 'Le Zambèze franchit les chutes Victoria sur cette frontière.'],
-  ['Quelle capitale africaine se trouve sur l’île de Santiago ?', 'Praia', 'Bissau', 'São Tomé', 'Malabo', 'Praia est la capitale du Cap-Vert et la principale ville de l’île de Santiago.'],
+  ['Quelle capitale africaine se trouve sur l’île de Santiago ?', 'Praia', 'Bissau', 'São Tomé', 'Malabo', 'Le Cap-Vert est un archipel volcanique de l’Atlantique, au large des côtes du Sénégal.'],
   ['Quel pays a pour capitale Antananarivo ?', 'Madagascar', 'Maurice', 'Les Comores', 'Les Seychelles', 'Antananarivo est bâtie sur les hauts plateaux du centre de Madagascar.'],
   ['Quel fleuve traverse la ville canadienne de Montréal ?', 'Le Saint-Laurent', 'Le Fraser', 'Le Mackenzie', 'Le Yukon', 'Montréal occupe une île située au confluent du Saint-Laurent et de la rivière des Outaouais.'],
   ['Quel pays possède la Terre de Feu orientale, partagée avec le Chili ?', 'L’Argentine', 'L’Uruguay', 'Le Pérou', 'La Bolivie', 'La frontière argentino-chilienne partage la grande île de la Terre de Feu.'],

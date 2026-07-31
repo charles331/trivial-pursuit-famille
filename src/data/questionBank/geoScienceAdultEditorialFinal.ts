@@ -51,16 +51,16 @@ Quel détroit sépare la Crimée de la péninsule de Taman ?|Le détroit de Kert
 Comment appelait-on les Dardanelles dans l’Antiquité grecque ?|L’Hellespont|Le Pont-Euxin|Le Propontide|Le Chersonèse|Ce passage vers la mer Égée fut le théâtre de la sanglante campagne de 1915.
 Quelle part du pétrole transporté par mer franchit le détroit d’Ormuz ?|Environ un cinquième|Environ la moitié|Environ un centième|La quasi-totalité|Sa largeur navigable réduite en fait le point de passage le plus stratégique du commerce pétrolier.
 Quel détroit commande l’entrée de la mer Rouge depuis le golfe d’Aden ?|Bab-el-Mandeb|Ormuz|Malacca|Le Bosphore|Son nom arabe signifie « la porte des lamentations », en raison de ses naufrages.
-Quel détroit sépare l’île russe de Sakhaline du Japon ?|Le détroit de La Pérouse|Le détroit de Béring|Le détroit de Davis|Le détroit de Bass|Ce passage sépare Sakhaline de l’île japonaise de Hokkaidō.
-Quel détroit sépare le Groenland de l’île de Baffin ?|Le détroit de Davis|Le détroit d’Hudson|Le détroit de Béring|Le détroit de Fram|Le détroit de Davis relie la baie de Baffin à la mer du Labrador.
+Quel détroit sépare l’île russe de Sakhaline du Japon ?|Le détroit de La Pérouse|Le détroit de Béring|Le détroit de Davis|Le détroit de Bass|Le détroit porte le nom de l’explorateur français La Pérouse, disparu en mer en 1788.
+Quel détroit sépare le Groenland de l’île de Baffin ?|Le détroit de Davis|Le détroit d’Hudson|Le détroit de Béring|Le détroit de Fram|Il doit son nom à John Davis, navigateur anglais parti chercher le passage du Nord-Ouest au XVIe siècle.
 Quel détroit sépare la Terre de Feu du continent sud-américain ?|Le détroit de Magellan|Le canal de Beagle|Le passage de Drake|Le détroit de Le Maire|Magellan emprunta ce passage lors de la première circumnavigation.
 Quel passage maritime sépare le cap Horn de l’Antarctique ?|Le passage de Drake|Le détroit de Magellan|Le canal de Beagle|Le passage du Nord-Ouest|Le passage de Drake relie les océans Atlantique et Pacifique au sud de l’Amérique.
 Quel État minuscule est niché dans les Pyrénées entre la France et l’Espagne ?|L’Andorre|Le Liechtenstein|Saint-Marin|Monaco|Ses coprinces sont l’évêque d’Urgell et le président de la République française.
 Quel massif abrite la plus grande population d’ours bruns d’Europe hors Russie ?|Les Carpates|Les Alpes|Les Pyrénées|Les Balkans|La Roumanie à elle seule en compte plusieurs milliers.
 Quel massif borde la côte adriatique des Balkans ?|Les Alpes dinariques|Les Balkans proprement dits|Le Pinde|Les Carpates|Ses calcaires ont donné leur nom au relief karstique, d’après la région du Karst.
-Quelle chaîne occupe l’axe de la péninsule italienne ?|Les Apennins|Les Alpes|Les Pyrénées|Les Sudètes|Les Apennins s’étendent de la Ligurie à la Calabre.
+Quelle chaîne occupe l’axe de la péninsule italienne ?|Les Apennins|Les Alpes|Les Pyrénées|Les Sudètes|Longue d’environ 1 200 km, cette chaîne forme l’épine dorsale de toute la péninsule.
 Quelle chaîne sépare la Russie européenne de la Sibérie occidentale ?|L’Oural|Le Caucase|L’Altaï|Le Tian Shan|L’Oural sert traditionnellement de limite entre l’Europe et l’Asie.
-Quelle chaîne comprend l’Elbrouz ?|Le Caucase|L’Oural|Les Carpates|L’Hindou Kouch|L’Elbrouz est un volcan endormi du Grand Caucase.
+Quelle chaîne comprend l’Elbrouz ?|Le Caucase|L’Oural|Les Carpates|L’Hindou Kouch|Avec ses 5 642 mètres, l’Elbrouz est le plus haut sommet d’Europe.
 Quelle chaîne comprend le K2 ?|Le Karakoram|L’Himalaya|Le Pamir|Le Tian Shan|Le K2 se situe à la frontière entre le Pakistan et la Chine.
 Quelle chaîne s’étend entre le Kazakhstan, le Kirghizistan et la Chine ?|Le Tian Shan|L’Altaï|Le Zagros|Le Kunlun|Le nom Tian Shan signifie « montagnes célestes ».
 Quelle chaîne borde le plateau tibétain au nord ?|Le Kunlun|Le Karakoram|Le Caucase|Le Zagros|Les monts Kunlun forment un long arc à travers l’ouest de la Chine.

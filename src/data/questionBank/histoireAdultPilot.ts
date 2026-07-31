@@ -273,7 +273,7 @@ export const HISTOIRE_ADULTE_PILOT: Question[] = [
     options: ['Anne', 'Victoria', 'Élisabeth Ire', 'Marie II'],
     correctAnswerIndex: 1,
     difficulty: 'adulte',
-    explanation: 'Le règne de Victoria dura plus de 63 ans.',
+    explanation: 'Son très long règne a donné son nom à toute une époque ; elle fut aussi impératrice des Indes.',
   },
   {
     id: 'his_adulte_pilot_031',
@@ -309,7 +309,7 @@ export const HISTOIRE_ADULTE_PILOT: Question[] = [
     options: ['Titanic', 'Lusitania', 'Britannic', 'Normandie'],
     correctAnswerIndex: 1,
     difficulty: 'adulte',
-    explanation: 'Le Lusitania fut coulé au large de l’Irlande en mai 1915.',
+    explanation: 'Sa perte, avec des civils américains à bord, fit basculer l’opinion des États-Unis vers l’entrée en guerre.',
   },
   {
     id: 'his_adulte_pilot_035',
@@ -318,7 +318,7 @@ export const HISTOIRE_ADULTE_PILOT: Question[] = [
     options: ['Brest-Litovsk', 'Trianon', 'Versailles', 'Lausanne'],
     correctAnswerIndex: 2,
     difficulty: 'adulte',
-    explanation: 'Le traité de Versailles fut signé le 28 juin 1919.',
+    explanation: 'Signé dans la galerie des Glaces, il imposa à l’Allemagne de lourdes réparations, source de rancœurs durables.',
   },
   {
     id: 'his_adulte_pilot_036',
@@ -354,7 +354,7 @@ export const HISTOIRE_ADULTE_PILOT: Question[] = [
     options: ['Nagasaki', 'Tokyo', 'Hiroshima', 'Osaka'],
     correctAnswerIndex: 2,
     difficulty: 'adulte',
-    explanation: 'Une bombe atomique fut larguée sur Hiroshima le 6 août 1945.',
+    explanation: 'Une seconde bombe frappa Nagasaki trois jours plus tard ; le Japon capitula dans la foulée.',
   },
   {
     id: 'his_adulte_pilot_040',

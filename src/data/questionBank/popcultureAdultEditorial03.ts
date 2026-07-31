@@ -18,7 +18,7 @@ const D: Q[] = [
 ["Quel jeu demande de survivre dans la ville de Raccoon City ?",["Resident Evil","Silent Hill","Dead Space","The Evil Within"],0,"Umbrella y provoque une catastrophe biologique liée au virus T."],
 ["Quel groupe chante « Enjoy the Silence » ?",["Depeche Mode","New Order","The Cure","Pet Shop Boys"],0,"Le titre figure sur Violator, paru en 1990."],
 ["Quel jeu de Valve oppose l'équipe aux infectés lors d'une apocalypse ?",["Left 4 Dead","Team Fortress 2","Half-Life","Counter-Strike"],0,"Un « réalisateur » piloté par ordinateur ajuste en direct l’intensité et les vagues d’infectés de chaque partie."],
-["Quel auteur belge a créé Alix ?",["Jacques Martin","Hergé","Edgar P. Jacobs","Jean Graton"],0,"Alix vit des aventures dans l'Antiquité romaine."],
+["Quel auteur belge a créé Alix ?",["Jacques Martin","Hergé","Edgar P. Jacobs","Jean Graton"],0,"Son créateur a longtemps travaillé aux côtés d’Hergé, dans les studios qui donnaient vie à Tintin."],
 ["Qui interprète « Both Sides, Now » ?",["Joni Mitchell","Carole King","Joan Baez","Laura Nyro"],0,"Mitchell réenregistra la chanson dans une version orchestrale en 2000."],
 ["Quel jeu de stratégie se déroule dans l'univers de Warhammer 40,000 ?",["Dawn of War","StarCraft","Company of Heroes","Homeworld"],0,"Relic Entertainment a développé le premier Dawn of War."],
 ["Quel héros de manga veut devenir roi des pirates ?",["Monkey D. Luffy","Naruto Uzumaki","Ichigo Kurosaki","Son Goku"],0,"Luffy est le capitaine de l'équipage du Chapeau de paille."],
