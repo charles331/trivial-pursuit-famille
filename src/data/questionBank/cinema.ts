@@ -1039,7 +1039,7 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_116",
     categoryId: "cinema",
-    question: "Que devient Simba à la fin du Roi Lion ?",
+    question: "Que devient Simba à la fin du dessin animé de Disney ?",
     options: ["Un explorateur", "Un chasseur", "Un chef hyène", "Le roi de la Terre des Lions"],
     correctAnswerIndex: 3,
     difficulty: "enfant",
@@ -1633,7 +1633,7 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_182",
     categoryId: "cinema",
-    question: "Pourquoi Stan Lee apparaissait-il quelques secondes dans presque tous les films Marvel ?",
+    question: "Pourquoi Stan Lee apparaissait-il quelques secondes dans presque tous les films tirés de ses comics ?",
     options: ["Il était producteur exigeant", "Il jouait un personnage secret", "C'était un pari", "C'est le créateur de nombreux héros Marvel"],
     correctAnswerIndex: 3,
     difficulty: "ado",
@@ -2353,7 +2353,7 @@ export const CINEMA_QUESTIONS: Question[] = [
   {
     id: "cin_262",
     categoryId: "cinema",
-    question: "De quel personnage littéraire s'inspire la série Lupin avec Omar Sy ?",
+    question: "De quel personnage littéraire s'inspire la série de Netflix portée par Omar Sy ?",
     options: ["Fantômas", "Rocambole", "Hercule Poirot", "Arsène Lupin"],
     correctAnswerIndex: 3,
     difficulty: "ado",

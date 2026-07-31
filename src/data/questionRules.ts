@@ -133,6 +133,83 @@ export function echoesCorrectAnswer(question: string, options: string[], correct
   return options.every((_, index) => index === correctIndex || !echoesOption(index));
 }
 
+/**
+ * Mots outils que la capitale initiale d'une phrase ou d'un titre ne transforme
+ * pas en nom propre : « Dans le Nord », « Le Trésor… », « C'est le créateur… ».
+ */
+const FUNCTION_WORDS = new Set([
+  'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'au', 'aux', 'et', 'ou',
+  'dans', 'pour', 'par', 'sur', 'sous', 'avec', 'sans', 'chez', 'vers', 'entre',
+  'ce', 'cet', 'cette', 'ces', 'son', 'sa', 'ses', 'leur', 'leurs', 'est',
+  'quel', 'quelle', 'quels', 'quelles', 'qui', 'que', 'quoi', 'comment',
+  'combien', 'pourquoi', 'quand', 'lorsque', 'lequel', 'laquelle', 'depuis',
+  'the', 'and', 'of', 'for', 'from', 'with',
+]);
+
+/**
+ * Noms propres d'un texte, dans l'ordre : les mots capitalisés, mots outils
+ * exclus.
+ *
+ * Les majuscules de début de phrase ne sont pas filtrées par la position mais
+ * par le sens : « Dans » et « Quand » restent des mots outils, tandis que
+ * « Ebola » ou « Titanic » désigne bel et bien quelque chose, même en tête de
+ * réponse.
+ */
+function properNames(text: string): string[] {
+  return text
+    .split(/[^\p{L}\p{N}’'-]+/u)
+    .filter((word) => /^[A-ZÀ-Ý]/.test(word))
+    .flatMap((word) => simplify(word).split(' '))
+    .filter((word) => word.length >= 3 && !FUNCTION_WORDS.has(normalize(word)))
+    .map((word) => word.replace(/s$/, ''));
+}
+
+/**
+ * L'énoncé cite-t-il un nom propre qui n'appartient qu'à la bonne réponse ?
+ *
+ * `echoesCorrectAnswer` exige que **tous** les mots distinctifs de la bonne
+ * réponse soient repris dans l'énoncé. Un seul mot de remplissage suffisait
+ * donc à passer : « Quelle épidémie fut identifiée en 1976 près de la rivière
+ * Ebola ? » pour « La maladie à virus Ebola » — « virus » n'apparaît pas dans
+ * la question, la carte passait, et pourtant elle ne demande rien à personne.
+ *
+ * Un nom propre ne se raisonne pas, il se reconnaît : dès qu'il n'appartient
+ * qu'à la bonne réponse et que l'énoncé le prononce, la carte est donnée.
+ *
+ * Trois garde-fous conservent les cartes légitimes. Le nom doit distinguer la
+ * bonne réponse des trois autres — « Quelle Marche de Gandhi… ? » face à quatre
+ * marches ne trahit rien. Il doit être un nom propre des deux côtés : citer
+ * l'œuvre dont on interroge le contenu reste permis. Et c'est **le dernier** nom
+ * propre de la réponse qui compte, celui qui la nomme vraiment : « Qui joue
+ * Daniel Plainview ? » ne donne pas « Daniel Day-Lewis », le prénom partagé ne
+ * désigne personne, alors que « près de la rivière Ebola » donne « la maladie à
+ * virus Ebola ».
+ *
+ * Le contrôle reste donc incomplet par construction : un nom identifiant placé
+ * ailleurs qu'en fin de réponse lui échappe. Il attrape la forme courante, pas
+ * toutes les formes.
+ */
+export function quotesAnswerProperName(
+  question: string,
+  options: string[],
+  correctIndex: number,
+): boolean {
+  if (options.length !== 4) return false;
+
+  const namesInAnswer = properNames(options[correctIndex] ?? '');
+  const identifyingName = namesInAnswer[namesInAnswer.length - 1];
+  if (!identifyingName) return false;
+
+  const wordsPerOption = options.map(answerWords);
+  const others = new Set(
+    wordsPerOption.filter((_, index) => index !== correctIndex).flat(),
+  );
+  if (others.has(identifyingName)) return false;
+
+  return properNames(question).includes(identifyingName)
+    && isEchoedInQuestion(question, identifyingName);
+}
+
 export function isArtificialFillIn(question: string): boolean {
   return (
     /\b(?:compl[eè]te|compl[eé]tez|compl[eè]te-t-il|manque)\b.{0,45}\b(?:fait|phrase|affirmation|citation)\b/i.test(question)
@@ -315,6 +392,9 @@ export function editorialRejectionReason(card: QuestionCandidate): string | null
   if (leaksCorrectAnswer(question, correctAnswer)) return 'bonne réponse révélée dans l’énoncé';
   if (echoesCorrectAnswer(question, card.options, card.correctAnswerIndex)) {
     return 'énoncé qui donne la bonne réponse';
+  }
+  if (quotesAnswerProperName(question, card.options, card.correctAnswerIndex)) {
+    return 'nom propre de la bonne réponse cité dans l’énoncé';
   }
   if (merelyRestatesQuestion({ question, explanation: card.explanation }, correctAnswer)) {
     return 'explication non informative';
