@@ -22,7 +22,7 @@ const FACTS: Fact[] = [
   ['Quel poète chilien publia « Vingt poèmes d’amour et une chanson désespérée » ?', 'Pablo Neruda', 'Vicente Huidobro', 'Nicanor Parra', 'Octavio Paz', 'Le recueil de Neruda parut en 1924 alors que le poète avait vingt ans.'],
   ['Qui est l’auteur du recueil « Cahier d’un retour au pays natal » ?', 'Aimé Césaire', 'Léopold Sédar Senghor', 'Léon-Gontran Damas', 'René Depestre', 'Le poème de Césaire, publié d’abord en 1939, est une œuvre fondatrice de la Négritude.'],
   ['Quel poète grec écrivit le long poème « Axion Esti » ?', 'Odysséas Elytis', 'Georges Séféris', 'Constantin Cavafy', 'Yannis Ritsos', 'Axion Esti, publié en 1959, fut ensuite mis en musique par Mikis Theodorakis.'],
-  ['Qui a écrit le recueil « Ariel » publié après sa mort ?', 'Sylvia Plath', 'Anne Sexton', 'Elizabeth Bishop', 'Adrienne Rich', 'Ariel parut en 1965, deux ans après la mort de Sylvia Plath.'],
+  ['Qui a écrit le recueil « Ariel » publié après sa mort ?', 'Sylvia Plath', 'Anne Sexton', 'Elizabeth Bishop', 'Adrienne Rich', 'Sylvia Plath s’est donné la mort en 1963 ; c’est son mari, le poète Ted Hughes, qui rassembla et publia « Ariel ».'],
 ];
 
 function rotate(values: string[], offset: number): string[] {

@@ -37,7 +37,7 @@ const CINEMA_FACTS: Fact[] = [
 
 const POP_FACTS: Fact[] = [
   ['Qui chante « Paper Planes » ?', 'M.I.A.', 'Santigold', 'Neneh Cherry', 'FKA twigs', 'Paper Planes figure sur l’album Kala et échantillonne Straight to Hell de The Clash.'],
-  ['Quel groupe sud-coréen a publié l’album « Map of the Soul: 7 » ?', 'BTS', 'EXO', 'Seventeen', 'Stray Kids', 'BTS a sorti Map of the Soul: 7 en février 2020.'],
+  ['Quel groupe sud-coréen a publié l’album « Map of the Soul: 7 » ?', 'BTS', 'EXO', 'Seventeen', 'Stray Kids', 'Septuor de K-pop, ce groupe fut le premier act sud-coréen à se hisser en tête des ventes d’albums aux États-Unis.'],
   ['Quelle chanteuse béninoise a enregistré l’album « Djin Djin » ?', 'Angélique Kidjo', 'Oumou Sangaré', 'Rokia Traoré', 'Fatoumata Diawara', 'Djin Djin reçut un Grammy et réunit plusieurs invités internationaux.'],
   ['Quel duo malien de chanteurs aveugles s’est fait connaître avec l’album Dimanche à Bamako ?', 'Amadou & Mariam', 'Tinariwen', 'Songhoy Blues', 'Tamikrest', 'Le duo est notamment connu pour l’album Dimanche à Bamako produit par Manu Chao.'],
   ['Quel artiste portoricain a publié « Un Verano Sin Ti » ?', 'Bad Bunny', 'Rauw Alejandro', 'J Balvin', 'Residente', 'L’album de Bad Bunny mêle reggaeton, dembow et influences caribéennes.'],

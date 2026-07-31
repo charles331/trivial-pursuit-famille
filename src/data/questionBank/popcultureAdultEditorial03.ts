@@ -1,7 +1,7 @@
 import { Question } from '../../types';
 type Q = [string,[string,string,string,string],number,string];
 const D: Q[] = [
-["Quel groupe belge a publié l'album The Ideal Crash ?",["dEUS","K's Choice","Ghinzu","Balthazar"],0,"The Ideal Crash est le troisième album de dEUS, sorti en 1999."],
+["Quel groupe belge a publié l'album The Ideal Crash ?",["dEUS","K's Choice","Ghinzu","Balthazar"],0,"Originaire d’Anvers, ce groupe est l’un des chefs de file du rock alternatif belge des années 1990."],
 ["Qui interprète Fleabag ?",["Phoebe Waller-Bridge","Olivia Colman","Sharon Horgan","Aisling Bea"],0,"Waller-Bridge a aussi créé et scénarisé la série."],
 ["Quel jeu se déroule dans le royaume de Hyrule ?",["The Legend of Zelda","Final Fantasy","Dragon Quest","Fire Emblem"],0,"Hyrule est souvent menacé par Ganon et défendu par Link."],
 ["Quel auteur a créé Le Petit Nicolas avec Sempé ?",["René Goscinny","Jean-Michel Charlier","Pierre Christin","Greg"],0,"Goscinny écrivait les récits illustrés par Jean-Jacques Sempé."],
@@ -13,11 +13,11 @@ const D: Q[] = [
 ["Qui a enregistré « Superstition » ?",["Stevie Wonder","Marvin Gaye","Curtis Mayfield","Isaac Hayes"],0,"Stevie Wonder joue notamment le clavinet emblématique du morceau."],
 ["Quelle série met en scène l'enquêtrice Sarah Lund ?",["Forbrydelsen","Borgen","The Bridge","Trapped"],0,"Son pull en laine est devenu un élément emblématique de la série danoise."],
 ["Quel jeu permet d'explorer Night City ?",["Cyberpunk 2077","Watch Dogs","Deus Ex","The Outer Worlds"],0,"Night City vient de l'univers de jeu de rôle créé par Mike Pondsmith."],
-["Quel personnage de BD est accompagné du chien Rantanplan ?",["Lucky Luke","Blueberry","Chick Bill","Jerry Spring"],0,"Rantanplan est un chien de prison réputé peu intelligent."],
+["Quel personnage de BD est accompagné du chien Rantanplan ?",["Lucky Luke","Blueberry","Chick Bill","Jerry Spring"],0,"Ce chien de prison, aussi fidèle que peu dégourdi, est une parodie de la star du cinéma Rin Tin Tin."],
 ["Quel duo a enregistré « Roads » ?",["Portishead","Everything but the Girl","Moloko","Lamb"],0,"Beth Gibbons chante ce titre de l'album Dummy."],
 ["Quel jeu demande de survivre dans la ville de Raccoon City ?",["Resident Evil","Silent Hill","Dead Space","The Evil Within"],0,"Umbrella y provoque une catastrophe biologique liée au virus T."],
 ["Quel groupe chante « Enjoy the Silence » ?",["Depeche Mode","New Order","The Cure","Pet Shop Boys"],0,"Le titre figure sur Violator, paru en 1990."],
-["Quel jeu de Valve oppose l'équipe aux infectés lors d'une apocalypse ?",["Left 4 Dead","Team Fortress 2","Half-Life","Counter-Strike"],0,"La coopération à quatre est au cœur de Left 4 Dead."],
+["Quel jeu de Valve oppose l'équipe aux infectés lors d'une apocalypse ?",["Left 4 Dead","Team Fortress 2","Half-Life","Counter-Strike"],0,"Un « réalisateur » piloté par ordinateur ajuste en direct l’intensité et les vagues d’infectés de chaque partie."],
 ["Quel auteur belge a créé Alix ?",["Jacques Martin","Hergé","Edgar P. Jacobs","Jean Graton"],0,"Alix vit des aventures dans l'Antiquité romaine."],
 ["Qui interprète « Both Sides, Now » ?",["Joni Mitchell","Carole King","Joan Baez","Laura Nyro"],0,"Mitchell réenregistra la chanson dans une version orchestrale en 2000."],
 ["Quel jeu de stratégie se déroule dans l'univers de Warhammer 40,000 ?",["Dawn of War","StarCraft","Company of Heroes","Homeworld"],0,"Relic Entertainment a développé le premier Dawn of War."],

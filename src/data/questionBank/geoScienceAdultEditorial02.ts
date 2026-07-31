@@ -12,7 +12,7 @@ type EditorialFact = [
 const GEOGRAPHY_FACTS: EditorialFact[] = [
   ['Quel fleuve traverse la ville belge de Gand ?', 'L’Escaut', 'La Meuse', 'L’Yser', 'La Dyle', 'Gand s’est développée au confluent de l’Escaut et de la Lys, deux voies d’eau majeures de Flandre.'],
   ['Quelle province belge a Hasselt pour chef-lieu ?', 'Le Limbourg', 'Le Brabant flamand', 'La Flandre orientale', 'Anvers', 'Hasselt est le chef-lieu du Limbourg belge, province frontalière des Pays-Bas.'],
-  ['Dans quelle province belge se trouve la ville de Dinant ?', 'Namur', 'Liège', 'Luxembourg', 'Hainaut', 'Dinant est établie sur la Meuse, dans la province de Namur.'],
+  ['Dans quelle province belge se trouve la ville de Dinant ?', 'Namur', 'Liège', 'Luxembourg', 'Hainaut', 'Cette ville de la Meuse est le berceau d’Adolphe Sax, l’inventeur du saxophone, né là en 1814.'],
   ['Quel point culminant de Belgique se trouve dans les Hautes Fagnes ?', 'Le signal de Botrange', 'La Baraque de Fraiture', 'Le mont Kemmel', 'La Croix-Scaille', 'Le signal de Botrange atteint 694 mètres d’altitude dans la province de Liège.'],
   ['Quelle rivière traverse Bruxelles avant de rejoindre la Dyle ?', 'La Senne', 'La Sambre', 'La Lys', 'La Lesse', 'La Senne a été voûtée dans une grande partie du centre de Bruxelles au XIXe siècle.'],
   ['Quelle province belge possède une façade sur la mer du Nord ?', 'La Flandre-Occidentale', 'La Flandre-Orientale', 'Anvers', 'Le Brabant flamand', 'Toute la côte belge se trouve en Flandre-Occidentale, de La Panne à Knokke-Heist.'],
@@ -33,7 +33,7 @@ const GEOGRAPHY_FACTS: EditorialFact[] = [
   ['Quel pays d’Afrique australe a pour capitale Gaborone ?', 'Le Botswana', 'La Namibie', 'La Zambie', 'Le Zimbabwe', 'Gaborone se trouve près de la frontière sud-africaine, dans le sud-est du Botswana.'],
   ['Quel lac africain est la principale source du Nil Blanc ?', 'Le lac Victoria', 'Le lac Tanganyika', 'Le lac Malawi', 'Le lac Turkana', 'Le Nil Victoria quitte le lac Victoria à Jinja avant de rejoindre le système du Nil Blanc.'],
   ['Dans quel pays se trouve la dépression du Danakil ?', 'L’Éthiopie', 'Le Kenya', 'Le Tchad', 'Le Maroc', 'Le Danakil, dans l’Afar éthiopien, appartient à une zone tectonique où trois rifts se rencontrent.'],
-  ['Quel pays d’Afrique australe fait face à Madagascar, de l’autre côté d’un bras de l’océan Indien ?', 'Le Mozambique', 'La Tanzanie', 'L’Afrique du Sud', 'La Somalie', 'Le canal du Mozambique est un bras de l’océan Indien entre Madagascar et l’Afrique australe.'],
+  ['Quel pays d’Afrique australe fait face à Madagascar, de l’autre côté d’un bras de l’océan Indien ?', 'Le Mozambique', 'La Tanzanie', 'L’Afrique du Sud', 'La Somalie', 'Large d’environ 400 km, ce bras de mer isole Madagascar du continent africain depuis des dizaines de millions d’années.'],
   ['Quelle capitale ouest-africaine se trouve sur la presqu’île du Cap-Vert ?', 'Dakar', 'Abidjan', 'Accra', 'Conakry', 'Dakar occupe l’extrémité occidentale de la presqu’île du Cap-Vert au Sénégal.'],
   ['Quel sommet culmine dans le Haut Atlas marocain ?', 'Le Toubkal', 'Le mont Chélia', 'Le Djebel Chambi', 'Le Rif central', 'Le Toubkal dépasse 4 100 mètres : c’est le point culminant de l’Afrique du Nord.'],
   ['Quel État africain est traversé par le Nil Bleu avant son entrée au Soudan ?', 'L’Éthiopie', 'L’Érythrée', 'Le Kenya', 'L’Ouganda', 'Le Nil Bleu sort du lac Tana, dans les hauts plateaux éthiopiens.'],

@@ -44,7 +44,7 @@ export const CINEMA_QUESTIONS: Question[] = [
     options: ["Vers l'infini et au-delà !", "En avant toute !", "À l'aventure !", "Plus haut que les étoiles !"],
     correctAnswerIndex: 0,
     difficulty: "enfant",
-    explanation: "En anglais, Buzz dit « To infinity and beyond! »."
+    explanation: "Buzz l’Éclair doit son prénom à l’astronaute Buzz Aldrin, deuxième homme à avoir marché sur la Lune."
   },
   {
     id: "cin_006",
@@ -125,7 +125,7 @@ export const CINEMA_QUESTIONS: Question[] = [
     options: ["Un lapin", "Un écureuil", "Un faon", "Un ourson"],
     correctAnswerIndex: 2,
     difficulty: "enfant",
-    explanation: "Un faon est le petit du cerf et de la biche."
+    explanation: "Dans le roman autrichien d’origine, Bambi est un chevreuil ; Disney en a fait un cerf de Virginie américain."
   },
   {
     id: "cin_015",
@@ -809,7 +809,7 @@ export const CINEMA_QUESTIONS: Question[] = [
     options: ["Bubulle", "Nemo", "Polochon", "Écaille"],
     correctAnswerIndex: 2,
     difficulty: "enfant",
-    explanation: "En anglais, Polochon s'appelle Flounder."
+    explanation: "En anglais il s’appelle Flounder, « le flet » — un poisson plat, alors qu’il n’en a pourtant pas du tout la forme."
   },
   {
     id: "cin_091",
@@ -1736,7 +1736,7 @@ export const CINEMA_QUESTIONS: Question[] = [
     options: ["88 miles à l'heure", "100 miles à l'heure", "66 miles à l'heure", "120 miles à l'heure"],
     correctAnswerIndex: 0,
     difficulty: "ado",
-    explanation: "88 miles à l'heure, cela fait environ 142 km/h."
+    explanation: "La DeLorean DMC-12, à la carrosserie en inox brut et aux portes en aile de mouette, ne fut produite qu’à environ 9 000 exemplaires."
   },
   {
     id: "cin_194",

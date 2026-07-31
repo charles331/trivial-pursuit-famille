@@ -12,7 +12,7 @@ export const HISTOIRE_ADULTE_PILOT: Question[] = [
     options: ['Pompéi', 'Sparte', 'Troie', 'Carthage'],
     correctAnswerIndex: 0,
     difficulty: 'adulte',
-    explanation: 'Pompéi fut ensevelie sous les cendres lors de l’éruption du Vésuve en 79.',
+    explanation: 'Ensevelie sous les cendres, la ville resta figée dans le temps jusqu’à sa redécouverte au XVIIIe siècle.',
   },
   {
     id: 'his_adulte_pilot_002',
@@ -39,7 +39,7 @@ export const HISTOIRE_ADULTE_PILOT: Question[] = [
     options: ['Athènes', 'Corinthe', 'Thèbes', 'Sparte'],
     correctAnswerIndex: 3,
     difficulty: 'adulte',
-    explanation: 'Léonidas Ier était roi de Sparte lors de la bataille des Thermopyles.',
+    explanation: 'À la tête de 300 Spartiates, ce roi résista aux Perses au défilé des Thermopyles, en 480 av. J.-C.',
   },
   {
     id: 'his_adulte_pilot_005',
@@ -48,7 +48,7 @@ export const HISTOIRE_ADULTE_PILOT: Question[] = [
     options: ['Les Nabatéens', 'Les Hittites', 'Les Sumériens', 'Les Mèdes'],
     correctAnswerIndex: 0,
     difficulty: 'adulte',
-    explanation: 'Pétra fut la capitale du royaume des Nabatéens.',
+    explanation: 'Taillée dans le grès rose du sud de l’actuelle Jordanie, la cité prospéra grâce au commerce caravanier des Nabatéens.',
   },
   {
     id: 'his_adulte_pilot_006',
@@ -174,7 +174,7 @@ export const HISTOIRE_ADULTE_PILOT: Question[] = [
     options: ['Vasco de Gama', 'Magellan', 'Christophe Colomb', 'Cabral'],
     correctAnswerIndex: 2,
     difficulty: 'adulte',
-    explanation: 'Christophe Colomb atteignit les Bahamas en octobre 1492.',
+    explanation: 'Persuadé d’avoir atteint les Indes, il fit quatre traversées sans jamais poser le pied sur le continent nord-américain.',
   },
   {
     id: 'his_adulte_pilot_020',
@@ -210,7 +210,7 @@ export const HISTOIRE_ADULTE_PILOT: Question[] = [
     options: ['Utrecht', 'Tordesillas', 'Westphalie', 'Versailles'],
     correctAnswerIndex: 2,
     difficulty: 'adulte',
-    explanation: 'Les traités de Westphalie mirent fin à la guerre de Trente Ans en 1648.',
+    explanation: 'Les traités de Westphalie posèrent les bases de l’ordre européen fondé sur des États souverains et leurs frontières.',
   },
   {
     id: 'his_adulte_pilot_024',
@@ -219,7 +219,7 @@ export const HISTOIRE_ADULTE_PILOT: Question[] = [
     options: ['Henri IV', 'Louis XIII', 'Louis XV', 'Louis XIV'],
     correctAnswerIndex: 3,
     difficulty: 'adulte',
-    explanation: 'Louis XIV révoqua l’édit de Nantes par l’édit de Fontainebleau en 1685.',
+    explanation: 'Sa révocation en 1685, par l’édit de Fontainebleau, poussa à l’exil quelque 200 000 protestants, les huguenots.',
   },
   {
     id: 'his_adulte_pilot_025',
@@ -255,7 +255,7 @@ export const HISTOIRE_ADULTE_PILOT: Question[] = [
     options: ['Elbe', 'Corse', 'Malte', 'Sainte-Hélène'],
     correctAnswerIndex: 3,
     difficulty: 'adulte',
-    explanation: 'Napoléon mourut à Sainte-Hélène le 5 mai 1821.',
+    explanation: 'Exilé par les Britanniques sur cette île perdue de l’Atlantique sud, Napoléon y mourut ; ses cendres rejoignirent les Invalides en 1840.',
   },
   {
     id: 'his_adulte_pilot_029',
@@ -264,7 +264,7 @@ export const HISTOIRE_ADULTE_PILOT: Question[] = [
     options: ['La France', 'Le Royaume-Uni', 'L’Italie', 'L’Espagne'],
     correctAnswerIndex: 0,
     difficulty: 'adulte',
-    explanation: 'La France offrit la statue, inaugurée à New York en 1886.',
+    explanation: 'Œuvre du sculpteur Bartholdi, la statue repose sur une charpente métallique conçue par Gustave Eiffel.',
   },
   {
     id: 'his_adulte_pilot_030',
@@ -282,7 +282,7 @@ export const HISTOIRE_ADULTE_PILOT: Question[] = [
     options: ['Panama', 'Corinthe', 'Suez', 'Kiel'],
     correctAnswerIndex: 2,
     difficulty: 'adulte',
-    explanation: 'Le canal de Suez fut inauguré en novembre 1869.',
+    explanation: 'Long de 193 km et dépourvu d’écluses, le canal fut percé sous la direction du diplomate français Ferdinand de Lesseps.',
   },
   {
     id: 'his_adulte_pilot_032',
