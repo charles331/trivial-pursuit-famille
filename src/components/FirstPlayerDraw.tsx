@@ -26,6 +26,22 @@ function formatSeconds(elapsedMs: number): string {
 /** Délai avant que l'organisateur puisse forcer le tirage, en millisecondes. */
 const FORCE_DRAW_DELAY_MS = 20_000;
 
+/** Durée de la culbute du dé avant qu'il ne montre son résultat. */
+const TUMBLE_MS = 850;
+
+/**
+ * Deux mises en scène pour un même tirage.
+ *
+ * **En ligne**, tout le monde lance en même temps, chacun sur son téléphone :
+ * le dé affiché est strictement personnel. Il ne réagit qu'au propre lancer du
+ * joueur et reste à l'écran une fois lancé, posé sur son résultat, pendant que
+ * les lancers des autres n'animent que le tableau en dessous. Sans cela, chaque
+ * lancer reçu ferait culbuter — et bloquerait — le dé de tous les joueurs qui
+ * n'ont pas encore joué.
+ *
+ * **En pass & play**, l'appareil est unique : le dé passe de main en main, se
+ * vide entre deux joueurs, et c'est le dernier lancer de la table qui l'anime.
+ */
 export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
   gameState,
   currentUserId,
@@ -47,6 +63,10 @@ export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
   const [recentRoll, setRecentRoll] = useState<FirstPlayerRoll | null>(null);
   const [chronoMs, setChronoMs] = useState(0);
   const [canForce, setCanForce] = useState(false);
+  // Retient l'annonce du vainqueur le temps qu'un dé encore en l'air atterrisse
+  // et soit lu : le dernier lancer tranche le tirage dans la même mise à jour
+  // serveur, et le verdict cannibaliserait sa propre animation.
+  const [holdsVerdict, setHoldsVerdict] = useState(false);
   const rollGuardRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const rollsByPlayer = useMemo(() => {
@@ -63,21 +83,45 @@ export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
     ? isHost && Boolean(localTurnPlayer)
     : pending.some(player => player.id === currentUserId);
 
-  const rolledForDisplay = isLocalMode ? recentRoll : myRoll;
   const canRollNow = !winnerId && isMyTurnToRoll && !isTumbling && !hasRequestedRoll;
 
   /**
-   * À qui appartient le dé affiché : celui qui vient de lancer tant que son
-   * résultat est à l'écran, sinon celui qui doit lancer. Changer de propriétaire
-   * remonte le dé, qui repart donc face neutre au lieu de garder le résultat du
-   * joueur précédent — ce qui se lirait comme un résultat déjà acquis.
+   * Le vainqueur n'est annoncé qu'une fois le dé retombé et lu : le dernier
+   * joueur à lancer verrait sinon le verdict s'afficher pendant que son dé
+   * roule encore, et apprendrait le résultat avant son propre dé.
    */
-  const dieOwnerId = isTumbling || recentRoll
-    ? rolls[rolls.length - 1]?.playerId
-    : localTurnPlayer?.id ?? currentUserId;
+  const announcedWinnerId = isTumbling || holdsVerdict ? null : winnerId;
 
-  // Un lancer qui arrive fait tomber le dé, puis reste affiché le temps d'être lu.
+  const clearRollGuard = () => {
+    if (rollGuardRef.current) {
+      clearTimeout(rollGuardRef.current);
+      rollGuardRef.current = null;
+    }
+  };
+
+  // En ligne : mon dé n'atterrit que sur MON lancer ; ceux des autres joueurs
+  // ne le touchent pas. Au rechargement de page, un lancer déjà connu s'affiche
+  // sans rejouer la culbute.
   useEffect(() => {
+    if (isLocalMode || !myRoll) return;
+    if (!isTumbling && !hasRequestedRoll) return;
+
+    setHasRequestedRoll(false);
+    clearRollGuard();
+    setHoldsVerdict(true);
+    const landTimer = setTimeout(() => setIsTumbling(false), TUMBLE_MS);
+    const readTimer = setTimeout(() => setHoldsVerdict(false), TUMBLE_MS + 1200);
+    return () => {
+      clearTimeout(landTimer);
+      clearTimeout(readTimer);
+    };
+  }, [isLocalMode, myRoll?.order]);
+
+  // Pass & play : un lancer qui arrive fait tomber le dé partagé, puis reste
+  // affiché le temps d'être lu.
+  useEffect(() => {
+    if (!isLocalMode) return;
+
     const lastRoll = rolls[rolls.length - 1] ?? null;
     if (!lastRoll) {
       setRecentRoll(null);
@@ -86,13 +130,18 @@ export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
 
     setHasRequestedRoll(false);
     setIsTumbling(true);
+    setHoldsVerdict(true);
     const tumbleTimer = setTimeout(() => {
       setIsTumbling(false);
       setRecentRoll(lastRoll);
-    }, 850);
+    }, TUMBLE_MS);
+    const readTimer = setTimeout(() => setHoldsVerdict(false), TUMBLE_MS + 1200);
 
-    return () => clearTimeout(tumbleTimer);
-  }, [rolls.length]);
+    return () => {
+      clearTimeout(tumbleTimer);
+      clearTimeout(readTimer);
+    };
+  }, [isLocalMode, rolls.length]);
 
   // Passage de relais en pass & play : le dé se vide pour le joueur suivant.
   useEffect(() => {
@@ -104,8 +153,9 @@ export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
 
   /**
    * Chronomètre indicatif, réservé aux parties en ligne où la vitesse départage.
-   * Il compte depuis l'affichage local : l'horloge qui fait foi est celle du
-   * serveur.
+   * Il compte depuis l'affichage local — l'horloge qui fait foi est celle du
+   * serveur — et ne dépend pas des lancers des autres joueurs, qui ne doivent
+   * pas le remettre à zéro.
    */
   useEffect(() => {
     if (!showsTiming || winnerId || !isMyTurnToRoll) {
@@ -116,7 +166,7 @@ export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
     const startedAt = Date.now();
     const ticker = setInterval(() => setChronoMs(Date.now() - startedAt), 100);
     return () => clearInterval(ticker);
-  }, [showsTiming, winnerId, isMyTurnToRoll, localTurnPlayer?.id, rolls.length]);
+  }, [showsTiming, winnerId, isMyTurnToRoll]);
 
   // La sortie de secours de l'organisateur n'apparaît qu'après une vraie attente.
   useEffect(() => {
@@ -127,9 +177,7 @@ export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
     return () => clearTimeout(delay);
   }, [isHost, winnerId]);
 
-  useEffect(() => () => {
-    if (rollGuardRef.current) clearTimeout(rollGuardRef.current);
-  }, []);
+  useEffect(() => () => clearRollGuard(), []);
 
   const handleRoll = () => {
     if (!canRollNow) return;
@@ -146,15 +194,27 @@ export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
     }, 2500);
   };
 
+  /**
+   * À qui appartient le dé partagé du pass & play : celui qui vient de lancer
+   * tant que son résultat est à l'écran, sinon celui qui doit lancer. Changer de
+   * propriétaire remonte le dé, qui repart donc face neutre au lieu de garder le
+   * résultat du joueur précédent — ce qui se lirait comme un résultat déjà acquis.
+   */
+  const dieOwnerId = isTumbling || recentRoll
+    ? rolls[rolls.length - 1]?.playerId
+    : localTurnPlayer?.id ?? currentUserId;
+
   const ranked = useMemo(() => rankDrawRolls(gameState), [rolls, showsTiming]);
   const rankOf = (playerId: string) => ranked.findIndex(roll => roll.playerId === playerId);
-  const winner = winnerId ? gameState.players.find(player => player.id === winnerId) ?? null : null;
-  const winnerRoll = winnerId ? rollsByPlayer.get(winnerId) ?? null : null;
+  const winner = announcedWinnerId
+    ? gameState.players.find(player => player.id === announcedWinnerId) ?? null
+    : null;
+  const winnerRoll = announcedWinnerId ? rollsByPlayer.get(announcedWinnerId) ?? null : null;
   const tiedWithWinner = winnerRoll
     ? ranked.filter(roll => roll.value === winnerRoll.value && roll.playerId !== winnerRoll.playerId)
     : [];
 
-  const orderedPlayers = winnerId
+  const orderedPlayers = announcedWinnerId
     ? [...gameState.players].sort((left, right) => {
         const leftRank = rankOf(left.id);
         const rightRank = rankOf(right.id);
@@ -168,9 +228,17 @@ export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
     if (isLocalMode) {
       return localTurnPlayer ? `Au tour de ${localTurnPlayer.name} de lancer` : 'Tirage en cours…';
     }
+    if (isTumbling) return 'Le dé roule…';
+    if (myRoll) return pending.length === 0 ? 'Tout le monde a lancé !' : 'En attente des autres joueurs…';
     if (isMyTurnToRoll) return 'Lancez le dé !';
-    return 'En attente des autres joueurs…';
+    return 'Tirage en cours…';
   };
+
+  const pendingLine = pending.length === 0
+    ? 'Tout le monde a lancé.'
+    : `${pending.length} joueur${pending.length > 1 ? 's' : ''} doi${
+        pending.length > 1 ? 'vent' : 't'
+      } encore lancer.`;
 
   return (
     <div className="flex w-full flex-1 items-start justify-center p-3 sm:p-5">
@@ -185,8 +253,8 @@ export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
           <p className="mt-1.5 text-[11px] font-medium leading-relaxed text-slate-300 sm:text-xs">
             {showsTiming ? (
               <>
-                Un seul lancer chacun. Le plus haut score ouvre la partie ; en cas d’égalité,
-                c’est le lancer le plus rapide qui l’emporte.
+                Un seul lancer chacun, tous en même temps. Le plus haut score ouvre la partie ;
+                en cas d’égalité, c’est le lancer le plus rapide qui l’emporte.
               </>
             ) : (
               <>
@@ -198,47 +266,73 @@ export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
         </div>
 
         {/* -------------------------------------------------------------- le dé */}
-        {!winnerId && (
+        {!announcedWinnerId && (
           <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-3 shadow-xl">
-            {isLocalMode && localTurnPlayer && (
-              <div className="mb-1 flex items-center justify-center gap-2 rounded-2xl bg-slate-950/70 px-3 py-2 text-xs font-bold text-amber-300">
-                <Smartphone className="h-4 w-4 shrink-0" />
-                <span className="truncate">Passez l’appareil à {localTurnPlayer.name}</span>
-              </div>
-            )}
-
-            {isMyTurnToRoll ? (
+            {isLocalMode ? (
               <>
+                {localTurnPlayer && (
+                  <div className="mb-1 flex items-center justify-center gap-2 rounded-2xl bg-slate-950/70 px-3 py-2 text-xs font-bold text-amber-300">
+                    <Smartphone className="h-4 w-4 shrink-0" />
+                    <span className="truncate">Passez l’appareil à {localTurnPlayer.name}</span>
+                  </div>
+                )}
+
+                {/* Le dé reste à l'écran pendant la dernière culbute, même si
+                    plus personne n'est attendu : il doit atterrir avant le verdict. */}
+                {isMyTurnToRoll || isTumbling || recentRoll ? (
+                  <Dice3D
+                    key={dieOwnerId}
+                    value={isTumbling ? null : recentRoll?.value ?? null}
+                    isRolling={isTumbling}
+                    onRollRequest={handleRoll}
+                    disabled={!canRollNow}
+                    size={78}
+                    compact
+                  />
+                ) : (
+                  <div className="flex flex-col items-center gap-2 py-6 text-center">
+                    <Hourglass className="h-8 w-8 animate-pulse text-amber-400" />
+                    <p className="text-sm font-bold text-slate-200">Le tirage est en cours.</p>
+                    <p className="text-[11px] font-medium text-slate-400">{pendingLine}</p>
+                  </div>
+                )}
+              </>
+            ) : isMyTurnToRoll || myRoll ? (
+              // En ligne : le dé personnel du joueur. Une fois lancé, il reste
+              // posé sur son résultat pendant que le tableau vit en dessous.
+              <>
+                {/* Le bouton reste visible tant que le dé roule, puis s'efface
+                    quand le résultat est posé : plus rien à lancer. */}
                 <Dice3D
-                  key={dieOwnerId}
-                  value={isTumbling ? null : rolledForDisplay?.value ?? null}
+                  key="own-die"
+                  value={isTumbling ? null : myRoll?.value ?? null}
                   isRolling={isTumbling}
-                  onRollRequest={handleRoll}
+                  onRollRequest={myRoll && !isTumbling ? undefined : handleRoll}
                   disabled={!canRollNow}
                   size={78}
                   compact
                 />
-                {showsTiming && (
+                {!myRoll && showsTiming && (
                   <div className="mt-1 flex items-center justify-center gap-1.5 text-[11px] font-bold text-slate-400">
                     <Timer className="h-3.5 w-3.5 text-amber-400" />
                     Temps de réaction : {formatSeconds(chronoMs)}
+                  </div>
+                )}
+                {myRoll && !isTumbling && (
+                  <div className="mt-1 space-y-0.5 text-center">
+                    <p className="text-sm font-bold text-slate-200">
+                      Vous avez fait <strong className="text-amber-300">{myRoll.value}</strong>
+                      {showsTiming ? ` en ${formatSeconds(myRoll.elapsedMs)}` : ''}.
+                    </p>
+                    <p className="text-[11px] font-medium text-slate-400">{pendingLine}</p>
                   </div>
                 )}
               </>
             ) : (
               <div className="flex flex-col items-center gap-2 py-6 text-center">
                 <Hourglass className="h-8 w-8 animate-pulse text-amber-400" />
-                <p className="text-sm font-bold text-slate-200">
-                  {!myRoll
-                    ? 'Le tirage est en cours.'
-                    : showsTiming
-                    ? `Vous avez fait ${myRoll.value} en ${formatSeconds(myRoll.elapsedMs)}.`
-                    : `Vous avez fait ${myRoll.value}.`}
-                </p>
-                <p className="text-[11px] font-medium text-slate-400">
-                  {pending.length} joueur{pending.length > 1 ? 's' : ''} doi
-                  {pending.length > 1 ? 'vent' : 't'} encore lancer.
-                </p>
+                <p className="text-sm font-bold text-slate-200">Le tirage est en cours.</p>
+                <p className="text-[11px] font-medium text-slate-400">{pendingLine}</p>
               </div>
             )}
           </div>
@@ -246,13 +340,16 @@ export const FirstPlayerDraw: React.FC<FirstPlayerDrawProps> = ({
 
         {/* ------------------------------------------------------ tableau des lancers */}
         <div className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 shadow-xl">
-          <div className="border-b border-slate-800 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-slate-400">
-            Lancers du tirage
+          <div className="flex items-center justify-between border-b border-slate-800 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-slate-400">
+            <span>Lancers du tirage</span>
+            <span className="normal-case tracking-normal text-slate-500">
+              {rolls.length}/{rolls.length + pending.length}
+            </span>
           </div>
           <ul className="divide-y divide-slate-800/80">
             {orderedPlayers.map(player => {
               const roll = rollsByPlayer.get(player.id) ?? null;
-              const isWinner = player.id === winnerId;
+              const isWinner = player.id === announcedWinnerId;
               const avatar = AVATARS.find(candidate => candidate.id === player.avatarId) || AVATARS[0];
               const isAway = !isExpectedToRoll(player);
 
