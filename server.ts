@@ -111,12 +111,18 @@ const GENERATED_PACK_SCHEMA = {
 };
 
 /**
- * Modèle par défaut : le Flash stable de la génération 3.5, sorti en mai 2026.
- * L'ancien `gemini-2.5-flash` est retiré de l'API le 16 octobre 2026 : rester
- * dessus, c'est une panne de génération programmée. Surclassable sans
- * redéploiement via la variable d'environnement GEMINI_MODEL.
+ * Modèle par défaut : `gemini-2.5-flash`.
+ *
+ * `gemini-3.5-flash` a été essayé et remis en arrière : sur le palier gratuit
+ * de l'API, son quota est de 5 requêtes par minute, et une génération part en
+ * trois lots parallèles — chaque tentative se soldait par un 429. Le 2.5 y a un
+ * quota plus large et suffit largement pour des cartes de quiz.
+ *
+ * À surveiller : le 2.5 est annoncé comme retiré de l'API le 16 octobre 2026.
+ * D'ici là, il faudra soit un palier payant, soit repasser au 3.5 en réduisant
+ * le parallélisme. `GEMINI_MODEL` permet d'en changer sans redéployer.
  */
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 /**
  * Les lots partent en parallèle avec le même thème : sans consigne propre,
