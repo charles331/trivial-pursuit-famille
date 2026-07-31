@@ -41,6 +41,7 @@ import {
   POPCULTURE_ADULTE_EDITORIAL_FINAL,
 } from './questionBank/cinemaPopAdultEditorialFinal';
 import { CINEMA_POP_ADULT_EDITORIAL_FINAL_02 } from './questionBank/cinemaPopAdultEditorialFinal02';
+import { CINEMA_GRAND_PUBLIC_ADULTE } from './questionBank/cinemaGrandPublicAdultEditorial';
 import { SCIENCES_QUESTIONS } from './questionBank/sciences';
 import { ART_QUESTIONS } from './questionBank/art';
 import { ART_ADULTE_EDITORIAL } from './questionBank/artAdultEditorial';
@@ -154,6 +155,7 @@ const CURATED_QUESTIONS: Question[] = [
   ...POPCULTURE_ADULT_EDITORIAL_06,
   ...POPCULTURE_ADULTE_EDITORIAL_FINAL,
   ...CINEMA_POP_ADULT_EDITORIAL_FINAL_02,
+  ...CINEMA_GRAND_PUBLIC_ADULTE,
   ...GASTRONOMIE_QUESTIONS,
   ...GASTRONOMIE_ADO_EDITORIAL,
   ...GASTRONOMIE_FRANCOPHONE_ADULTE,

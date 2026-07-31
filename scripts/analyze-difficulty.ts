@@ -33,6 +33,8 @@ const TARGETS = {
   templateReuse: 8,
   /** Part maximale de cartes dont les 4 options sont des nombres nus. */
   bareNumberRate: 0.05,
+  /** Part maximale de cartes « qui a fait cette œuvre ? », dont la réponse est un nom. */
+  authorAttributionRate: 0.1,
 };
 
 function deaccent(value: string): string {
@@ -438,6 +440,33 @@ for (const difficulty of DIFFICULTIES) {
     }
   });
   console.log(`${difficulty.padEnd(8)}${overlaps.join(', ') || 'rien de notable'}`);
+}
+
+// ---------------------------------------------------------------------------
+// 11. Cartes d'attribution d'une œuvre à son auteur
+// ---------------------------------------------------------------------------
+section('11. Attribution d\'une œuvre à son auteur (niveau adulte)');
+console.log('« Quel réalisateur a signé ce film ? » n\'a qu\'une seule façon de se');
+console.log('gagner : connaître le nom. Quatre noms inconnus, et la carte se subit au');
+console.log('lieu de se jouer. Le moule échappe au contrôle 4 : chaque énoncé');
+console.log('reformule légèrement le même geste.');
+console.log(`\nCible : ≤ ${Math.round(100 * TARGETS.authorAttributionRate)}% des cartes adultes par catégorie.`);
+console.log('');
+
+/** « Qui a réalisé / peint / écrit / composé cette œuvre ? », sous ses variantes. */
+const ATTRIBUTION_VERB = /\b(?:qui|quel|quelle)\b[^?]*\b(?:a |ont |signa|r[ée]alisa|peignit|composa|[ée]crivit)[^?]*\b(?:r[ée]alis[ée]|sign[ée]|tourn[ée]|peint|[ée]crit|compos[ée]|dessin[ée]|sculpt[ée])/i;
+const ATTRIBUTION_ROLE = /\bquel(?:le)?s? (?:r[ée]alisateur|r[ée]alisatrice|cin[ée]aste|metteur en sc[èe]ne|peintre|[ée]crivain|romancier|compositeur|compositrice|auteur|architecte|dessinateur|sculpteur)/i;
+
+for (const categoryId of CATEGORIES) {
+  const rows = rowsOf(categoryId, 'adulte');
+  const attribution = rows.filter(
+    (question) => ATTRIBUTION_VERB.test(question.question) || ATTRIBUTION_ROLE.test(question.question),
+  );
+  console.log(
+    `${categoryId.padEnd(15)}${String(attribution.length).padStart(4)}/${rows.length}`
+      + `  ${pct(attribution.length, rows.length).padStart(5)}`
+      + ` ${flag(attribution.length, rows.length, TARGETS.authorAttributionRate)}`,
+  );
 }
 
 console.log('\nDiagnostic terminé. Les repères « << » signalent un écart à la cible.');

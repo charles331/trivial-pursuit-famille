@@ -120,7 +120,15 @@ Pour ajouter ou remplacer des cartes :
 5. varier les époques, pays, disciplines et représentations ;
 6. éviter un biais exclusivement français : inclure Belgique, Europe et monde ;
 7. vérifier tout fait nouveau auprès d’une source fiable avant de l’intégrer ;
-8. ne jamais gonfler le volume avec des cartes vrai/faux ou des associations.
+8. ne jamais gonfler le volume avec des cartes vrai/faux ou des associations ;
+9. se demander comment la carte se gagne. « Qui a réalisé ce film ? », « Qui a
+   peint ce tableau ? » n’ont qu’une porte : connaître le nom. Un film se devine
+   par son sujet, une réplique par son film ; un patronyme ne se déduit de rien.
+   Cette famille est donc bornée : `npm run analyze:difficulty` en mesure la part
+   par catégorie (section 11, cible ≤ 10 % des cartes adultes). Elle échappe au
+   contrôle des moules, car « Quel cinéaste a réalisé _ ? » et « Qui a réalisé
+   _ ? » comptent pour deux moules alors que la table entend deux fois la même
+   question.
 
 Les cartes à trou générées depuis les anecdotes sont interdites. Toute
 amélioration future doit remplacer une carte à volume constant, avec quatre

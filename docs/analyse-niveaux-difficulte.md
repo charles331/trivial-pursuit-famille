@@ -523,6 +523,9 @@ cinéphile ne cite pas la monteuse de Scorsese.
 
 ### 8.4 Un défaut à corriger dans tous les cas
 
+> **Réglé.** Les deux cartes La Cité de Dieu ont été retirées lors de la passe
+> décrite en section 9. Les deux cas bénins subsistent.
+
 « Qui a réalisé La Cité de Dieu ? » existe deux fois avec deux bonnes réponses
 différentes : `cin_adulte_editorial_03_006` attend « Fernando Meirelles »,
 `cin_adulte_editorial_04_022` attend « Fernando Meirelles et Kátia Lund » sans
@@ -562,3 +565,99 @@ peinture grand public, BD franco-belge.
 
 **C. Ajouter un contrôle d'audit** « même énoncé, réponses libellées
 différemment », qui aurait attrapé La Cité de Dieu.
+
+---
+
+## 9. Passe « on ne connaît pas les réalisateurs » (deuxième session de test)
+
+Retour de table, sur une carte de « Cinéma & Séries » : *« Quel réalisateur a
+signé Le Ruban blanc ? »* — Michael Haneke, Ulrich Seidl, Christian Petzold,
+Fatih Akın. Personne ne peut répondre, et la remarque porte autant sur la
+répétition que sur la difficulté : « on a eu beaucoup de questions du style quel
+réalisateur ».
+
+### 9.1 Ce que mesurait le corpus
+
+Les deux reproches étaient exacts et se cumulaient.
+
+| Constat | Mesure |
+|---|---:|
+| Cartes « qui a réalisé / signé ce film ? » en cinéma adulte | 85 / 400 |
+| Toute la famille attribution d'une œuvre à son auteur (cinéma) | 104 / 400 |
+| Réponses inconnues du foyer en cinéma adulte | 34 % |
+
+La famille passait entre les mailles du contrôle 4 : « Quel cinéaste a réalisé
+_ ? », « Quel réalisateur a signé _ ? », « Qui a réalisé _ ? » et « Quel
+réalisateur polonais a signé _ ? » sont quatre moules distincts pour
+`questionSkeleton`, aucun ne dépassant huit reprises, alors que la table entend
+quatre fois la même question. La difficulté, elle, n'a qu'une porte de sortie :
+connaître le nom. Un film peut se deviner par son sujet, une réplique par son
+film ; un patronyme ne se déduit de rien.
+
+### 9.2 Ce qui a été fait
+
+68 cartes remplacées, à volume constant :
+
+- **60 cartes d'attribution** dont la réponse ne pouvait pas être citée par le
+  foyer : Fruit Chan, Amir Naderi, Otar Iosseliani, Béla Tarr, Jonas Mekas,
+  Rainer Sarnet, Cristi Puiu, Miguel Gomes, Roberto Gavaldón, Jiří Menzel,
+  Fernando Solanas, Julie Dash, Johnnie To, Tsai Ming-liang, Elia Suleiman,
+  Mahamat-Saleh Haroun, Ousmane Sembène, Kenji Mizoguchi, Robert Wiene,
+  Dziga Vertov, Albert Lamorisse, Andrew Dominik, Sebastián Lelio.
+- **8 cartes de métiers de l'ombre** dont la réponse était un nom invisible du
+  grand public : Anton Karas, Tan Dun, Mica Levi, Vittorio Storaro, Germaine
+  Dulac, Kinuyo Tanaka.
+
+Ce qui reste de la famille est ce qu'un foyer peut nommer : Truffaut, Godard,
+Tati, Clouzot, Bergman, Visconti, Almodóvar, del Toro, Lynch, Campion,
+Kassovitz, Sciamma, Triet, Villeneuve, Dolan, Arcand, Van Dormael, Dhont,
+Roskam, les auteurs de *C'est arrivé près de chez vous*.
+
+Les remplaçantes sont dans `src/data/questionBank/cinemaGrandPublicAdultEditorial.ts`
+et couvrent trois terrains :
+
+| Terrain | Cartes | Exemples |
+|---|---:|---|
+| séries — ce que le nom de la catégorie promet | 21 | Lost, Les Experts, Dallas, Columbo, Le Prince de Bel-Air, Star Trek, Caméra café |
+| comédie et cinéma francophones, dont la Belgique | 24 | Le Splendid, Tanguy, La Cité de la peur, Coluche, Pascal Duquenne, Ernest et Célestine, le BIFFF |
+| grands succès que le foyer a vus | 23 | Titanic, Rocky, Léon, Un jour sans fin, L'Arme fatale, Les Évadés |
+
+Le format varie autant que le sujet : personnages, répliques, objets, lieux de
+tournage, récompenses — plutôt qu'une nouvelle liste de quatre patronymes.
+
+Chaque remplaçante a été confrontée au reste du corpus, pas seulement à sa
+catégorie : vingt-quatre sujets d'abord retenus ont été écartés parce que le
+fait était déjà posé ailleurs (Game of Thrones, The Crown, Amélie Poulain et
+Intouchables en popculture adulte ; l'anneau de la Montagne du Destin, la
+DeLorean, la pilule rouge, Poudlard, Dark Vador aux niveaux enfant et ado). Une
+carte adulte qui répète une carte enfant produit exactement le même ennui qu'une
+carte impossible.
+
+### 9.3 Mesures avant / après
+
+| Indicateur | Avant | Après |
+|---|---:|---:|
+| Cartes « qui a réalisé ce film ? » — cinéma adulte | 85 | **26** |
+| Famille attribution complète — cinéma adulte | 104 | **39** |
+| Réponses inconnues du foyer — cinéma adulte | 34 % | **23 %** |
+
+Volumes inchangés : 400 cartes adultes en cinéma, 5 360 au total. `npm run check`
+passe.
+
+### 9.4 Un onzième indicateur au diagnostic
+
+`npm run analyze:difficulty` mesure désormais la part de cartes d'attribution
+par catégorie (section 11, cible ≤ 10 %). Le cinéma revient dans la cible ; la
+mesure rend visible ce qui reste :
+
+| Catégorie | Cartes d'attribution | Part |
+|---|---:|---:|
+| art | 104 / 400 | 26 % |
+| popculture | 62 / 400 | 16 % |
+| cinema | 40 / 400 | 10 % |
+
+Le diagnostic ne bloque pas : descendre l'art à la même cible demande d'écrire
+une soixantaine de cartes de peinture, de littérature et de BD franco-belge, ce
+qui rejoint la proposition 8 restée ouverte. C'est le prochain chantier
+naturel — la remarque de table portait sur le cinéma, mais « qui a peint ceci,
+qui a écrit cela » se joue exactement de la même façon.
