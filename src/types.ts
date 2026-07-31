@@ -87,7 +87,10 @@ export interface GameSettings {
   selectedCategories: CategoryId[];
   timerSeconds: number; // e.g. 30, 45, 0 (no timer)
   wedgesToWin: number; // default 6
+  /** @deprecated Ancien filtre à thème unique, encore lu en secours. */
   customThemePackName?: string;
+  /** Thèmes IA actifs pendant la partie : leurs cartes sortent régulièrement. */
+  customThemePackNames?: string[];
   isLocalMode?: boolean; // pass & play on single device
   isReaderMode?: boolean; // Card Reader Mode: another player reads the card out loud
   enableLiveCamera?: boolean; // Live camera & mic spotlight during question turn

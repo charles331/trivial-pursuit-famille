@@ -3,6 +3,7 @@ import { BoardType, CategoryId, GameSettings } from '../types';
 import { CATEGORIES } from '../data/categories';
 import { BOARD_PRESETS } from '../data/boards';
 import { isCardReadAloud } from '../server/turnRoles';
+import { activeThemeKeys } from '../server/questionSelection';
 import { LayoutGrid, Timer, Sparkles, Check, Wand2, RefreshCw } from 'lucide-react';
 import { soundManager } from '../utils/sound';
 
@@ -84,9 +85,9 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
           + ` sur ${examined} générées (les non conformes sont écartées).`
       );
       if (onAddCustomPack) {
+        // Le serveur active lui-même le thème généré, en plus des autres.
         onAddCustomPack(data.themeName, data.questions);
       }
-      onUpdateSettings({ customThemePackName: data.themeName });
       setCustomThemeInput('');
     } catch (err: any) {
       setGenError(err.message || 'Erreur de génération');
@@ -346,7 +347,7 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
           L&apos;IA génère un pack de 30 questions sur mesure par thème (jusqu&apos;à 3 thèmes par salon), soumis aux mêmes règles éditoriales que la banque officielle.
         </p>
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          Le thème activé sort <strong>au maximum une fois sur trois tours</strong>, et seulement quand la carte correspond au camembert de la case et au niveau du joueur. Le reste du temps, la banque officielle garde la main.
+          Les thèmes activés sortent <strong>environ une carte sur trois, au rythme du hasard</strong> — jamais plus d&apos;une sur deux, et toujours assez tôt dans la partie — et seulement quand la carte correspond au camembert de la case et au niveau du joueur. Le reste du temps, la banque officielle garde la main. Vous pouvez activer plusieurs thèmes à la fois : ils se partagent cette part.
         </p>
 
         {/* List of Created Custom Theme Packs & Selection */}
@@ -354,24 +355,26 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
           <div className="p-3 bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900/50 rounded-xl space-y-2">
             <div className="text-xs font-bold text-purple-900 dark:text-purple-200 flex items-center justify-between">
               <span>✨ Thèmes IA Disponibles dans le Salon :</span>
-              {settings.customThemePackName && (
+              {activeThemeKeys(settings).size > 0 && (
                 <button
                   type="button"
                   disabled={!isHost}
                   onClick={() => {
                     soundManager.playClick();
-                    onUpdateSettings({ customThemePackName: undefined });
+                    onUpdateSettings({ customThemePackNames: [], customThemePackName: undefined });
                   }}
                   className="text-[11px] underline text-purple-600 dark:text-purple-400 font-semibold hover:text-purple-800"
                 >
-                  Désactiver le filtre
+                  Tout désactiver
                 </button>
               )}
             </div>
 
             <div className="flex flex-wrap gap-2">
               {customPacks.map((pack) => {
-                const isActive = settings.customThemePackName?.toLowerCase() === pack.name.toLowerCase();
+                const activeKeys = activeThemeKeys(settings);
+                const packKey = pack.name.toLowerCase().trim();
+                const isActive = activeKeys.has(packKey);
 
                 return (
                   <button
@@ -380,8 +383,16 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
                     disabled={!isHost}
                     onClick={() => {
                       soundManager.playClick();
+                      const currentNames = [
+                        ...(settings.customThemePackNames ?? []),
+                        ...(settings.customThemePackName ? [settings.customThemePackName] : []),
+                      ];
+                      const nextNames = isActive
+                        ? currentNames.filter((name) => name.toLowerCase().trim() !== packKey)
+                        : [...new Set([...currentNames, pack.name])];
                       onUpdateSettings({
-                        customThemePackName: isActive ? undefined : pack.name
+                        customThemePackNames: nextNames,
+                        customThemePackName: undefined,
                       });
                     }}
                     className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 border ${

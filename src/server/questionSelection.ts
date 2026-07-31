@@ -3,18 +3,36 @@
  *
  * Le thème IA actif vidait auparavant tout son pack avant que la banque
  * officielle ne reprenne la main : trente tours d'affilée sur le même thème,
- * sans égard pour le camembert de la case ni pour le niveau du joueur. Le pack
- * est désormais un invité régulier — au plus une carte tous
- * `CUSTOM_PACK_TURN_RATIO` tours — et il n'est servi que s'il tombe juste.
+ * sans égard pour le camembert de la case ni pour le niveau du joueur. Les
+ * thèmes actifs — il peut y en avoir plusieurs — sont désormais des invités
+ * réguliers : une carte sur trois en moyenne, au rythme du hasard plutôt qu'à
+ * cadence fixe, et une carte n'est servie que si elle tombe juste.
  */
 
 import { normalizeCategoryId } from '../data/categories';
-import { CategoryId, DifficultyLevel, GameState, Question } from '../types';
+import { CategoryId, DifficultyLevel, GameSettings, GameState, Question } from '../types';
 
-/** Une carte générée au maximum tous les trois tours. */
-export const CUSTOM_PACK_TURN_RATIO = 3;
+/** Part moyenne visée pour les thèmes actifs : une carte sur trois. */
+export const CUSTOM_PACK_TARGET_SHARE = 1 / 3;
+/** Plafond dur : les thèmes ne dépassent jamais une carte sur deux. */
+export const CUSTOM_PACK_MAX_SHARE = 1 / 2;
 
 type Random = () => number;
+
+/**
+ * Thèmes actifs d'un salon, en clé normalisée. L'ancien réglage à thème
+ * unique reste lu en secours pour les salons sauvegardés avant la
+ * multi-sélection.
+ */
+export function activeThemeKeys(
+  settings: Pick<GameSettings, 'customThemePackName' | 'customThemePackNames'>,
+): Set<string> {
+  const names = [
+    ...(settings.customThemePackNames ?? []),
+    ...(settings.customThemePackName ? [settings.customThemePackName] : []),
+  ];
+  return new Set(names.map((name) => name.toLowerCase().trim()).filter(Boolean));
+}
 
 /** Mélange les options pour que la bonne réponse ne reste pas au même rang. */
 export function shuffleQuestionOptions(question: Question, random: Random = Math.random): Question {
@@ -31,18 +49,36 @@ export function shuffleQuestionOptions(question: Question, random: Random = Math
   };
 }
 
-function belongsToTheme(question: Question, activeTheme: string): boolean {
+function belongsToActiveTheme(question: Question, activeThemes: Set<string>): boolean {
   return Boolean(question.themePack)
-    && question.themePack!.toLowerCase().trim() === activeTheme;
+    && activeThemes.has(question.themePack!.toLowerCase().trim());
 }
 
 /**
- * Le tour en cours peut-il servir une carte du thème actif sans dépasser sa
- * part ? `served` compte les cartes déjà posées, `fromPack` celles qui venaient
- * du thème.
+ * Le tour en cours peut-il servir une carte des thèmes actifs ? `served`
+ * compte les cartes déjà posées, `fromPack` celles qui venaient d'un thème.
+ *
+ * L'ancienne cadence fixe — une carte tous les trois tours, exactement —
+ * rendait le tirage prévisible : la table savait quand le thème allait
+ * tomber. Le hasard décide désormais du moment, entre deux bornes :
+ *
+ * - plafond : jamais plus d'une carte sur deux, et jamais la toute première
+ *   carte de la partie — elle revient à la banque officielle ;
+ * - plancher : jamais plus de deux cartes de retard sur la part cible, pour
+ *   que les thèmes sortent tôt même quand le hasard boude (au plus tard à la
+ *   sixième carte, si une carte du thème correspond à la case et au niveau).
  */
-export function customPackTurnIsDue(served: number, fromPack: number): boolean {
-  return (fromPack + 1) * CUSTOM_PACK_TURN_RATIO <= served + 1;
+export function customPackTurnIsDue(
+  served: number,
+  fromPack: number,
+  random: Random = Math.random,
+): boolean {
+  if ((fromPack + 1) / (served + 1) > CUSTOM_PACK_MAX_SHARE) return false;
+
+  const deficit = (served + 1) * CUSTOM_PACK_TARGET_SHARE - fromPack;
+  if (deficit >= 2) return true;
+  if (deficit <= 0) return false;
+  return random() < CUSTOM_PACK_TARGET_SHARE;
 }
 
 /**
@@ -57,7 +93,7 @@ export function pickQuestionForPlayer(
   random: Random = Math.random,
 ): Question {
   const targetCategory = normalizeCategoryId(targetCategoryId);
-  const activeTheme = state.settings.customThemePackName?.toLowerCase().trim();
+  const activeThemes = activeThemeKeys(state.settings);
   const usedIds = new Set(state.usedQuestionIds);
   const pickOne = (list: Question[]): Question => list[Math.floor(random() * list.length)];
 
@@ -66,17 +102,18 @@ export function pickQuestionForPlayer(
     return shuffleQuestionOptions({ ...question, categoryId }, random);
   };
 
-  // 1. Thème IA actif : une carte du pack, à sa part et seulement si elle
-  //    correspond vraiment à la case et au niveau du joueur. Faute de quoi, la
-  //    banque officielle reprend la main — sans jamais déguiser la catégorie
-  //    d'une carte ni servir une question adulte à un enfant.
-  if (activeTheme) {
+  // 1. Thèmes IA actifs : une carte d'un des packs, à leur part commune et
+  //    seulement si elle correspond vraiment à la case et au niveau du
+  //    joueur. Faute de quoi, la banque officielle reprend la main — sans
+  //    jamais déguiser la catégorie d'une carte ni servir une question
+  //    adulte à un enfant.
+  if (activeThemes.size > 0) {
     const packQuestions = state.questionsPool.filter(
-      (question) => belongsToTheme(question, activeTheme),
+      (question) => belongsToActiveTheme(question, activeThemes),
     );
     const servedFromPack = packQuestions.filter((question) => usedIds.has(question.id)).length;
 
-    if (customPackTurnIsDue(state.usedQuestionIds.length, servedFromPack)) {
+    if (customPackTurnIsDue(state.usedQuestionIds.length, servedFromPack, random)) {
       const candidates = packQuestions.filter(
         (question) => !usedIds.has(question.id)
           && normalizeCategoryId(question.categoryId) === targetCategory
@@ -88,10 +125,10 @@ export function pickQuestionForPlayer(
     }
   }
 
-  // 2. Banque officielle. Le thème actif en est exclu : sa part est déjà tenue
-  //    par l'étape 1, et un second tirage la ferait déborder.
-  const isEligible = (question: Question): boolean => !activeTheme
-    || !belongsToTheme(question, activeTheme);
+  // 2. Banque officielle. Les thèmes actifs en sont exclus : leur part est
+  //    déjà tenue par l'étape 1, et un second tirage la ferait déborder.
+  const isEligible = (question: Question): boolean => activeThemes.size === 0
+    || !belongsToActiveTheme(question, activeThemes);
 
   const eligible = state.questionsPool.filter(isEligible);
 

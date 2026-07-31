@@ -33,7 +33,7 @@ import {
   assembleGeneratedPack,
   describeRejections,
 } from './src/server/packAssembly.js';
-import { pickQuestionForPlayer } from './src/server/questionSelection.js';
+import { activeThemeKeys, pickQuestionForPlayer } from './src/server/questionSelection.js';
 import { previewOrigin, withAbsolutePreviewImages } from './src/server/previewMeta.js';
 import { 
   GameState, 
@@ -749,9 +749,19 @@ io.on('connection', (socket: Socket) => {
       });
     }
 
-    // Set active custom theme pack name in settings
-    room.settings.customThemePackName = data.themeName;
-    room.gameState.settings.customThemePackName = data.themeName;
+    // Le thème fraîchement généré rejoint les thèmes actifs, sans désactiver
+    // les autres : la table peut jouer avec ses trois thèmes à la fois.
+    if (!activeThemeKeys(room.settings).has(data.themeName.toLowerCase().trim())) {
+      const activeNames = [
+        ...(room.settings.customThemePackNames ?? []),
+        ...(room.settings.customThemePackName ? [room.settings.customThemePackName] : []),
+        data.themeName,
+      ];
+      room.settings.customThemePackNames = activeNames;
+      room.settings.customThemePackName = undefined;
+      room.gameState.settings.customThemePackNames = activeNames;
+      room.gameState.settings.customThemePackName = undefined;
+    }
 
     // Merge into room's active questions pool
     room.gameState.questionsPool = [...data.questions, ...room.gameState.questionsPool];
