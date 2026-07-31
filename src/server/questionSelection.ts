@@ -93,34 +93,43 @@ export function pickQuestionForPlayer(
   const isEligible = (question: Question): boolean => !activeTheme
     || !belongsToTheme(question, activeTheme);
 
-  let candidates = state.questionsPool.filter(
-    (question) => isEligible(question)
-      && normalizeCategoryId(question.categoryId) === targetCategory
+  const eligible = state.questionsPool.filter(isEligible);
+
+  // Le niveau du joueur passe avant la catégorie et avant la fraîcheur des
+  // cartes : plutôt changer de catégorie, ou resservir une carte déjà jouée,
+  // que poser une question adulte à un enfant. Les autres niveaux ne
+  // reviennent qu'en dernier recours, si le réservoir n'a aucune carte du
+  // niveau demandé.
+  const atPlayerLevel = eligible.filter(
+    (question) => question.difficulty === playerDifficulty,
+  );
+  const pool = atPlayerLevel.length > 0
+    ? atPlayerLevel
+    : eligible.length > 0 ? eligible : state.questionsPool;
+
+  let candidates = pool.filter(
+    (question) => normalizeCategoryId(question.categoryId) === targetCategory
       && !usedIds.has(question.id),
   );
 
   if (candidates.length === 0) {
-    const allUnused = state.questionsPool.filter(
-      (question) => isEligible(question) && !usedIds.has(question.id),
-    );
-    if (allUnused.length > 0) {
-      candidates = allUnused;
+    const unused = pool.filter((question) => !usedIds.has(question.id));
+    if (unused.length > 0) {
+      candidates = unused;
     } else {
-      // Réservoir épuisé : un nouveau cycle repart des mêmes cartes.
-      state.usedQuestionIds = [];
-      candidates = state.questionsPool.filter(
-        (question) => isEligible(question)
-          && normalizeCategoryId(question.categoryId) === targetCategory,
+      // Réservoir du niveau épuisé : un nouveau cycle repart des mêmes
+      // cartes, sans remettre à zéro les cartes encore fraîches que les
+      // joueurs des autres niveaux n'ont pas vues.
+      const recycledIds = new Set(pool.map((question) => question.id));
+      state.usedQuestionIds = state.usedQuestionIds.filter((id) => !recycledIds.has(id));
+      const sameCategory = pool.filter(
+        (question) => normalizeCategoryId(question.categoryId) === targetCategory,
       );
-      if (candidates.length === 0) {
-        candidates = state.questionsPool.filter(isEligible);
-      }
-      if (candidates.length === 0) candidates = state.questionsPool;
+      candidates = sameCategory.length > 0 ? sameCategory : pool;
     }
   }
 
-  const sameDifficulty = candidates.filter((question) => question.difficulty === playerDifficulty);
-  const selected = pickOne(sameDifficulty.length > 0 ? sameDifficulty : candidates);
+  const selected = pickOne(candidates);
 
   return serve(
     selected,

@@ -169,6 +169,52 @@ test('chaque carte servie est marquée comme utilisée, sans répétition', () =
   assert.equal(state.usedQuestionIds.length, served.length);
 });
 
+test('le niveau du joueur tient même quand sa banque est épuisée', () => {
+  // 20 cartes enfant par catégorie seulement : la case Histoire s'épuise vite.
+  const state = createGameState({
+    questionsPool: officialBank(),
+    usedQuestionIds: [],
+    customPacks: undefined,
+  });
+
+  const served = Array.from(
+    { length: 200 },
+    () => pickQuestionForPlayer(state, 'histoire', 'enfant', () => 0.5),
+  );
+
+  assert.ok(
+    served.every((question) => question.difficulty === 'enfant'),
+    'aucune carte ado ou adulte servie à un enfant, même après épuisement',
+  );
+  // Les 20 cartes enfant Histoire sortent avant tout changement de catégorie.
+  assert.ok(
+    served.slice(0, 20).every((question) => question.categoryId === 'histoire'),
+    'la catégorie de la case est servie tant qu\'elle a des cartes fraîches',
+  );
+});
+
+test('le recyclage d\'un niveau épuisé préserve les cartes fraîches des autres niveaux', () => {
+  const state = createGameState({
+    questionsPool: officialBank(),
+    usedQuestionIds: [],
+    customPacks: undefined,
+  });
+
+  // Un adulte joue trois cartes, puis un enfant épuise les 80 cartes enfant.
+  for (let turn = 0; turn < 3; turn += 1) {
+    pickQuestionForPlayer(state, 'histoire', 'adulte', () => 0.5);
+  }
+  const adultIds = state.usedQuestionIds.slice(0, 3);
+  for (let turn = 0; turn < 81; turn += 1) {
+    pickQuestionForPlayer(state, 'histoire', 'enfant', () => 0.5);
+  }
+
+  assert.ok(
+    adultIds.every((id) => state.usedQuestionIds.includes(id)),
+    'le nouveau cycle enfant n\'a pas remis en jeu les cartes adultes déjà posées',
+  );
+});
+
 test('la part du thème se calcule sur les tours déjà joués', () => {
   assert.equal(CUSTOM_PACK_TURN_RATIO, 3);
   assert.equal(customPackTurnIsDue(0, 0), false);
