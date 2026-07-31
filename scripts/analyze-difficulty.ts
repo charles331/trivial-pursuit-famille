@@ -492,4 +492,34 @@ for (const categoryId of CATEGORIES) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// 12. Cartes qui demandent de nommer une personne
+// ---------------------------------------------------------------------------
+section('12. « Nommez la personne » (niveau adulte)');
+console.log('La famille de la section 11 étendue aux autres rôles : roi, explorateur,');
+console.log('savant, dirigeant, militante, sportif. Une carte n\'est pas fautive parce');
+console.log('que sa réponse est un nom — « Quel explorateur remonta le Saint-Laurent ? »');
+console.log('se gagne très bien face à trois inconnus et un Jacques Cartier. Ce que la');
+console.log('colonne « hors du jeu » compte, c\'est le cas où le nom attendu n\'apparaît');
+console.log('nulle part ailleurs dans le corpus : personne à table ne peut le produire.');
+console.log('');
+
+const ASKS_FOR_ROLE = /\bquel(?:le)?s?\s+(?:explorat|navigat|conquistador|roi\b|reine|empereur|imp[ée]ratrice|tsar|sultan|pharaon|pape|g[ée]n[ée]ral|mar[ée]chal|amiral|chef\b|savant|scientifique|physicien|chimiste|biologiste|m[ée]decin|astronome|math[ée]maticien|inventeur|philosophe|[ée]conomiste|pr[ée]sident|chancelier|ministre|dirigeant|souverain|r[ée]sistant|aviat|alpiniste|militant|sportif|joueur|coureur|cycliste|nageur|athl[èe]te|pilote|boxeur|footballeur|l[ée]gislateur)/i;
+
+for (const categoryId of CATEGORIES) {
+  const rows = rowsOf(categoryId, 'adulte');
+  const named = rows.filter(
+    (question) => (ASKS_FOR_ROLE.test(question.question) || ASKS_FOR_CREATOR.test(question.question))
+      && looksLikePersonName(answerOf(question)),
+  );
+  const outside = named.filter((question) => {
+    const words = contentWords(answerOf(question));
+    return words.length > 0 && words.every((word) => !familyLexicon.has(word));
+  });
+  console.log(
+    `${categoryId.padEnd(15)}${String(named.length).padStart(4)}/${rows.length}`
+      + `   hors du jeu : ${String(outside.length).padStart(3)}`,
+  );
+}
+
 console.log('\nDiagnostic terminé. Les repères « << » signalent un écart à la cible.');

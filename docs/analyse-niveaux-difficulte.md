@@ -829,3 +829,90 @@ encore, ou assumer que « qui a fait cette œuvre ? » reste une question
 légitime quand la réponse est un nom que le foyer connaît. C'est un arbitrage
 éditorial, pas un correctif — et il vaut d'être tranché avant la prochaine
 session de test.
+
+
+---
+
+## 12. Passe « nommez la personne » sur Histoire
+
+Signalée par une carte qui, elle, allait très bien : *« Quel explorateur français
+remonta le Saint-Laurent et nomma le Canada ? »* — Jacques Cartier, face à
+Pierre Dugua de Mons, Cavelier de La Salle et Champlain.
+
+### 12.1 Ce que cette carte apprend sur le critère
+
+Elle n'a rien à se reprocher : un seul nom connu parmi les quatre, et elle a été
+gagnée à table. Le défaut n'est donc pas « la réponse est un nom de personne »,
+c'est **personne ne peut le produire ni le reconnaître**. Le Ruban blanc alignait
+quatre inconnus ; Cartier en aligne trois et un nom de manuel scolaire.
+
+Cette carte-là échappait aussi aux indicateurs : la section 11 ne compte que les
+rôles de créateur, et histoire y affichait 4 cartes sur 400. La famille existe
+pourtant sous d'autres rôles — roi, empereur, explorateur, savant, dirigeant,
+militante. Une **section 12** les mesure désormais, avec la colonne qui compte
+vraiment : le nom attendu apparaît-il ailleurs dans le jeu, ou nulle part ?
+
+### 12.2 Ce qui a été fait
+
+36 cartes remplacées, toutes choisies parce que leur réponse est hors de portée
+d'un foyer : Cyrus II, Brennus, Genséric, Théodora, Alfred le Grand, André II de
+Hongrie, Kubilaï Khan, Bartolomeu Dias, Bohdan Khmelnytsky, Shivaji, Ahmad Shah
+Durrani, Haïlé Sélassié, Enriquillo, Túpac Amaru, Lázaro Cárdenas, l'empereur
+Yongle, Suharto, Hatchepsout, Zénobie, Wu Zetian, la reine Tamar, Njinga,
+Emmeline Pankhurst, Tycho Brahe, Annie Jump Cannon, Ashoka, Akbar, Abel Tasman,
+Cavelier de La Salle, David Ricardo, Reginald Fessenden, Ignace Semmelweis,
+Habib Bourguiba, Mansa Moussa, Zheng He, Tokugawa Ieyasu.
+
+Ce qui reste est ce qu'un foyer nomme ou reconnaît : Cléopâtre, Hannibal, Clovis,
+Gengis Khan, Colomb, Henri VIII, Louis XIV, Bismarck, de Gaulle, Saladin,
+Guillaume le Conquérant, Élisabeth Ire, Catherine II, Olympe de Gouges, Rosa
+Parks, Copernic, Magellan, Cartier, Amundsen, Marx, Keynes, Montessori, Jenner,
+Atatürk, Lumumba, Albert Ier — et Ambiorix, que tout écolier belge a croisé.
+
+Les remplaçantes (`src/data/questionBank/histoireGrandPublicAdultEditorial.ts`)
+déplacent la question du nom vers le fait, avec un accent belge que la catégorie
+méritait : La Muette de Portici et la révolution de 1830, la fête nationale du
+21 juillet, la frontière linguistique, l'État indépendant du Congo, la dynastie
+de Saxe-Cobourg, la première ligne de chemin de fer du continent, les dix-huit
+jours de mai 1940, la bibliothèque de Louvain incendiée en 1914, le drame du
+Heysel, le palais de la Nation, le droit de vote des femmes en 1948. Puis
+l'Europe et le monde par l'événement : Schengen, le pacte de Varsovie, la durée
+réelle de la guerre de Cent Ans, la prise de Grenade, la Convention de 1792, la
+traite atlantique, la grippe espagnole, la dissolution de l'URSS, Maastricht, la
+réunification allemande. Et enfin des mots d'histoire : armistice,
+décolonisation, monarchie constitutionnelle, Constitution, Moyen Âge,
+suffragettes.
+
+**Deux précautions prises.** Sept des cartes retirées portaient sur des femmes :
+deux remplaçantes reprennent le sujet sans exiger un patronyme inconnu, sur les
+suffragettes britanniques et sur le droit de vote des femmes en Belgique. Et
+trois remplaçantes d'abord écrites ont été jetées parce que le fait existait
+déjà — la question royale, la bataille des Ardennes, la crise de Cuba. Deux
+d'entre elles avaient échappé à la recherche par mot-clé à cause d'une
+majuscule : « Question royale » contre « question royale ». Le contrôle de
+quasi-doublons, lui, les a vues.
+
+### 12.3 Mesures avant / après
+
+| Indicateur (section 12) | Avant | Après |
+|---|---:|---:|
+| Cartes « nommez la personne » — histoire | 90 / 400 | **54 / 400** |
+| dont le nom n'apparaît nulle part ailleurs | 30 | **8** |
+
+### 12.4 Bilan des quatre passes
+
+| Catégorie | Cartes réécrites | Famille « nommez la personne », après |
+|---|---:|---:|
+| cinema | 68 | 56 / 400 |
+| art | 61 | 194 / 400 |
+| popculture | 29 | 62 / 400 |
+| histoire | 36 | 54 / 400 |
+
+194 cartes réécrites en tout, à volume constant : 5 360 cartes, 400 adultes par
+catégorie, `npm run check` vert.
+
+Ce qui reste ouvert n'a pas changé de nature : **art** garde 194 cartes de cette
+famille, dont 43 dont la réponse n'apparaît nulle part ailleurs. C'est la seule
+catégorie où le problème est encore structurel, et le trancher demande un choix
+éditorial — réécrire environ 150 cartes, ou accepter que « qui a peint ceci ? »
+reste la question centrale d'une catégorie qui s'appelle « Art & Littérature ».

@@ -76,19 +76,9 @@ const FACTS: EditorialFact[] = [
     'À Manzikert, le sultan Alp Arslan vainquit et captura l’empereur byzantin Romain IV Diogène.',
   ],
   [
-    'Quel souverain d’Afrique de l’Ouest fit un célèbre pèlerinage à La Mecque en 1324 ?',
-    'Mansa Moussa', 'Soundiata Keïta', 'Askia Mohammed', 'Sonni Ali',
-    'Le fastueux pèlerinage de Mansa Moussa révéla au monde méditerranéen la richesse de l’empire du Mali.',
-  ],
-  [
     'Quelle révolte paysanne anglaise de 1381 fut menée notamment par Wat Tyler ?',
     'La révolte des paysans', 'La révolte des Boxers', 'La Fronde', 'La Jacquerie',
     'La révolte de 1381 protesta entre autres contre la capitation et les contraintes du servage.',
-  ],
-  [
-    'Quel navigateur chinois dirigea sept grandes expéditions maritimes sous les Ming ?',
-    'Zheng He', 'Xuanzang', 'Koxinga', 'Lin Zexu',
-    'Entre 1405 et 1433, les flottes de Zheng He voyagèrent jusqu’en Arabie et sur les côtes d’Afrique orientale.',
   ],
   [
     'Quel empire mésoaméricain avait Tenochtitlan pour capitale ?',
@@ -109,11 +99,6 @@ const FACTS: EditorialFact[] = [
     'Quelle bataille navale de 1571 opposa la Sainte Ligue à l’Empire ottoman ?',
     'Lépante', 'Trafalgar', 'Actium', 'Navarin',
     'La flotte de la Sainte Ligue remporta à Lépante une victoire majeure en Méditerranée.',
-  ],
-  [
-    'Quel dirigeant japonais acheva l’unification du pays et fonda le shogunat d’Edo ?',
-    'Tokugawa Ieyasu', 'Oda Nobunaga', 'Toyotomi Hideyoshi', 'Ashikaga Takauji',
-    'Victorieux à Sekigahara en 1600, Tokugawa Ieyasu devint shogun en 1603.',
   ],
   [
     'Quel traité de 1529 partagea les zones d’influence ibériques en Asie ?',

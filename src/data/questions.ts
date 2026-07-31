@@ -8,6 +8,7 @@ import { HISTOIRE_ADULTE_EDITORIAL_04 } from './questionBank/histoireAdultEditor
 import { HISTOIRE_ADULTE_EDITORIAL_05 } from './questionBank/histoireAdultEditorial05';
 import { HISTOIRE_ADULTE_EDITORIAL_06 } from './questionBank/histoireAdultEditorial06';
 import { HISTOIRE_ADULTE_EDITORIAL_07 } from './questionBank/histoireAdultEditorial07';
+import { HISTOIRE_GRAND_PUBLIC_ADULTE } from './questionBank/histoireGrandPublicAdultEditorial';
 import { GEOGRAPHIE_QUESTIONS } from './questionBank/geographie';
 import {
   ADULT_QUALITY_GEOGRAPHY,
@@ -102,6 +103,7 @@ const CURATED_QUESTIONS: Question[] = [
   ...HISTOIRE_ADULTE_EDITORIAL_05,
   ...HISTOIRE_ADULTE_EDITORIAL_06,
   ...HISTOIRE_ADULTE_EDITORIAL_07,
+  ...HISTOIRE_GRAND_PUBLIC_ADULTE,
   ...GEOGRAPHIE_QUESTIONS,
   ...ADULT_QUALITY_GEOGRAPHY,
   ...GEOGRAPHIE_ADULTE_EDITORIAL_02,
