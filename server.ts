@@ -110,6 +110,29 @@ const GENERATED_PACK_SCHEMA = {
   }
 };
 
+/**
+ * Modèle par défaut : le Flash stable de la génération 3.5, sorti en mai 2026.
+ * L'ancien `gemini-2.5-flash` est retiré de l'API le 16 octobre 2026 : rester
+ * dessus, c'est une panne de génération programmée. Surclassable sans
+ * redéploiement via la variable d'environnement GEMINI_MODEL.
+ */
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
+
+/**
+ * Les lots partent en parallèle avec le même thème : sans consigne propre,
+ * chacun ouvre par les mêmes évidences et les doublons inter-lots partent au
+ * rebut (« fait déjà posé sous une autre formulation »). Un angle par lot
+ * répartit le terrain d'avance.
+ */
+const GENERATION_BATCH_ANGLES = [
+  'les personnages, créatures et figures emblématiques',
+  'les lieux, objets et décors',
+  'les dates, les événements et la chronologie',
+  'les œuvres, les épisodes et les intrigues',
+  'les coulisses, les créateurs et la fabrication',
+  'les chiffres, les records et les comparaisons',
+];
+
 const GENERATION_BATCH_SIZE = 15;
 const GENERATION_MAX_COUNT = 60;
 // Les contrôles éditoriaux rejettent une partie des cartes : on en demande
@@ -144,12 +167,16 @@ function consumeGenerationQuota(key: string, now = Date.now()): boolean {
 async function generateQuestionBatch(
   ai: GoogleGenAI,
   themeName: string,
-  count: number
+  count: number,
+  angle?: string
 ): Promise<any[]> {
   const perLevel = Math.max(1, Math.floor(count / 3));
+  const anglePart = angle
+    ? `\n- Angle prioritaire de ce lot : ${angle}. D'autres lots couvrent les autres angles du thème en parallèle — ne t'en écarte que si le thème ne s'y prête vraiment pas.`
+    : '';
   const prompt = `Génère exactement ${count} questions de quiz captivantes, amusantes et FACTUELLEMENT EXACTES en français sur le thème "${themeName}", pour un jeu familial de type Trivial Pursuit.
 
-Structure imposée :
+Structure imposée :${anglePart}
 - Répartis les questions entre les catégories du jeu (${CATEGORY_IDS.join(', ')}) en choisissant celles qui collent le mieux au thème. Chaque question doit réellement porter sur "${themeName}".
 - Répartis les difficultés : environ ${perLevel} questions "enfant" (6-10 ans, très simples), ${perLevel} "ado" (11-16 ans) et le reste "adulte".
 - Exactement 4 options par question, une seule correcte (correctAnswerIndex entre 0 et 3), distracteurs plausibles et de même famille sémantique.
@@ -169,8 +196,11 @@ Contraintes de forme, éliminatoires :
 
 Ancrage : varie les époques, les pays et les disciplines ; évite un tropisme exclusivement français, la Belgique, l'Europe et le reste du monde ont leur place. Contenu familial, aucune question polémique ou choquante.`;
 
+  // Sortie structurée par schéma : le modèle ne peut répondre qu'un tableau
+  // conforme. Pas de temperature/topP/topK : ces paramètres sont dépréciés et
+  // ignorés à partir de Gemini 3.x, les réglages par défaut sont les bons.
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: GEMINI_MODEL,
     contents: prompt,
     config: {
       responseMimeType: 'application/json',
@@ -231,12 +261,13 @@ app.post('/api/generate-pack', async (req, res) => {
     }
 
     const batchResults = await Promise.allSettled(
-      batchSizes.map(async (size) => {
+      batchSizes.map(async (size, index) => {
+        const angle = GENERATION_BATCH_ANGLES[index % GENERATION_BATCH_ANGLES.length];
         try {
-          return await generateQuestionBatch(ai, cleanTheme, size);
+          return await generateQuestionBatch(ai, cleanTheme, size, angle);
         } catch (err) {
           console.warn(`[Pack IA] Lot en échec, nouvelle tentative:`, err instanceof Error ? err.message : err);
-          return await generateQuestionBatch(ai, cleanTheme, size);
+          return await generateQuestionBatch(ai, cleanTheme, size, angle);
         }
       })
     );
