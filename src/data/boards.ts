@@ -18,12 +18,12 @@ const CATEGORIES_LIST: CategoryId[] = [
   'sports'
 ];
 
-function generateWheelBoard(): BoardTile[] {
+function generateWheelBoard(additionalSpokeTile = true): BoardTile[] {
   const tiles: BoardTile[] = [];
   const cx = 500;
   const cy = 500;
   const outerR = 380;
-  const spokeStepR = outerR / 4; // spokes have 3 intermediate tiles
+  const spokeStepR = outerR / 4; // regular 95-unit spacing on the classic wheel
 
   // Hub / Center tile (ID 0)
   tiles.push({
@@ -37,18 +37,20 @@ function generateWheelBoard(): BoardTile[] {
 
   let currentId = 1;
   const spokeOuterTileIds: number[] = [];
+  const spokeTileIds: number[][] = [];
 
   // Create 6 spokes (Angles: 0, 60, 120, 180, 240, 300)
   for (let i = 0; i < 6; i++) {
     const angle = i * 60;
     const hqCatId = CATEGORIES_LIST[i % CATEGORIES_LIST.length];
 
-    const spokeStartId = currentId;
+    const currentSpokeTileIds: number[] = [];
     // 3 spoke tiles going outwards
     for (let s = 1; s <= 3; s++) {
       const pt = circlePoint(cx, cy, s * spokeStepR, angle);
       const isLastSpoke = (s === 3);
       const tileId = currentId++;
+      currentSpokeTileIds.push(tileId);
 
       // Distribute categories along spoke leading to HQ
       const spokeCatId = isLastSpoke 
@@ -71,10 +73,7 @@ function generateWheelBoard(): BoardTile[] {
       }
     }
 
-    // Link spoke tiles in order 0 -> spoke1 -> spoke2 -> spoke3
-    tiles[0].nextTileIds.push(spokeStartId);
-    tiles.find(t => t.id === spokeStartId)!.nextTileIds.push(spokeStartId + 1);
-    tiles.find(t => t.id === spokeStartId + 1)!.nextTileIds.push(spokeStartId + 2);
+    spokeTileIds.push(currentSpokeTileIds);
   }
 
   // Create outer circle connecting the 6 outer spoke tiles
@@ -129,6 +128,32 @@ function generateWheelBoard(): BoardTile[] {
     }
   }
 
+  // The classic wheel has one extra category tile in the large gap between
+  // each spoke's second tile and its camembert. Add these after every legacy
+  // tile has been created so all existing IDs remain stable for saved games.
+  if (additionalSpokeTile) {
+    for (let i = 0; i < 6; i++) {
+      const angle = i * 60;
+      const pt = circlePoint(cx, cy, 3 * spokeStepR, angle);
+      const categoryId = CATEGORIES_LIST[(i + 3) % CATEGORIES_LIST.length];
+      const tileId = currentId++;
+
+      tiles.push({
+        id: tileId,
+        type: 'category',
+        categoryId,
+        label: categoryId.toUpperCase(),
+        x: pt.x,
+        y: pt.y,
+        nextTileIds: []
+      });
+
+      // Insert the new tile immediately before the existing camembert.
+      const currentSpokeTileIds = spokeTileIds[i];
+      currentSpokeTileIds.splice(currentSpokeTileIds.length - 1, 0, tileId);
+    }
+  }
+
   // Now create bidirectional graph connectivity for all adjacent ring & spoke tiles
   // Re-map ring nodes in angular order
   const ringTileMap: number[] = [];
@@ -156,18 +181,13 @@ function generateWheelBoard(): BoardTile[] {
 
   // Connect spokes outwards & inwards towards hub
   for (let i = 0; i < 6; i++) {
-    const spoke1 = 1 + i * 3;
-    const spoke2 = 2 + i * 3;
-    const spoke3 = 3 + i * 3; // Camembert
-
-    // Hub <-> spoke1 <-> spoke2 <-> spoke3
-    const t1 = tiles.find(t => t.id === spoke1);
-    const t2 = tiles.find(t => t.id === spoke2);
-    const t3 = tiles.find(t => t.id === spoke3);
-
-    if (t1) t1.nextTileIds.push(0, spoke2);
-    if (t2) t2.nextTileIds.push(spoke1, spoke3);
-    if (t3) t3.nextTileIds.push(spoke2);
+    const path = [0, ...spokeTileIds[i]];
+    for (let position = 0; position < path.length - 1; position++) {
+      const from = tiles.find(tile => tile.id === path[position]);
+      const to = tiles.find(tile => tile.id === path[position + 1]);
+      if (from) from.nextTileIds.push(path[position + 1]);
+      if (to) to.nextTileIds.push(path[position]);
+    }
   }
 
   // Deduplicate all nextTileIds and remove self-references
@@ -229,7 +249,7 @@ export const BOARD_PRESETS: Record<BoardType, BoardConfig> = {
   wheel: {
     id: 'wheel',
     name: 'Roue Classique 6 Branches',
-    description: 'Le plateau de jeu emblématique avec hub central, 6 spokes et 6 cases camemberts.',
+    description: 'Le plateau de jeu emblématique avec un centre, 6 branches et 6 cases camemberts.',
     suggestedDuration: '45-60 min',
     layout: 'radial',
     tiles: generateWheelBoard()
@@ -248,7 +268,7 @@ export const BOARD_PRESETS: Record<BoardType, BoardConfig> = {
     description: 'Un plateau à 4 branches courtes concentré sur la rapidité et la stratégie.',
     suggestedDuration: '20-30 min',
     layout: 'radial',
-    tiles: generateWheelBoard() // reuse wheel logic with stylized star view
+    tiles: generateWheelBoard(false) // keep the shorter four-position branches
   }
 };
 
