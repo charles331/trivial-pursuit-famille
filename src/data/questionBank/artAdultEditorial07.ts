@@ -11,7 +11,7 @@ const FACTS: Fact[] = [
   ['Qui illustra une célèbre édition de « La Divine Comédie » au XIXe siècle ?', 'Gustave Doré', 'J. J. Grandville', 'Tony Johannot', 'Félicien Rops', 'Les gravures de Doré pour Dante furent publiées à partir de 1861.'],
   ['Quel artiste belge illustra « Les Épaves » de Baudelaire ?', 'Félicien Rops', 'James Ensor', 'Fernand Khnopff', 'George Minne', 'Rops réalisa le frontispice des Épaves, recueil contenant les pièces condamnées des Fleurs du mal.'],
   ['Quel artiste tchèque conçut des affiches Art nouveau pour Sarah Bernhardt ?', 'Alphonse Mucha', 'Koloman Moser', 'Aubrey Beardsley', 'Jan Toorop', 'L’affiche Gismonda de 1894 rendit Mucha célèbre à Paris.'],
-  ['Qui créa l’affiche au chat noir pour la tournée du cabaret de Rodolphe Salis ?', 'Théophile Steinlen', 'Jules Chéret', 'Eugène Grasset', 'Adolphe Willette', 'Steinlen dessina en 1896 le célèbre chat auréolé de rouge du cabaret montmartrois.'],
+  ['Quel artiste créa en 1896 l’affiche au chat noir du célèbre cabaret parisien de Montmartre ?', 'Théophile Steinlen', 'Jules Chéret', 'Eugène Grasset', 'Adolphe Willette', 'Steinlen dessina pour sa tournée le célèbre chat auréolé de rouge du cabaret de Rodolphe Salis.'],
   ['Quel auteur suisse créa la bande dessinée « Histoire de M. Vieux Bois » ?', 'Rodolphe Töpffer', 'Wilhelm Busch', 'Gustave Doré', 'Caran d’Ache', 'Les récits en estampes de Töpffer au XIXe siècle sont souvent vus comme des précurseurs de la BD.'],
   ['Qui créa « Little Nemo in Slumberland » ?', 'Winsor McCay', 'George Herriman', 'Lyonel Feininger', 'Richard Outcault', 'La planche dominicale de McCay explorait format, couleur et architecture des rêves dès 1905.'],
   ['Quel auteur est le créateur de « Krazy Kat » ?', 'George Herriman', 'Winsor McCay', 'Cliff Sterrett', 'E. C. Segar', 'Krazy Kat jouait avec langage, décor changeant et triangle amoureux entre Krazy, Ignatz et Offisa Pupp.'],
@@ -56,4 +56,3 @@ export const ART_ADULTE_EDITORIAL_07: Question[] = FACTS.map(
     };
   },
 );
-
