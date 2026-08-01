@@ -93,6 +93,7 @@ import {
   GASTRONOMIE_ADO_EDITORIAL,
 } from './questionBank/popcultureGastronomieAdoEditorial';
 import { applyFamilyAdultReplacements } from './questionBank/familyAdultReplacements';
+import { applyFamilyAdultSecondPass } from './questionBank/familyAdultSecondPass';
 
 const CURATED_QUESTIONS: Question[] = [
   ...HISTOIRE_QUESTIONS,
@@ -182,7 +183,9 @@ const seenIds = new Set<string>();
 // to the teen bank removed a whole step from the difficulty ladder: a teenager
 // received the child questions verbatim. Every level now reaches its target
 // only through banks written for that level.
-const COMPLETED_QUESTIONS = applyFamilyAdultReplacements(CURATED_QUESTIONS);
+const COMPLETED_QUESTIONS = applyFamilyAdultSecondPass(
+  applyFamilyAdultReplacements(CURATED_QUESTIONS),
+);
 
 /**
  * Répartit les bonnes réponses adultes entre A, B, C et D.

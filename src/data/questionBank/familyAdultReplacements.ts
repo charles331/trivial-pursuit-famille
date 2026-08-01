@@ -97,6 +97,7 @@ const REPLACEMENTS: Replacement[] = [
   ['art_adulte_editorial_final_018', 'Quel artiste peignit le plafond de l’Opéra Garnier en 1964 ?', 'Marc Chagall', 'Henri Matisse', 'Joan Miró', 'Pablo Picasso', 'Le plafond coloré de Chagall rend hommage à plusieurs compositeurs.'],
   ['art_adulte_editorial_final_023', 'Quel artiste belge a représenté un tuyau avec la phrase « Ceci n’est pas une pipe » ?', 'René Magritte', 'Marcel Broodthaers', 'Paul Delvaux', 'James Ensor', '« La Trahison des images » distingue la représentation d’un objet de l’objet lui-même.'],
   ['art_adulte_editorial_final_024', 'Quel artiste a placé une fontaine en forme de chien géant fleuri devant le musée Guggenheim de Bilbao ?', 'Jeff Koons', 'Damien Hirst', 'Anish Kapoor', 'Ai Weiwei', '« Puppy » est recouvert de milliers de fleurs vivantes.'],
+  ['art_adulte_editorial_05_034', 'Depuis sa rénovation, quel matériau recouvre les neuf sphères de l’Atomium ?', 'L’acier inoxydable', 'Le cuivre', 'Le bronze', 'Le verre', 'Les anciennes plaques d’aluminium ont été remplacées par de l’acier inoxydable lors de la rénovation achevée en 2006.'],
 
   // Géographie et sciences : faits utiles et formulés concrètement.
   ['geo_adulte_editorial_final_002', 'Quel pays européen a la forme caractéristique d’une botte ?', 'L’Italie', 'La Grèce', 'Le Portugal', 'La Croatie', 'La péninsule italienne s’avance dans la Méditerranée avec une forme de botte.'],
