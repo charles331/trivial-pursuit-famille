@@ -7,7 +7,10 @@ import { activeThemeKeys } from '../server/questionSelection';
 import { LayoutGrid, Timer, Sparkles, Check, Wand2, RefreshCw } from 'lucide-react';
 import { soundManager } from '../utils/sound';
 import { QUESTION_TIMER_OPTIONS } from '../utils/questionTimer';
-import { DEFAULT_GENERATED_PACK_COUNT } from '../config/generatedPack';
+import {
+  DEFAULT_GENERATED_PACK_COUNT,
+  GENERATED_PACK_BUTTON_LABEL,
+} from '../config/generatedPack';
 
 interface BoardCustomizerProps {
   settings: GameSettings;
@@ -266,7 +269,7 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
               </span>
             ) : (
               <span className="text-slate-600 dark:text-slate-400">
-                📱 <strong>Mode Direct (Par défaut) :</strong> Chaque joueur voit la question et les 4 choix directement sur son écran.
+                📱 <strong>Mode Direct :</strong> Chaque joueur voit la question et les 4 choix directement sur son écran.
               </span>
             )}
           </p>
@@ -443,7 +446,7 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
               ) : (
                 <>
                   <Wand2 className="w-3.5 h-3.5" />
-                  Créer (30 q)
+                  {GENERATED_PACK_BUTTON_LABEL}
                 </>
               )}
             </button>

@@ -5,6 +5,7 @@ import {
   KnownFactIndex,
   answerKeyOf,
   assembleGeneratedPack,
+  correctObviousGeneratedCategory,
   describeRejections,
 } from '../src/server/packAssembly';
 import { Question } from '../src/types';
@@ -205,4 +206,31 @@ test('une catégorie hors plateau est refusée', () => {
   );
 
   assert.deepEqual(reasons(pack.rejections), ['catégorie invalide']);
+});
+
+test('une question sur un rôle de film ne peut pas rester classée en sciences', () => {
+  const bladeRunner = card({
+    categoryId: 'sciences',
+    question: 'Dans Blade Runner (1982), quel androïde est interprété par Rutger Hauer ?',
+    options: ['Pris Stratton', 'Rachael', 'Roy Batty', 'Leon Kowalski'],
+    correctAnswerIndex: 2,
+    explanation: 'Son monologue final sous la pluie est devenu une scène culte du cinéma.',
+  });
+
+  const corrected = correctObviousGeneratedCategory(bladeRunner);
+  const pack = assembleGeneratedPack([bladeRunner], 30);
+
+  assert.equal(corrected.categoryId, 'cinema');
+  assert.equal(pack.questions[0]?.categoryId, 'cinema');
+});
+
+test('une vraie question scientifique contenant un androïde reste en sciences', () => {
+  const scienceCard = card({
+    categoryId: 'sciences',
+    question: 'Quel matériau conducteur est souvent utilisé dans les circuits d’un androïde ?',
+    options: ['Le cuivre', 'Le verre', 'Le bois', 'Le granit'],
+    explanation: 'Le cuivre conduit bien le courant tout en restant facile à façonner.',
+  });
+
+  assert.equal(correctObviousGeneratedCategory(scienceCard).categoryId, 'sciences');
 });

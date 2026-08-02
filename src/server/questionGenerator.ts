@@ -138,6 +138,8 @@ export function buildQuestionGenerationPrompt(
 
 Structure imposée :${anglePart}
 - Répartis les questions entre les catégories du jeu (${CATEGORY_IDS.join(', ')}) en choisissant celles qui collent le mieux au thème. Chaque question doit réellement porter sur "${themeName}".
+- Respecte strictement le sujet réellement testé par la question : histoire = événements et personnages historiques ; geographie = pays, lieux et reliefs ; cinema = films, séries, acteurs, rôles et réalisateurs ; sciences = phénomènes scientifiques, nature, corps, animaux et espace ; art = arts visuels et littérature ; sports = disciplines, compétitions et loisirs ; popculture = musique, BD, jeux vidéo et web ; gastronomie = plats, ingrédients et cuisine.
+- Le décor ne détermine jamais la catégorie : une question sur un acteur, un rôle ou un personnage de film de science-fiction appartient à "cinema", pas à "sciences". Exemple : une question sur Rutger Hauer dans Blade Runner doit être classée "cinema".
 - Répartis les difficultés : environ ${perLevel} questions "enfant" (6-10 ans, très simples), ${perLevel} "ado" (11-16 ans) et le reste "adulte".
 - Exactement 4 options par question, une seule correcte (correctAnswerIndex entre 0 et 3), distracteurs plausibles et de même famille sémantique.
 - "explanation" : une anecdote courte qui APPREND quelque chose de neuf, absent de l'énoncé et de la bonne réponse. Une explication qui répète la question est refusée.

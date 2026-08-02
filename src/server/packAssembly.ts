@@ -24,6 +24,23 @@ import { DifficultyLevel, Question } from '../types';
 const DIFFICULTY_ORDER: DifficultyLevel[] = ['enfant', 'ado', 'adulte'];
 
 /**
+ * Indices qui rendent une carte explicitement cinématographique, même lorsque
+ * son univers parle de robots, d'espace, d'histoire ou de cuisine. Les modèles
+ * confondent parfois le décor d'une œuvre avec le savoir réellement testé :
+ * « quel androïde est interprété par Rutger Hauer ? » teste Blade Runner, pas
+ * les sciences. La correction reste volontairement étroite pour ne pas
+ * deviner la catégorie des cas ambigus.
+ */
+const OBVIOUS_CINEMA_CUE = /\b(?:film|serie|acteur|actrice|realisateur|realisatrice|interprete|interpretee|interpreter|interpretait|incarne|incarnee|incarner|incarnait|role|episode|saison|oscar|box office|bande originale)\b/u;
+
+export function correctObviousGeneratedCategory(question: Question): Question {
+  if (question.categoryId === 'cinema' || !OBVIOUS_CINEMA_CUE.test(normalize(question.question))) {
+    return question;
+  }
+  return { ...question, categoryId: 'cinema' };
+}
+
+/**
  * Ce que la banque officielle sait déjà, injecté pour que l'assemblage reste
  * testable sans charger les 5 360 cartes.
  */
@@ -103,7 +120,8 @@ export function assembleGeneratedPack(
   const maxBareCards = Math.floor(targetCount * MAX_BARE_NUMBER_RATIO);
   let bareCards = 0;
 
-  for (const candidate of candidates) {
+  for (const rawCandidate of candidates) {
+    const candidate = correctObviousGeneratedCategory(rawCandidate);
     const structuralReason = editorialRejectionReason(candidate);
     if (structuralReason) {
       reject(structuralReason);

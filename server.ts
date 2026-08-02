@@ -34,6 +34,10 @@ import { activeThemeKeys, pickQuestionForPlayer } from './src/server/questionSel
 import { previewOrigin, withAbsolutePreviewImages } from './src/server/previewMeta.js';
 import { createQuestionGenerator } from './src/server/questionGenerator.js';
 import { DEFAULT_GENERATED_PACK_COUNT } from './src/config/generatedPack.js';
+import {
+  DEFAULT_QUESTION_TIMER_SECONDS,
+  DEFAULT_READER_MODE,
+} from './src/config/gameSettings.js';
 import { 
   GameState, 
   Player, 
@@ -444,10 +448,10 @@ io.on('connection', (socket: Socket) => {
       roomCode,
       boardType: data.settings.boardType || 'wheel',
       selectedCategories: data.settings.selectedCategories || ['histoire', 'geographie', 'cinema', 'sciences', 'art', 'sports'],
-      timerSeconds: data.settings.timerSeconds ?? 30,
+      timerSeconds: data.settings.timerSeconds ?? DEFAULT_QUESTION_TIMER_SECONDS,
       wedgesToWin: data.settings.wedgesToWin || 6,
       isLocalMode: isLocal,
-      isReaderMode: data.settings?.isReaderMode ?? false,
+      isReaderMode: data.settings?.isReaderMode ?? DEFAULT_READER_MODE,
       enableLiveCamera: data.settings?.enableLiveCamera ?? false
     };
 
