@@ -10,6 +10,10 @@ export type CategoryId =
 
 export type DifficultyLevel = 'enfant' | 'ado' | 'adulte';
 
+export type BonusType = 'fifty_fifty';
+
+export type PlayerBonuses = Partial<Record<BonusType, number>>;
+
 export interface CategoryInfo {
   id: CategoryId;
   name: string;
@@ -54,6 +58,8 @@ export interface Player {
   correctAnswersCount: number;
   totalAnswersCount: number;
   isConnected: boolean;
+  /** Bonus gagnés et conservés jusqu'à ce que le joueur décide de les utiliser. */
+  bonuses?: PlayerBonuses;
 }
 
 export type BoardType = 'wheel' | 'snake' | 'star';
@@ -94,6 +100,14 @@ export interface GameSettings {
   isLocalMode?: boolean; // pass & play on single device
   isReaderMode?: boolean; // Card Reader Mode: another player reads the card out loud
   enableLiveCamera?: boolean; // Live camera & mic spotlight during question turn
+  /** Variante facultative : les cases Surprise donnent des bonus à conserver. */
+  enableBonuses?: boolean;
+}
+
+export interface ActiveQuestionBonus {
+  type: BonusType;
+  playerId: string;
+  hiddenOptionIndexes: number[];
 }
 
 export type GamePhase =
@@ -160,6 +174,10 @@ export interface GameState {
   usedQuestionIds: string[];
   customPacks?: { name: string; questions: Question[] }[];
   lastTurnEventMessage?: string | null;
+  /** Bonus gagné en arrivant sur la case de ce tour, affiché avec la question. */
+  bonusAwardedThisTurn?: BonusType | null;
+  /** Effet déjà appliqué à la question en cours. */
+  activeQuestionBonus?: ActiveQuestionBonus | null;
   /** Partie mise en pause par l'organisateur : le salon est gardé plus longtemps. */
   isPaused?: boolean;
   /** Instant de la mise en pause, qui sert à décaler le minuteur à la reprise. */

@@ -34,7 +34,9 @@ import { activeThemeKeys, pickQuestionForPlayer } from './src/server/questionSel
 import { previewOrigin, withAbsolutePreviewImages } from './src/server/previewMeta.js';
 import { createQuestionGenerator } from './src/server/questionGenerator.js';
 import { DEFAULT_GENERATED_PACK_COUNT } from './src/config/generatedPack.js';
+import { awardSurpriseBonus, useFiftyFiftyBonus } from './src/server/bonuses.js';
 import {
+  DEFAULT_BONUS_MODE,
   DEFAULT_QUESTION_TIMER_SECONDS,
   DEFAULT_READER_MODE,
 } from './src/config/gameSettings.js';
@@ -441,7 +443,8 @@ io.on('connection', (socket: Socket) => {
       score: 0,
       correctAnswersCount: 0,
       totalAnswersCount: 0,
-      isConnected: true
+      isConnected: true,
+      bonuses: {},
     };
 
     const initialSettings: GameSettings = {
@@ -452,7 +455,8 @@ io.on('connection', (socket: Socket) => {
       wedgesToWin: data.settings.wedgesToWin || 6,
       isLocalMode: isLocal,
       isReaderMode: data.settings?.isReaderMode ?? DEFAULT_READER_MODE,
-      enableLiveCamera: data.settings?.enableLiveCamera ?? false
+      enableLiveCamera: data.settings?.enableLiveCamera ?? false,
+      enableBonuses: data.settings?.enableBonuses ?? DEFAULT_BONUS_MODE,
     };
 
     const initialGameState: GameState = {
@@ -469,7 +473,9 @@ io.on('connection', (socket: Socket) => {
       lastAnswerResult: null,
       winnerId: null,
       questionsPool: [...QUESTIONS_DATABASE],
-      usedQuestionIds: []
+      usedQuestionIds: [],
+      bonusAwardedThisTurn: null,
+      activeQuestionBonus: null,
     };
 
     const now = Date.now();
@@ -575,7 +581,8 @@ io.on('connection', (socket: Socket) => {
       score: 0,
       correctAnswersCount: 0,
       totalAnswersCount: 0,
-      isConnected: true
+      isConnected: true,
+      bonuses: {},
     };
 
     room.sockets.set(socket.id, newPlayer);
@@ -620,7 +627,8 @@ io.on('connection', (socket: Socket) => {
       score: 0,
       correctAnswersCount: 0,
       totalAnswersCount: 0,
-      isConnected: true
+      isConnected: true,
+      bonuses: {},
     };
 
     room.gameState.players.push(newPlayer);
@@ -767,6 +775,8 @@ io.on('connection', (socket: Socket) => {
     // Shuffle questions pool on game start (custom pack questions included first)
     room.gameState.questionsPool = shuffled([...customQuestions, ...QUESTIONS_DATABASE]);
     room.gameState.usedQuestionIds = [];
+    room.gameState.bonusAwardedThisTurn = null;
+    room.gameState.activeQuestionBonus = null;
 
     // Le premier joueur n'est plus l'organisateur d'office : tout le monde
     // lance le dé une fois et le meilleur lancer ouvre la partie. Une partie
@@ -901,6 +911,8 @@ io.on('connection', (socket: Socket) => {
     room.gameState.diceValue = dice;
     room.gameState.phase = 'moving';
     room.gameState.lastTurnEventMessage = null;
+    room.gameState.bonusAwardedThisTurn = null;
+    room.gameState.activeQuestionBonus = null;
 
     const activePlayer = room.gameState.players[room.gameState.activePlayerIndex];
     const board = BOARD_PRESETS[room.settings.boardType];
@@ -951,6 +963,10 @@ io.on('connection', (socket: Socket) => {
       return;
     }
 
+    if (tile.type === 'surprise' && awardSurpriseBonus(room.gameState)) {
+      room.gameState.lastTurnEventMessage = `🎁 ${activePlayer.name} gagne un bonus 50/50 à utiliser quand il le souhaite !`;
+    }
+
     // Pick question according to tile category or player's difficulty
     const validCategories = room.settings.selectedCategories && room.settings.selectedCategories.length > 0 
       ? room.settings.selectedCategories 
@@ -964,6 +980,19 @@ io.on('connection', (socket: Socket) => {
     room.gameState.questionStartTime = Date.now();
 
     emitGameState(room);
+    saveRooms(rooms);
+  });
+
+  // Use a stored question bonus. The server chooses the eliminated answers so
+  // the correct answer never needs to be sent to the answering player's client.
+  socket.on('use-bonus', (data: { roomCode: string; bonusType: string }) => {
+    const room = getRoom(data.roomCode);
+    if (!room || isPaused(room) || data.bonusType !== 'fifty_fifty') return;
+    if (!isPlayerAllowedToAnswer(room, socket.id)) return;
+    if (!useFiftyFiftyBonus(room.gameState)) return;
+
+    emitGameState(room);
+    saveRooms(rooms);
   });
 
   // Submit Question Answer
@@ -973,6 +1002,7 @@ io.on('connection', (socket: Socket) => {
     if (isPaused(room)) return;
     if (!isPlayerAllowedToAnswer(room, socket.id)) return;
     if (!Number.isInteger(data.optionIndex) || data.optionIndex < -1 || data.optionIndex > 3) return;
+    if (room.gameState.activeQuestionBonus?.hiddenOptionIndexes.includes(data.optionIndex)) return;
 
     const board = BOARD_PRESETS[room.settings.boardType];
     resolveAnswer(room.gameState, room.settings, board, data.optionIndex);

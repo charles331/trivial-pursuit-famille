@@ -205,7 +205,10 @@ export function loadRooms(
       hostSocketId: stored.hostSocketId,
       generationToken: stored.generationToken || randomBytes(32).toString('base64url'),
       reconnectTokens: new Map(Object.entries(stored.reconnectTokens ?? {})),
-      settings: stored.settings,
+      settings: {
+        ...stored.settings,
+        enableBonuses: stored.settings.enableBonuses ?? false,
+      },
       createdAt: stored.createdAt,
       lastActivityAt: stored.lastActivityAt,
       // Les compteurs de grâce repartent à zéro : sans cela une salle rechargée
@@ -215,7 +218,15 @@ export function loadRooms(
       sockets: new Map(),
       gameState: {
         ...stored.gameState,
-        players: stored.gameState.players.map((player) => ({ ...player, isConnected: false })),
+        settings: {
+          ...stored.gameState.settings,
+          enableBonuses: stored.gameState.settings.enableBonuses ?? false,
+        },
+        players: stored.gameState.players.map((player) => ({
+          ...player,
+          bonuses: player.bonuses ?? {},
+          isConnected: false,
+        })),
         questionsPool: shuffle([...customQuestions, ...questionsDatabase]),
       },
     });

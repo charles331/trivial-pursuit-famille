@@ -25,6 +25,7 @@ export const testSettings: GameSettings = {
   isLocalMode: false,
   isReaderMode: false,
   enableLiveCamera: false,
+  enableBonuses: false,
 };
 
 export const testBoard: BoardConfig = {
@@ -63,6 +64,7 @@ export function createPlayer(id: string, isHost = false): Player {
     correctAnswersCount: 0,
     totalAnswersCount: 0,
     isConnected: true,
+    bonuses: {},
   };
 }
 

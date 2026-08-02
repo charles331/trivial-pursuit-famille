@@ -4,7 +4,7 @@ import { CATEGORIES } from '../data/categories';
 import { BOARD_PRESETS } from '../data/boards';
 import { isCardReadAloud } from '../server/turnRoles';
 import { activeThemeKeys } from '../server/questionSelection';
-import { LayoutGrid, Timer, Sparkles, Check, Wand2, RefreshCw } from 'lucide-react';
+import { LayoutGrid, Timer, Sparkles, Check, Wand2, RefreshCw, Gift } from 'lucide-react';
 import { soundManager } from '../utils/sound';
 import { QUESTION_TIMER_OPTIONS } from '../utils/questionTimer';
 import {
@@ -254,6 +254,41 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Optional bonuses variant */}
+      <div className="flex flex-col items-start justify-between gap-3 rounded-2xl border border-pink-300 bg-pink-50/80 p-4 dark:border-pink-800 dark:bg-pink-950/30 sm:flex-row sm:items-center">
+        <div className="space-y-1">
+          <div className="flex items-center gap-1.5 text-xs font-extrabold text-pink-950 dark:text-pink-200 sm:text-sm">
+            <Gift className="h-4 w-4" /> Mode Bonus
+          </div>
+          <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+            {settings.enableBonuses ? (
+              <span className="font-semibold text-pink-700 dark:text-pink-300">
+                Les cases Surprise donnent un 50/50. Chaque joueur peut le conserver et l&apos;utiliser pendant la question de son choix.
+              </span>
+            ) : (
+              <span>
+                Désactivé par défaut : les cases Surprise restent des cases de question normales.
+              </span>
+            )}
+          </p>
+        </div>
+        <button
+          type="button"
+          disabled={!isHost}
+          onClick={() => {
+            soundManager.playClick();
+            onUpdateSettings({ enableBonuses: !settings.enableBonuses });
+          }}
+          className={`flex shrink-0 items-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-black transition-all ${
+            settings.enableBonuses
+              ? 'bg-pink-500 text-white shadow-md ring-2 ring-pink-400/50'
+              : 'bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300'
+          }`}
+        >
+          {settings.enableBonuses ? 'BONUS ACTIVÉS 🎁' : 'DÉSACTIVÉ 🔒'}
+        </button>
       </div>
 
       {/* Reader Mode (Maître du jeu / Lecteur de carte) */}

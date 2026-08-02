@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Question, Player, CategoryId } from '../types';
+import { ActiveQuestionBonus, BonusType, Question, Player, CategoryId } from '../types';
 import { CATEGORIES } from '../data/categories';
 import { PlayerWedgeBadge } from './PlayerWedgeBadge';
 import { LiveSpotlight } from './LiveSpotlight';
 import { resolveReaderId } from '../server/turnRoles';
 import { soundManager } from '../utils/sound';
 import { resolveQuestionTimerSeconds } from '../utils/questionTimer';
-import { Timer, CheckCircle2, XCircle, Sparkles, HelpCircle, ArrowRight, Eye, EyeOff, BookOpen } from 'lucide-react';
+import { Timer, CheckCircle2, XCircle, Sparkles, HelpCircle, ArrowRight, Eye, EyeOff, BookOpen, Gift } from 'lucide-react';
 
 const LETTERS = ['A', 'B', 'C', 'D'];
 
@@ -27,7 +27,11 @@ interface QuestionModalProps {
   allPlayers?: Player[];
   currentUserId?: string;
   onSubmitAnswer: (optionIndex: number) => void;
+  onUseBonus: () => void;
   onNextTurn: () => void;
+  bonusesEnabled?: boolean;
+  bonusAwardedThisTurn?: BonusType | null;
+  activeQuestionBonus?: ActiveQuestionBonus | null;
 }
 
 export const QuestionModal: React.FC<QuestionModalProps> = ({
@@ -42,7 +46,11 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   allPlayers = [],
   currentUserId,
   onSubmitAnswer,
-  onNextTurn
+  onUseBonus,
+  onNextTurn,
+  bonusesEnabled = false,
+  bonusAwardedThisTurn = null,
+  activeQuestionBonus = null,
 }) => {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [localReaderReady, setLocalReaderReady] = useState(false);
@@ -211,6 +219,17 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
 
   const timerPercent = effectiveTimerSeconds > 0 ? (timeLeft / effectiveTimerSeconds) * 100 : 100;
   const showTimer = effectiveTimerSeconds > 0 && !isAnswered;
+  const fiftyFiftyCount = activePlayer.bonuses?.fifty_fifty ?? 0;
+  const hiddenOptionIndexes = activeQuestionBonus?.type === 'fifty_fifty'
+    ? activeQuestionBonus.hiddenOptionIndexes
+    : [];
+  const hiddenOptionKey = hiddenOptionIndexes.join(',');
+
+  useEffect(() => {
+    if (selectedIdx !== null && hiddenOptionIndexes.includes(selectedIdx)) {
+      setSelectedIdx(null);
+    }
+  }, [hiddenOptionKey, selectedIdx]);
 
   return (
     <div className="fixed inset-0 z-50 flex justify-center bg-slate-950 animate-fadeIn sm:items-center sm:p-4">
@@ -311,6 +330,13 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
          <div className="my-auto space-y-3">
 
           {/* Question Text */}
+          {bonusAwardedThisTurn === 'fifty_fifty' && (
+            <div className="flex items-center gap-2 rounded-xl border border-pink-300 bg-pink-50 p-2.5 text-xs font-black text-pink-900 dark:border-pink-800 dark:bg-pink-950/40 dark:text-pink-200">
+              <Gift className="h-4 w-4 shrink-0" />
+              Case Surprise : {activePlayer.name} gagne un 50/50 à conserver !
+            </div>
+          )}
+
           {isCardMasked ? (
             <div className="flex items-center gap-3 rounded-2xl border-2 border-dashed border-purple-400 bg-purple-50/80 p-3 dark:border-purple-800 dark:bg-purple-950/40">
               <span className="shrink-0 text-2xl">🎴</span>
@@ -327,6 +353,29 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
             <p className="text-base font-bold leading-snug text-slate-900 dark:text-white sm:text-lg">
               {question.question}
             </p>
+          )}
+
+          {bonusesEnabled && canAnswer && !isAnswered && (
+            <div className="flex items-center justify-between gap-2 rounded-xl border border-pink-300/70 bg-pink-50/70 p-2 dark:border-pink-800 dark:bg-pink-950/30">
+              <div className="min-w-0 text-[11px] font-bold leading-snug text-pink-900 dark:text-pink-200">
+                {activeQuestionBonus
+                  ? '50/50 utilisé : deux mauvaises réponses ont été éliminées.'
+                  : `Inventaire de ${activePlayer.name} : ${fiftyFiftyCount} × 50/50`}
+              </div>
+              {!activeQuestionBonus && (
+                <button
+                  type="button"
+                  disabled={fiftyFiftyCount < 1}
+                  onClick={() => {
+                    soundManager.playClick();
+                    onUseBonus();
+                  }}
+                  className="tap-target shrink-0 rounded-lg bg-pink-500 px-3 text-xs font-black text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Utiliser
+                </button>
+              )}
+            </div>
           )}
 
           {/* Hold-to-reveal: the reader checks the answer without exposing it to
@@ -370,6 +419,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
           {/* Option Choices Grid */}
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {question.options.map((opt, idx) => {
+              const isEliminated = hiddenOptionIndexes.includes(idx) && !isAnswered;
               const isCorrect = idx === solutionIndex;
               const isChosen = lastAnswerResult?.selectedOption === idx;
               const isSelected = !isAnswered && selectedIdx === idx;
@@ -391,10 +441,14 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                 btnStyle = 'bg-amber-100 dark:bg-amber-950/50 border-amber-500 text-amber-950 dark:text-amber-100 font-bold ring-2 ring-amber-500/30';
               }
 
+              if (isEliminated) {
+                btnStyle = 'border-slate-200 bg-slate-100 text-slate-400 opacity-55 line-through dark:border-slate-800 dark:bg-slate-900 dark:text-slate-500';
+              }
+
               return (
                 <button
                   key={idx}
-                  disabled={isAnswered || !canAnswer}
+                  disabled={isAnswered || !canAnswer || isEliminated}
                   onClick={() => handleOptionClick(idx)}
                   className={`flex items-center gap-2.5 rounded-xl border-2 p-2.5 text-left text-sm transition-colors ${btnStyle} ${
                     !isAnswered && canAnswer ? 'active:scale-[0.98]' : ''
@@ -411,7 +465,9 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                   </span>
 
                   <span className="min-w-0 flex-1 font-semibold leading-snug">
-                    {isCardMasked && !isAnswered ? `Option ${LETTERS[idx]}` : opt}
+                    {isEliminated
+                      ? `Réponse ${LETTERS[idx]} éliminée`
+                      : isCardMasked && !isAnswered ? `Option ${LETTERS[idx]}` : opt}
                   </span>
 
                   {isAnswered && isCorrect && <CheckCircle2 className="h-4 w-4 shrink-0 text-white" />}
@@ -464,7 +520,11 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                 className="tap-target flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-3 text-sm font-black text-white shadow-xl transition-colors hover:bg-slate-800 dark:bg-amber-500 dark:text-slate-950 dark:hover:bg-amber-400"
               >
                 <span>
-                  {lastAnswerResult?.isCorrect ? 'Super ! Relancer le dé 🎲' : 'Passer au Joueur Suivant ➡️'}
+                  {lastAnswerResult?.earnedWedge
+                    ? 'Camembert gagné ! Joueur suivant ➡️'
+                    : lastAnswerResult?.isCorrect
+                      ? 'Super ! Relancer le dé 🎲'
+                      : 'Passer au Joueur Suivant ➡️'}
                 </span>
                 <ArrowRight className="h-4 w-4 stroke-[3]" />
               </button>

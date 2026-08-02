@@ -30,17 +30,46 @@ test('a correct camembert answer updates score and awards one wedge', () => {
 });
 
 test('a wrong answer advances to the next player', () => {
-  const state = createGameState();
+  const state = createGameState({
+    bonusAwardedThisTurn: 'fifty_fifty',
+    activeQuestionBonus: {
+      type: 'fifty_fifty',
+      playerId: 'host',
+      hiddenOptionIndexes: [0, 2],
+    },
+  });
   resolveAnswer(state, testSettings, testBoard, 0);
   advanceTurn(state);
 
   assert.equal(state.activePlayerIndex, 1);
   assert.equal(state.phase, 'rolling');
   assert.equal(state.currentQuestion, null);
+  assert.equal(state.bonusAwardedThisTurn, null);
+  assert.equal(state.activeQuestionBonus, null);
 });
 
-test('a correct answer grants an extra turn', () => {
+test('winning a camembert passes the turn to the next player', () => {
   const state = createGameState();
+  resolveAnswer(state, testSettings, testBoard, 1);
+  advanceTurn(state);
+
+  assert.equal(state.activePlayerIndex, 1);
+  assert.equal(state.phase, 'rolling');
+});
+
+test('a correct answer on a regular tile grants an extra turn', () => {
+  const state = createGameState();
+  state.players[0].currentTileId = 2;
+  resolveAnswer(state, testSettings, testBoard, 1);
+  advanceTurn(state);
+
+  assert.equal(state.activePlayerIndex, 0);
+  assert.equal(state.phase, 'rolling');
+});
+
+test('a correct answer on an already-owned camembert grants an extra turn', () => {
+  const state = createGameState();
+  state.players[0].wedges = ['histoire'];
   resolveAnswer(state, testSettings, testBoard, 1);
   advanceTurn(state);
 

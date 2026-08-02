@@ -276,6 +276,12 @@ export default function App() {
     }
   };
 
+  const handleUseBonus = () => {
+    if (socket && gameState) {
+      socket.emit('use-bonus', { roomCode: gameState.roomCode, bonusType: 'fifty_fifty' });
+    }
+  };
+
   const handleNextTurn = () => {
     if (socket && gameState) {
       socket.emit('next-turn', { roomCode: gameState.roomCode });
@@ -433,7 +439,11 @@ export default function App() {
             allPlayers={gameState.players}
             currentUserId={currentUserId}
             onSubmitAnswer={handleSubmitAnswer}
+            onUseBonus={handleUseBonus}
             onNextTurn={handleNextTurn}
+            bonusesEnabled={gameState.settings.enableBonuses === true}
+            bonusAwardedThisTurn={gameState.bonusAwardedThisTurn}
+            activeQuestionBonus={gameState.activeQuestionBonus}
           />
         </React.Suspense>
       )}
@@ -453,7 +463,11 @@ export default function App() {
             allPlayers={gameState.players}
             currentUserId={currentUserId}
             onSubmitAnswer={handleSubmitAnswer}
+            onUseBonus={handleUseBonus}
             onNextTurn={handleNextTurn}
+            bonusesEnabled={gameState.settings.enableBonuses === true}
+            bonusAwardedThisTurn={gameState.bonusAwardedThisTurn}
+            activeQuestionBonus={gameState.activeQuestionBonus}
           />
         </React.Suspense>
       )}

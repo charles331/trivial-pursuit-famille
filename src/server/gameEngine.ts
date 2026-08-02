@@ -73,7 +73,8 @@ export function resolveAnswer(
 }
 
 export function advanceTurn(state: GameState): void {
-  if (!state.lastAnswerResult?.isCorrect) {
+  const earnedWedge = state.lastAnswerResult?.earnedWedge;
+  if (!state.lastAnswerResult?.isCorrect || earnedWedge) {
     state.activePlayerIndex = (state.activePlayerIndex + 1) % state.players.length;
     state.lastTurnEventMessage = null;
   } else {
@@ -86,6 +87,8 @@ export function advanceTurn(state: GameState): void {
   state.possibleMoves = [];
   state.currentQuestion = null;
   state.lastAnswerResult = null;
+  state.bonusAwardedThisTurn = null;
+  state.activeQuestionBonus = null;
 }
 
 export function togglePauseState(state: GameState, now: number): void {

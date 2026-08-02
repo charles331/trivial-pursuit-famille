@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  DEFAULT_BONUS_MODE,
   DEFAULT_QUESTION_TIMER_SECONDS,
   DEFAULT_READER_MODE,
 } from '../src/config/gameSettings';
@@ -13,4 +14,8 @@ test('un nouveau salon démarre avec 60 secondes par question', () => {
 
 test('un nouveau salon démarre en mode lecteur de carte', () => {
   assert.equal(DEFAULT_READER_MODE, true);
+});
+
+test('le mode bonus est désactivé par défaut', () => {
+  assert.equal(DEFAULT_BONUS_MODE, false);
 });
