@@ -5,13 +5,10 @@ import { existsSync, readFileSync } from 'fs';
 import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { createServer as createViteServer } from 'vite';
-import { GoogleGenAI, Type } from '@google/genai';
 import { QUESTIONS_DATABASE } from './src/data/questions.js';
 import { BOARD_PRESETS } from './src/data/boards.js';
-import { CATEGORY_IDS, normalizeCategoryId } from './src/data/categories.js';
+import { normalizeCategoryId } from './src/data/categories.js';
 import {
-  MAX_ADULT_OPTION_LENGTH,
-  MAX_ADULT_QUESTION_LENGTH,
   normalize as normalizeText,
 } from './src/data/questionRules.js';
 import { checkStore, loadRooms, startRoomPersistence, saveRooms, ROOM_STORE_PATH } from './roomStore.js';
@@ -35,6 +32,8 @@ import {
 } from './src/server/packAssembly.js';
 import { activeThemeKeys, pickQuestionForPlayer } from './src/server/questionSelection.js';
 import { previewOrigin, withAbsolutePreviewImages } from './src/server/previewMeta.js';
+import { createQuestionGenerator } from './src/server/questionGenerator.js';
+import { DEFAULT_GENERATED_PACK_COUNT } from './src/config/generatedPack.js';
 import { 
   GameState, 
   Player, 
@@ -59,7 +58,7 @@ const PLAYER_COLORS = ['#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#
 app.set('trust proxy', 1);
 app.use(express.json({ limit: '256kb' }));
 
-// --- GEMINI API DYNAMIC PACK GENERATOR ---
+// --- AI DYNAMIC PACK GENERATOR ---
 
 function normalizeDifficulty(raw: unknown): DifficultyLevel {
   const clean = String(raw ?? '').toLowerCase().trim();
@@ -90,39 +89,6 @@ function getKnownFacts(): KnownFactIndex {
   }
   return knownFacts;
 }
-
-const GENERATED_PACK_SCHEMA = {
-  type: Type.ARRAY,
-  items: {
-    type: Type.OBJECT,
-    properties: {
-      categoryId: {
-        type: Type.STRING,
-        enum: [...CATEGORY_IDS]
-      },
-      question: { type: Type.STRING },
-      options: { type: Type.ARRAY, items: { type: Type.STRING } },
-      correctAnswerIndex: { type: Type.INTEGER },
-      explanation: { type: Type.STRING },
-      difficulty: { type: Type.STRING, enum: ['enfant', 'ado', 'adulte'] }
-    },
-    required: ['categoryId', 'question', 'options', 'correctAnswerIndex', 'explanation', 'difficulty']
-  }
-};
-
-/**
- * Modèle par défaut : `gemini-2.5-flash`.
- *
- * `gemini-3.5-flash` a été essayé et remis en arrière : sur le palier gratuit
- * de l'API, son quota est de 5 requêtes par minute, et une génération part en
- * trois lots parallèles — chaque tentative se soldait par un 429. Le 2.5 y a un
- * quota plus large et suffit largement pour des cartes de quiz.
- *
- * À surveiller : le 2.5 est annoncé comme retiré de l'API le 16 octobre 2026.
- * D'ici là, il faudra soit un palier payant, soit repasser au 3.5 en réduisant
- * le parallélisme. `GEMINI_MODEL` permet d'en changer sans redéployer.
- */
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 /**
  * Les lots partent en parallèle avec le même thème : sans consigne propre,
@@ -170,63 +136,21 @@ function consumeGenerationQuota(key: string, now = Date.now()): boolean {
   return true;
 }
 
-async function generateQuestionBatch(
-  ai: GoogleGenAI,
-  themeName: string,
-  count: number,
-  angle?: string
-): Promise<any[]> {
-  const perLevel = Math.max(1, Math.floor(count / 3));
-  const anglePart = angle
-    ? `\n- Angle prioritaire de ce lot : ${angle}. D'autres lots couvrent les autres angles du thème en parallèle — ne t'en écarte que si le thème ne s'y prête vraiment pas.`
-    : '';
-  const prompt = `Génère exactement ${count} questions de quiz captivantes, amusantes et FACTUELLEMENT EXACTES en français sur le thème "${themeName}", pour un jeu familial de type Trivial Pursuit.
-
-Structure imposée :${anglePart}
-- Répartis les questions entre les catégories du jeu (${CATEGORY_IDS.join(', ')}) en choisissant celles qui collent le mieux au thème. Chaque question doit réellement porter sur "${themeName}".
-- Répartis les difficultés : environ ${perLevel} questions "enfant" (6-10 ans, très simples), ${perLevel} "ado" (11-16 ans) et le reste "adulte".
-- Exactement 4 options par question, une seule correcte (correctAnswerIndex entre 0 et 3), distracteurs plausibles et de même famille sémantique.
-- "explanation" : une anecdote courte qui APPREND quelque chose de neuf, absent de l'énoncé et de la bonne réponse. Une explication qui répète la question est refusée.
-
-Calibrage des niveaux :
-- "enfant" : fait concret et visuel, énoncé de 12 mots maximum.
-- "ado" : pas plus long qu'une carte enfant, mais plus daté et plus situé (une année, un lieu, un nom précis).
-- "adulte" : culture générale grand public, où un adulte informé répond juste à peu près une fois sur deux. Pas de pointe d'expert, pas de fait isolé qu'on oublie aussitôt.
-
-Contraintes de forme, éliminatoires :
-- Énoncé de ${MAX_ADULT_QUESTION_LENGTH} caractères maximum, chaque option de ${MAX_ADULT_OPTION_LENGTH} caractères maximum.
-- Interdit : le format « quelle association question-réponse est correcte ? », les paires dans les options, les questions à trou, les préfixes décoratifs (« Question flash : »), les questions vrai/faux.
-- Interdit : révéler la bonne réponse dans l'énoncé, et les quatre options réduites à quatre nombres nus.
-- Deux options ne doivent jamais être identiques.
-- Aucune question en double ni reformulation d'une autre question du lot.
-
-Ancrage : varie les époques, les pays et les disciplines ; évite un tropisme exclusivement français, la Belgique, l'Europe et le reste du monde ont leur place. Contenu familial, aucune question polémique ou choquante.`;
-
-  // Sortie structurée par schéma : le modèle ne peut répondre qu'un tableau
-  // conforme. Pas de temperature/topP/topK : ces paramètres sont dépréciés et
-  // ignorés à partir de Gemini 3.x, les réglages par défaut sont les bons.
-  const response = await ai.models.generateContent({
-    model: GEMINI_MODEL,
-    contents: prompt,
-    config: {
-      responseMimeType: 'application/json',
-      responseSchema: GENERATED_PACK_SCHEMA
-    }
-  });
-
-  const parsed = JSON.parse(response.text || '[]');
-  if (!Array.isArray(parsed)) {
-    throw new Error('Réponse JSON invalide de Gemini');
-  }
-  return parsed;
-}
-
 app.post('/api/generate-pack', async (req, res) => {
   const roomCode = String(req.header('x-room-code') ?? '').toUpperCase().trim();
   const hostToken = req.header('x-host-token');
   const room = rooms.get(roomCode);
   if (!room || !safeTokenEquals(hostToken, room.generationToken)) {
     return res.status(403).json({ error: 'Génération réservée à l’organisateur du salon.' });
+  }
+
+  let generator: ReturnType<typeof createQuestionGenerator>;
+  try {
+    generator = createQuestionGenerator();
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Configuration IA invalide.';
+    console.error('Configuration du générateur IA invalide:', errorMessage);
+    return res.status(503).json({ error: errorMessage });
   }
 
   const sourceKey = req.ip || req.socket.remoteAddress || 'unknown';
@@ -239,25 +163,20 @@ app.post('/api/generate-pack', async (req, res) => {
 
   generationsInProgress.add(roomCode);
   try {
-    const { themeName, count = 30 } = req.body;
-    const apiKey = process.env.GEMINI_API_KEY;
-
-    if (!apiKey) {
-      return res.status(400).json({ error: 'GEMINI_API_KEY non configurée.' });
-    }
-
+    const { themeName, count = DEFAULT_GENERATED_PACK_COUNT } = req.body;
     if (!themeName || typeof themeName !== 'string' || themeName.trim().length < 2 || themeName.length > 100) {
       return res.status(400).json({ error: 'Nom de thème requis (2 à 100 caractères).' });
     }
 
     const cleanTheme = themeName.trim();
-    const requestedCount = Math.min(Math.max(Number(count) || 30, 5), GENERATION_MAX_COUNT);
+    const requestedCount = Math.min(
+      Math.max(Number(count) || DEFAULT_GENERATED_PACK_COUNT, 5),
+      GENERATION_MAX_COUNT,
+    );
     const attemptCount = Math.min(
       Math.ceil(requestedCount * GENERATION_OVERSHOOT),
       GENERATION_ATTEMPT_CAP,
     );
-
-    const ai = new GoogleGenAI({ apiKey });
 
     // Split the generation into parallel batches: small batches are far more
     // reliable than a single large one, and one failed batch doesn't sink the pack.
@@ -270,10 +189,13 @@ app.post('/api/generate-pack', async (req, res) => {
       batchSizes.map(async (size, index) => {
         const angle = GENERATION_BATCH_ANGLES[index % GENERATION_BATCH_ANGLES.length];
         try {
-          return await generateQuestionBatch(ai, cleanTheme, size, angle);
+          return await generator.generateBatch(cleanTheme, size, angle);
         } catch (err) {
-          console.warn(`[Pack IA] Lot en échec, nouvelle tentative:`, err instanceof Error ? err.message : err);
-          return await generateQuestionBatch(ai, cleanTheme, size, angle);
+          console.warn(
+            `[Pack IA/${generator.provider}] Lot en échec, nouvelle tentative:`,
+            err instanceof Error ? err.message : err,
+          );
+          return await generator.generateBatch(cleanTheme, size, angle);
         }
       })
     );
@@ -311,7 +233,7 @@ app.post('/api/generate-pack', async (req, res) => {
     }
 
     console.log(
-      `[Pack IA] "${cleanTheme}" : ${pack.questions.length} question(s) retenue(s)`
+      `[Pack IA/${generator.provider}:${generator.model}] "${cleanTheme}" : ${pack.questions.length} question(s) retenue(s)`
         + ` sur ${pack.examined} générée(s) — rejets : ${describeRejections(pack.rejections)}`,
     );
     return res.json({
@@ -322,7 +244,7 @@ app.post('/api/generate-pack', async (req, res) => {
       examined: pack.examined,
     });
   } catch (err: unknown) {
-    console.error('Erreur génération Gemini:', err);
+    console.error('Erreur génération IA:', err);
     const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la génération du thème';
     return res.status(500).json({ error: errorMessage });
   } finally {

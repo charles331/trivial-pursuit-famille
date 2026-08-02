@@ -30,6 +30,12 @@ interface StoredProfile {
 // Au tout premier passage, le prénom reste vide (placeholder) plutôt que « Joueur 1 ».
 const DEFAULT_PROFILE: StoredProfile = { name: '', avatarId: 'lion', color: '#EF4444', difficulty: 'adulte' };
 
+const DIFFICULTY_LABEL: Record<DifficultyLevel, string> = {
+  enfant: '🎈 Enfant',
+  ado: '🚀 Ado',
+  adulte: '🏆 Adulte',
+};
+
 function loadStoredProfile(): StoredProfile {
   if (typeof window === 'undefined') return DEFAULT_PROFILE;
   try {
@@ -97,6 +103,9 @@ export const Lobby: React.FC<LobbyProps> = ({
   const [copiedLink, setCopiedLink] = useState(false);
   const [showLeaveLobbyModal, setShowLeaveLobbyModal] = useState(false);
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+  // Dans le salon aussi, les réglages détaillés du profil restent facultatifs
+  // et repliés par défaut afin de laisser la priorité aux joueurs et au lancement.
+  const [showLobbyProfile, setShowLobbyProfile] = useState(false);
   // Sur l'accueil, la personnalisation d'avatar est repliée par défaut : elle
   // n'est pas nécessaire pour comprendre l'écran ni pour se lancer.
   const [showProfileSetup, setShowProfileSetup] = useState(false);
@@ -128,6 +137,7 @@ export const Lobby: React.FC<LobbyProps> = ({
   const connectedPlayers = gameState?.players.filter(p => p.isConnected) || [];
   const readyCount = connectedPlayers.filter(p => p.isReady).length;
   const everyoneReady = connectedPlayers.length > 0 && readyCount === connectedPlayers.length;
+  const lobbyAvatar = AVATARS.find(a => a.id === me?.avatarId) || AVATARS[0];
 
   const handleCreateOnline = (isLocal = false) => {
     soundManager.playClick();
@@ -360,21 +370,53 @@ export const Lobby: React.FC<LobbyProps> = ({
               </div>
             </div>
 
-            {/* Profile Customizer for current player */}
-            <AvatarPicker
-              playerName={me?.name !== undefined ? me.name : playerName}
-              avatarId={me?.avatarId || avatarId}
-              selectedColor={me?.color || color}
-              difficulty={me?.difficulty || difficulty}
-              onUpdate={(updated) => {
-                if (updated.name !== undefined) setPlayerName(updated.name);
-                if (updated.avatarId) setAvatarId(updated.avatarId);
-                if (updated.color) setColor(updated.color);
-                if (updated.difficulty) setDifficulty(updated.difficulty);
+            {/* Profil compact : mêmes principes que sur l'écran d'accueil. */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowLobbyProfile(value => !value)}
+                className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left"
+                aria-expanded={showLobbyProfile}
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  <span
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xl shadow-inner"
+                    style={{ backgroundColor: me?.color || color }}
+                  >
+                    {lobbyAvatar.emoji}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-black text-slate-900 dark:text-white truncate">
+                      {me?.name || playerName || 'Mon profil'}
+                    </span>
+                    <span className="block text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">
+                      {DIFFICULTY_LABEL[me?.difficulty || difficulty]} · Personnaliser mon profil
+                    </span>
+                  </span>
+                </span>
+                <ChevronDown className={`w-5 h-5 shrink-0 text-slate-400 transition-transform ${showLobbyProfile ? 'rotate-180' : ''}`} />
+              </button>
 
-                onUpdatePlayer(updated);
-              }}
-            />
+              {showLobbyProfile && (
+                <div className="border-t border-slate-200 dark:border-slate-800">
+                  <AvatarPicker
+                    embedded
+                    playerName={me?.name !== undefined ? me.name : playerName}
+                    avatarId={me?.avatarId || avatarId}
+                    selectedColor={me?.color || color}
+                    difficulty={me?.difficulty || difficulty}
+                    onUpdate={(updated) => {
+                      if (updated.name !== undefined) setPlayerName(updated.name);
+                      if (updated.avatarId) setAvatarId(updated.avatarId);
+                      if (updated.color) setColor(updated.color);
+                      if (updated.difficulty) setDifficulty(updated.difficulty);
+
+                      onUpdatePlayer(updated);
+                    }}
+                  />
+                </div>
+              )}
+            </div>
 
             {!gameState.settings.isLocalMode && (
               <button
@@ -510,11 +552,6 @@ export const Lobby: React.FC<LobbyProps> = ({
 
   // Welcome Screen (Mode Selection & Room Join)
   const welcomeAvatar = AVATARS.find(a => a.id === avatarId) || AVATARS[0];
-  const DIFFICULTY_LABEL: Record<DifficultyLevel, string> = {
-    enfant: '🎈 Enfant',
-    ado: '🚀 Ado',
-    adulte: '🏆 Adulte',
-  };
   const isJoining = tab === 'join';
 
   return (

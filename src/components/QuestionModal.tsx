@@ -5,6 +5,7 @@ import { PlayerWedgeBadge } from './PlayerWedgeBadge';
 import { LiveSpotlight } from './LiveSpotlight';
 import { resolveReaderId } from '../server/turnRoles';
 import { soundManager } from '../utils/sound';
+import { resolveQuestionTimerSeconds } from '../utils/questionTimer';
 import { Timer, CheckCircle2, XCircle, Sparkles, HelpCircle, ArrowRight, Eye, EyeOff, BookOpen } from 'lucide-react';
 
 const LETTERS = ['A', 'B', 'C', 'D'];
@@ -91,10 +92,9 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
     : null;
   const canHoldToReveal = isIReader && !isAnswered && solutionIndex !== null;
 
-  // In Reader Mode, reading aloud takes extra time. Give a minimum 60s when timer is active
-  const effectiveTimerSeconds = (isReaderMode && timerSeconds > 0)
-    ? Math.max(timerSeconds + 30, 60)
-    : timerSeconds;
+  // Respect the host's choice in every mode. In local reader mode the timer
+  // already waits until the device has been handed over and the reader is ready.
+  const effectiveTimerSeconds = resolveQuestionTimerSeconds(timerSeconds);
 
   const [timeLeft, setTimeLeft] = useState<number>(() => {
     if (effectiveTimerSeconds <= 0) return 999;

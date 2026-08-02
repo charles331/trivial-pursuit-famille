@@ -85,7 +85,7 @@ export interface GameSettings {
   roomCode: string;
   boardType: BoardType;
   selectedCategories: CategoryId[];
-  timerSeconds: number; // e.g. 30, 45, 0 (no timer)
+  timerSeconds: number; // 30, 60, 90, or 0 (no timer)
   wedgesToWin: number; // default 6
   /** @deprecated Ancien filtre à thème unique, encore lu en secours. */
   customThemePackName?: string;

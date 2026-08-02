@@ -199,12 +199,10 @@ const FACTS_ALREADY_COVERED = new Set([
  * individuellement.
  */
 /**
- * Cinquante œuvres canoniques, mais autant de formulations différentes.
- *
- * Ces cartes posaient toutes littéralement la même question — « Quel artiste
- * a créé « … » ? » — suivie de la même phrase d'explication. Le fait était
- * juste, la catégorie devenait une litanie. Les tournures et les explications
- * alternent désormais, sans toucher aux œuvres ni aux distracteurs.
+ * Cinquante œuvres canoniques utilisées comme portes d'entrée vers les grands
+ * courants artistiques. Le nom de l'artiste est donné comme indice : le joueur
+ * peut associer, éliminer et apprendre, au lieu de devoir attribuer un titre
+ * isolé à l'un de quatre spécialistes.
  */
 /** « à la galerie des Offices », « au musée du Louvre », « à l’église… ». */
 function atMuseum(museum: string): string {
@@ -230,15 +228,15 @@ function inPeriod(period: string): string {
   return `au ${period}`;
 }
 
-const PROMPTS: ((work: string, museum: string, period: string) => string)[] = [
-  (work) => `Qui a réalisé « ${work} » ?`,
-  (work) => `De quel artiste « ${work} » est-il l’œuvre ?`,
-  (work, museum) => `Qui a signé « ${work} », que l’on peut voir ${atMuseum(museum)} ?`,
-  (work, _museum, period) => `Quel artiste ${ofPeriod(period)} est l’auteur de « ${work} » ?`,
-  (work) => `À quel artiste doit-on « ${work} » ?`,
-  (work) => `Quel est l’auteur de « ${work} » ?`,
-  (work, museum) => `Quel artiste exposé ${atMuseum(museum)} a produit « ${work} » ?`,
-  (work, _museum, period) => `Qui, ${inPeriod(period)}, a réalisé l’œuvre « ${work} » ?`,
+const PROMPTS: ((work: string, artistCredit: string) => string)[] = [
+  (work, credit) => `À quel courant rattache-t-on « ${work} », œuvre ${credit} ?`,
+  (work, credit) => `« ${work} », œuvre ${credit}, appartient à quel mouvement artistique ?`,
+  (work, credit) => `Dans quel grand courant classe-t-on « ${work} », œuvre ${credit} ?`,
+  (work, credit) => `Quel style artistique correspond le mieux à « ${work} », œuvre ${credit} ?`,
+  (work, credit) => `L’œuvre « ${work} » ${credit} relève de quel courant ?`,
+  (work, credit) => `À quel mouvement associe-t-on « ${work} », œuvre ${credit} ?`,
+  (work, credit) => `Si l’on classait « ${work} », œuvre ${credit}, quel courant choisirait-on ?`,
+  (work, credit) => `À quelle famille artistique appartient « ${work} », œuvre ${credit} ?`,
 ];
 
 /** « Œuvre du Bernin » plutôt que « Œuvre de Le Bernin ». */
@@ -256,15 +254,11 @@ const COMMENTS: ((artist: string, museum: string, period: string) => string)[] =
 export const ART_ADULTE_EDITORIAL: Question[] = ARTWORKS
   .filter(([work]) => !FACTS_ALREADY_COVERED.has(work))
   .slice(0, 50)
-  .map(([work, artist, museum, period], index) => makeQuestion(
+  .map(([work, artist, museum, period], index, rows) => makeQuestion(
     `art_adulte_editorial_${String(index + 1).padStart(3, '0')}`,
-    PROMPTS[index % PROMPTS.length](work, museum, period),
-    artist,
-    alternatives(
-      ARTWORKS.filter(([candidate]) => !FACTS_ALREADY_COVERED.has(candidate)),
-      index,
-      1,
-    ),
-    COMMENTS[index % COMMENTS.length](artist, museum, period),
+    PROMPTS[index % PROMPTS.length](work, byArtist(artist)),
+    period,
+    alternatives(rows, index, 3),
+    `« ${work} » est une œuvre ${byArtist(artist)}, rattachée ${inPeriod(period)} et conservée ${atMuseum(museum)}.`,
     index % 4,
   ));

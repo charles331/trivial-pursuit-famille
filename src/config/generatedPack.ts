@@ -1,0 +1,1 @@
+export const DEFAULT_GENERATED_PACK_COUNT = 50;

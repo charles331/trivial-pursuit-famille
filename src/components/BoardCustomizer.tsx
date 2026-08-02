@@ -6,6 +6,8 @@ import { isCardReadAloud } from '../server/turnRoles';
 import { activeThemeKeys } from '../server/questionSelection';
 import { LayoutGrid, Timer, Sparkles, Check, Wand2, RefreshCw } from 'lucide-react';
 import { soundManager } from '../utils/sound';
+import { QUESTION_TIMER_OPTIONS } from '../utils/questionTimer';
+import { DEFAULT_GENERATED_PACK_COUNT } from '../config/generatedPack';
 
 interface BoardCustomizerProps {
   settings: GameSettings;
@@ -54,7 +56,7 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
     }
   };
 
-  const handleGenerateGeminiPack = async (e: React.FormEvent) => {
+  const handleGenerateAiPack = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customThemeInput.trim() || isGenerating || isLimitReached) return;
 
@@ -71,7 +73,10 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
           'X-Room-Code': settings.roomCode,
           'X-Host-Token': generationToken ?? '',
         },
-        body: JSON.stringify({ themeName: customThemeInput.trim(), count: 30 })
+        body: JSON.stringify({
+          themeName: customThemeInput.trim(),
+          count: DEFAULT_GENERATED_PACK_COUNT,
+        })
       });
 
       const data = await res.json();
@@ -197,7 +202,7 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
             </span>
           </div>
           <div className="flex gap-2">
-            {[15, 30, 45, 0].map((sec) => (
+            {QUESTION_TIMER_OPTIONS.map((sec) => (
               <button
                 key={sec}
                 type="button"
@@ -325,7 +330,7 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
         </button>
       </div>
 
-      {/* AI Dynamic Theme Pack Generator (Gemini Integration) */}
+      {/* AI Dynamic Theme Pack Generator */}
       <div className="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -344,7 +349,7 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
         </div>
 
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          L&apos;IA génère un pack de 30 questions sur mesure par thème (jusqu&apos;à 3 thèmes par salon), soumis aux mêmes règles éditoriales que la banque officielle.
+          L&apos;IA génère un pack de {DEFAULT_GENERATED_PACK_COUNT} questions sur mesure par thème (jusqu&apos;à 3 thèmes par salon), soumis aux mêmes règles éditoriales que la banque officielle.
         </p>
         <p className="text-xs text-slate-500 dark:text-slate-400">
           Les thèmes activés sortent <strong>environ une carte sur trois, au rythme du hasard</strong> — jamais plus d&apos;une sur deux, et toujours assez tôt dans la partie — et seulement quand la carte correspond au camembert de la case et au niveau du joueur. Le reste du temps, la banque officielle garde la main. Vous pouvez activer plusieurs thèmes à la fois : ils se partagent cette part.
@@ -416,7 +421,7 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
 
         {/* Generator Form */}
         {!isLimitReached ? (
-          <form onSubmit={handleGenerateGeminiPack} className="flex gap-2">
+          <form onSubmit={handleGenerateAiPack} className="flex gap-2">
             <input
               type="text"
               value={customThemeInput}
