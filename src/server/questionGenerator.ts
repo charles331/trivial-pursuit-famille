@@ -150,6 +150,7 @@ Calibrage des niveaux :
 - "adulte" : culture générale grand public, où un adulte informé répond juste à peu près une fois sur deux. Pas de pointe d'expert, pas de fait isolé qu'on oublie aussitôt.
 
 Contraintes de forme, éliminatoires :
+- Énoncé autoportant : la question doit se comprendre seule et nommer explicitement son sujet (l'animal, l'œuvre, le lieu, la personne ou l'époque dont elle parle). Le joueur ne voit que l'énoncé et les options, jamais l'explication ni un contexte implicite. Interdit : « Chez quel sexe les antennes sont-elles les plus plumeuses ? » (quel animal ?) ; écris plutôt « Chez le moustique, quel sexe porte les antennes les plus plumeuses ? ».
 - Énoncé de ${MAX_ADULT_QUESTION_LENGTH} caractères maximum, chaque option de ${MAX_ADULT_OPTION_LENGTH} caractères maximum.
 - Interdit : le format « quelle association question-réponse est correcte ? », les paires dans les options, les questions à trou, les préfixes décoratifs (« Question flash : »), les questions vrai/faux.
 - Interdit : révéler la bonne réponse dans l'énoncé, et les quatre options réduites à quatre nombres nus.

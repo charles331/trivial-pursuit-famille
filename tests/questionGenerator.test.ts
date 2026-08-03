@@ -53,6 +53,7 @@ test('le prompt partagé conserve les règles éditoriales quel que soit le four
   assert.match(prompt, /Angle prioritaire.*les personnages/);
   assert.match(prompt, /Exactement 4 options/);
   assert.match(prompt, /Rutger Hauer.*Blade Runner.*cinema/);
+  assert.match(prompt, /autoportant/);
 });
 
 test('la requête OpenAI utilise Responses et une sortie JSON strictement structurée', () => {
