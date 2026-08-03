@@ -44,7 +44,7 @@ const FACTS: Fact[] = [
   ["Dans quelle série trouve-t-on l'entreprise Waystar Royco ?", "Succession", "Billions", "Industry", "The Morning Show", "Le conglomérat médiatique appartient à la famille Roy."],
   ["Quelle série suit la famille Fisher, propriétaire d'une entreprise funéraire ?", "Six Feet Under", "Parenthood", "Brothers & Sisters", "This Is Us", "Chaque épisode commence généralement par un décès."],
   ["Quelle série anthologique a été créée par Charlie Brooker ?", "Black Mirror", "Inside No. 9", "Electric Dreams", "Room 104", "Black Mirror examine les effets sociaux de technologies souvent proches des nôtres."],
-  ["Quelle série met en scène le détective Rust Cohle ?", "True Detective", "Mindhunter", "Fargo", "The Night Of", "Matthew McConaughey incarne Cohle dans la première saison."],
+  ["Qui incarne l'enquêtrice Morgane Alvaro dans la série française HPI ?", "Audrey Fleurot", "Marina Foïs", "Léa Drucker", "Alexandra Lamy", "Femme de ménage à haut potentiel intellectuel, elle prête main-forte à la police de Lille."],
   ["Quelle série raconte la catastrophe nucléaire de 1986 en cinq épisodes ?", "Chernobyl", "The Days", "The Hot Zone", "Years and Years", "La mini-série a été créée par Craig Mazin."],
   ["Quelle série suit une partie d'échecs prodige nommée Beth Harmon ?", "Le Jeu de la dame", "Unorthodox", "Godless", "Alias Grace", "Anya Taylor-Joy incarne Beth dans cette mini-série."],
   ["Quelle série met en scène une dystopie nommée Gilead ?", "The Handmaid's Tale", "Years and Years", "3%", "The Man in the High Castle", "La série adapte le roman de Margaret Atwood."],
