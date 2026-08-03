@@ -77,6 +77,7 @@ import { GASTRONOMIE_ADULT_CURATED_05 } from './questionBank/gastronomieAdultCur
 import { GASTRONOMIE_ADULT_CURATED_06 } from './questionBank/gastronomieAdultCurated06';
 import { GASTRONOMIE_ADULT_CURATED_FINAL } from './questionBank/gastronomieAdultCuratedFinal';
 import { ADULT_KNOWLEDGE_SUPPLEMENT } from './questionBank/adultKnowledgeSupplement';
+import { VARIABLE_FORMAT_PILOT } from './questionBank/variableFormatPilot';
 import { MUSIQUE_CLASSIQUE_ADULTE } from './questionBank/musiqueClassiqueAdultEditorial';
 import { POPCULTURE_FRANCOPHONE_ADULTE } from './questionBank/popcultureFrancophoneAdultEditorial';
 import { POPCULTURE_GRAND_PUBLIC_ADULTE } from './questionBank/popcultureGrandPublicAdultEditorial';
@@ -176,6 +177,7 @@ const CURATED_QUESTIONS: Question[] = [
   ...GASTRONOMIE_ADULT_CURATED_06,
   ...GASTRONOMIE_ADULT_CURATED_FINAL,
   ...ADULT_KNOWLEDGE_SUPPLEMENT,
+  ...VARIABLE_FORMAT_PILOT,
 ];
 
 // Safety net: guarantee unique ids even if two bank files ever collide

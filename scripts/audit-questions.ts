@@ -6,6 +6,7 @@ import {
   MAX_SKELETON_REUSE,
   comparableAnswer,
   echoesCorrectAnswer,
+  editorialRejectionReason,
   hasDecorativePrefix,
   hasGrammarHintAroundBlank,
   isArtificialFillIn,
@@ -47,13 +48,17 @@ let longAdultOptions = 0;
 let associationCards = 0;
 let longAdultQuestions = 0;
 
+function questionFormat(question: Question): 'mcq' | 'boolean' | 'open' {
+  return question.format ?? 'mcq';
+}
+
 function answerOfQuestion(question: Question): string {
+  if (questionFormat(question) === 'open') return question.answer ?? '';
   return question.options[question.correctAnswerIndex] ?? '';
 }
 
 function sourceFactSignature(question: Question): string {
-  const answer = question.options[question.correctAnswerIndex] ?? '';
-  return `${normalize(question.question)}|${normalize(answer)}`;
+  return `${normalize(question.question)}|${normalize(answerOfQuestion(question))}`;
 }
 
 const childFactSignatures = new Set(
@@ -78,30 +83,39 @@ for (const question of QUESTIONS_DATABASE) {
     errors.push(`Difficulté invalide pour ${question.id}`);
   }
   if (!question.question.trim()) errors.push(`Question vide : ${question.id}`);
-  if (question.options.length !== 4) errors.push(`Il faut 4 choix : ${question.id}`);
-  if (new Set(question.options.map(normalize)).size !== 4) {
-    errors.push(`Choix dupliqué : ${question.id}`);
-  }
-  if (
-    !Number.isInteger(question.correctAnswerIndex)
-    || question.correctAnswerIndex < 0
-    || question.correctAnswerIndex > 3
-  ) {
-    errors.push(`Bonne réponse invalide : ${question.id}`);
-  }
 
-  // Une carte dont l'énoncé reprend ce qui distingue la bonne réponse se joue
-  // sans rien savoir. Le contrôle vaut à tous les niveaux : les cartes enfant
-  // sont les premières à tomber dans « Quel fruit garnit la tarte aux pommes ? ».
-  if (echoesCorrectAnswer(question.question, question.options, question.correctAnswerIndex)) {
-    editorialError(`Énoncé qui donne la bonne réponse`, question.id);
-  }
+  // Les formats sans quatre propositions (vrai/faux, ouvert) ne sont pas soumis
+  // aux contrôles de distracteurs ; ils passent par le contrat éditorial partagé,
+  // qui applique les règles propres à leur format.
+  if (questionFormat(question) !== 'mcq') {
+    const reason = editorialRejectionReason(question);
+    if (reason) editorialError(reason, question.id);
+  } else {
+    if (question.options.length !== 4) errors.push(`Il faut 4 choix : ${question.id}`);
+    if (new Set(question.options.map(normalize)).size !== 4) {
+      errors.push(`Choix dupliqué : ${question.id}`);
+    }
+    if (
+      !Number.isInteger(question.correctAnswerIndex)
+      || question.correctAnswerIndex < 0
+      || question.correctAnswerIndex > 3
+    ) {
+      errors.push(`Bonne réponse invalide : ${question.id}`);
+    }
 
-  // Un mot de remplissage dans la réponse suffisait à passer le contrôle
-  // ci-dessus : « près de la rivière Ebola » pour « la maladie à virus Ebola ».
-  // Le nom propre qui nomme la réponse ne peut pas figurer dans l'énoncé.
-  if (quotesAnswerProperName(question.question, question.options, question.correctAnswerIndex)) {
-    editorialError(`Nom propre de la bonne réponse cité dans l'énoncé`, question.id);
+    // Une carte dont l'énoncé reprend ce qui distingue la bonne réponse se joue
+    // sans rien savoir. Le contrôle vaut à tous les niveaux : les cartes enfant
+    // sont les premières à tomber dans « Quel fruit garnit la tarte aux pommes ? ».
+    if (echoesCorrectAnswer(question.question, question.options, question.correctAnswerIndex)) {
+      editorialError(`Énoncé qui donne la bonne réponse`, question.id);
+    }
+
+    // Un mot de remplissage dans la réponse suffisait à passer le contrôle
+    // ci-dessus : « près de la rivière Ebola » pour « la maladie à virus Ebola ».
+    // Le nom propre qui nomme la réponse ne peut pas figurer dans l'énoncé.
+    if (quotesAnswerProperName(question.question, question.options, question.correctAnswerIndex)) {
+      editorialError(`Nom propre de la bonne réponse cité dans l'énoncé`, question.id);
+    }
   }
 
   // Le niveau ado ne doit jamais être complété en recopiant la banque enfant :
@@ -117,7 +131,7 @@ for (const question of QUESTIONS_DATABASE) {
     if (texts.has(signature)) errors.push(`Question adulte dupliquée : ${question.id}`);
     texts.add(signature);
     adultTextsByCategory.set(question.categoryId, texts);
-    const correctAnswer = question.options[question.correctAnswerIndex] ?? '';
+    const correctAnswer = answerOfQuestion(question);
     const sourceSignature = sourceFactSignature(question);
     if (childFactSignatures.has(sourceSignature)) {
       editorialError(`Question enfant promue au niveau adulte`, question.id);
@@ -138,19 +152,23 @@ for (const question of QUESTIONS_DATABASE) {
     if (isArtificialFillIn(question.question)) {
       editorialError(`Question adulte à trou artificielle`, question.id);
     }
-    if (leaksCorrectAnswer(question.question, correctAnswer)) {
-      editorialError(`Bonne réponse adulte révélée dans l'énoncé`, question.id);
+    // Contrôles propres au QCM : les autres formats sont déjà passés par le
+    // contrat éditorial partagé, qui applique les règles adaptées à leur forme.
+    if (questionFormat(question) === 'mcq') {
+      if (leaksCorrectAnswer(question.question, correctAnswer)) {
+        editorialError(`Bonne réponse adulte révélée dans l'énoncé`, question.id);
+      }
+      if (merelyRestatesQuestion(question, correctAnswer)) {
+        editorialError(`Explication adulte non informative`, question.id);
+      }
+      if (hasGrammarHintAroundBlank(question.question)) {
+        editorialError(`Indice grammatical autour d'un blanc`, question.id);
+      }
+      if (question.options.some((option) => option.length > MAX_ADULT_OPTION_LENGTH)) {
+        longAdultOptions += 1;
+      }
+      if (question.question.length > MAX_ADULT_QUESTION_LENGTH) longAdultQuestions += 1;
     }
-    if (merelyRestatesQuestion(question, correctAnswer)) {
-      editorialError(`Explication adulte non informative`, question.id);
-    }
-    if (hasGrammarHintAroundBlank(question.question)) {
-      editorialError(`Indice grammatical autour d'un blanc`, question.id);
-    }
-    if (question.options.some((option) => option.length > MAX_ADULT_OPTION_LENGTH)) {
-      longAdultOptions += 1;
-    }
-    if (question.question.length > MAX_ADULT_QUESTION_LENGTH) longAdultQuestions += 1;
     if (question.id.includes('_adulte_association_')) associationCards += 1;
   }
 }
@@ -201,7 +219,9 @@ for (const categoryId of CATEGORIES) {
 // --- Cartes jouées au hasard entre quatre nombres nus ------------------------
 for (const categoryId of CATEGORIES) {
   const rows = QUESTIONS_DATABASE.filter(
-    (question) => question.categoryId === categoryId && question.difficulty === 'adulte',
+    (question) => question.categoryId === categoryId
+      && question.difficulty === 'adulte'
+      && questionFormat(question) === 'mcq',
   );
   const bare = rows.filter((question) => isBareNumberCard(question.options)).length;
   if (bare > rows.length * MAX_BARE_NUMBER_RATIO) {
@@ -212,6 +232,11 @@ for (const categoryId of CATEGORIES) {
   }
 }
 
+// L'invariant « 400 cartes adultes relues, réponses équilibrées A/B/C/D » ne
+// vaut que pour les QCM : les formats vrai/faux et ouverts forment un pool
+// séparé, hors quota, résumé sous le tableau.
+let variableFormatBoolean = 0;
+let variableFormatOpen = 0;
 console.log('Catégorie       Enfant  Ado  Adulte  Total');
 console.log('--------------------------------------------');
 for (const categoryId of CATEGORIES) {
@@ -219,20 +244,23 @@ for (const categoryId of CATEGORIES) {
   const counts = DIFFICULTIES.map(
     (difficulty) => rows.filter((q) => q.difficulty === difficulty).length,
   );
+  const adultMcq = rows.filter(
+    (q) => q.difficulty === 'adulte' && questionFormat(q) === 'mcq',
+  );
+  variableFormatBoolean += rows.filter((q) => questionFormat(q) === 'boolean').length;
+  variableFormatOpen += rows.filter((q) => questionFormat(q) === 'open').length;
   console.log(
     `${categoryId.padEnd(15)}${String(counts[0]).padStart(6)}${String(counts[1]).padStart(5)}`
       + `${String(counts[2]).padStart(8)}${String(rows.length).padStart(7)}`,
   );
-  if (counts[2] !== ADULT_EDITORIAL_TARGET_PER_CATEGORY) {
+  if (adultMcq.length !== ADULT_EDITORIAL_TARGET_PER_CATEGORY) {
     errors.push(
       `${categoryId} doit contenir exactement ${ADULT_EDITORIAL_TARGET_PER_CATEGORY}`
-        + ` questions adultes relues (actuellement ${counts[2]})`,
+        + ` questions adultes QCM relues (actuellement ${adultMcq.length})`,
     );
   }
   const answerPositions = [0, 1, 2, 3].map(
-    (answerIndex) => rows.filter(
-      (q) => q.difficulty === 'adulte' && q.correctAnswerIndex === answerIndex,
-    ).length,
+    (answerIndex) => adultMcq.filter((q) => q.correctAnswerIndex === answerIndex).length,
   );
   if (answerPositions.some(
     (count) => count !== ADULT_EDITORIAL_TARGET_PER_CATEGORY / 4,
@@ -245,6 +273,12 @@ for (const categoryId of CATEGORIES) {
   if (counts[0] !== 135 || counts[1] !== 135) {
     errors.push(`${categoryId} doit contenir 135 questions enfant et 135 questions ado`);
   }
+}
+if (variableFormatBoolean > 0 || variableFormatOpen > 0) {
+  console.log(
+    `\nFormats variés (pool séparé) : ${variableFormatBoolean} vrai/faux,`
+      + ` ${variableFormatOpen} ouvertes.`,
+  );
 }
 
 if (associationCards > 0) {

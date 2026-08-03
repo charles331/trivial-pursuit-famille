@@ -36,6 +36,10 @@ export function activeThemeKeys(
 
 /** Mélange les options pour que la bonne réponse ne reste pas au même rang. */
 export function shuffleQuestionOptions(question: Question, random: Random = Math.random): Question {
+  // Seul le QCM se mélange : une carte vrai/faux garde l'ordre « Vrai » puis
+  // « Faux », et une carte ouverte n'a pas d'options (son index correct reste 0,
+  // celui que le lecteur soumet en cas de réussite).
+  if ((question.format ?? 'mcq') !== 'mcq') return question;
   const originalCorrectOption = question.options[question.correctAnswerIndex];
   const shuffledOptions = [...question.options];
   for (let i = shuffledOptions.length - 1; i > 0; i -= 1) {
@@ -126,9 +130,15 @@ export function pickQuestionForPlayer(
   }
 
   // 2. Banque officielle. Les thèmes actifs en sont exclus : leur part est
-  //    déjà tenue par l'étape 1, et un second tirage la ferait déborder.
-  const isEligible = (question: Question): boolean => activeThemes.size === 0
-    || !belongsToActiveTheme(question, activeThemes);
+  //    déjà tenue par l'étape 1, et un second tirage la ferait déborder. Les
+  //    questions ouvertes n'apparaissent qu'en mode lecteur : hors de ce mode,
+  //    la solution est masquée au joueur actif, personne ne pourrait juger sa
+  //    réponse orale.
+  const readerMode = state.settings.isReaderMode === true;
+  const isEligible = (question: Question): boolean => {
+    if ((question.format ?? 'mcq') === 'open' && !readerMode) return false;
+    return activeThemes.size === 0 || !belongsToActiveTheme(question, activeThemes);
+  };
 
   const eligible = state.questionsPool.filter(isEligible);
 

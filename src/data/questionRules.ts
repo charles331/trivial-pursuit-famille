@@ -355,6 +355,57 @@ export interface QuestionCandidate {
   options: string[];
   correctAnswerIndex: number;
   explanation?: string;
+  format?: 'mcq' | 'boolean' | 'open';
+  answer?: string;
+}
+
+/** Longueur maximale de la réponse révélée d'une carte ouverte. */
+export const MAX_OPEN_ANSWER_LENGTH = 80;
+
+/** Les deux seuls choix admis pour une carte Vrai/Faux, une fois normalisés. */
+const BOOLEAN_OPTION_SET = new Set(['vrai', 'faux']);
+
+/**
+ * Contrôles propres aux cartes Vrai/Faux : exactement deux choix « Vrai » et
+ * « Faux » et une bonne réponse binaire. Les contrôles de distracteurs (échos,
+ * noms propres…) ne s'appliquent pas : il n'y a pas quatre options à départager.
+ */
+function booleanRejectionReason(card: QuestionCandidate): string | null {
+  if (!Array.isArray(card.options) || card.options.length !== 2) {
+    return 'une carte vrai/faux a exactement deux choix';
+  }
+  const normalized = new Set(card.options.map(normalize));
+  if (normalized.size !== 2 || [...normalized].some((option) => !BOOLEAN_OPTION_SET.has(option))) {
+    return 'les deux choix doivent être « Vrai » et « Faux »';
+  }
+  if (card.correctAnswerIndex !== 0 && card.correctAnswerIndex !== 1) {
+    return 'bonne réponse invalide';
+  }
+  return null;
+}
+
+/**
+ * Contrôles propres aux cartes ouvertes : aucune proposition, une réponse
+ * canonique qui n'apparaît pas dans l'énoncé (sinon la carte se joue seule) et
+ * un index correct fixé à 0, celui que le lecteur soumet en cas de réussite.
+ */
+function openRejectionReason(card: QuestionCandidate): string | null {
+  if (Array.isArray(card.options) && card.options.length !== 0) {
+    return 'une carte ouverte n’a aucune proposition';
+  }
+  if (card.correctAnswerIndex !== 0) return 'bonne réponse invalide';
+  const answer = typeof card.answer === 'string' ? card.answer.trim() : '';
+  if (answer.length < 1) return 'réponse absente';
+  if (answer.length > MAX_OPEN_ANSWER_LENGTH) {
+    return `réponse de plus de ${MAX_OPEN_ANSWER_LENGTH} caractères`;
+  }
+  // Sans propositions, la moindre apparition littérale de la réponse suffit à
+  // donner la carte : on est plus strict que pour un QCM, où `leaksCorrectAnswer`
+  // ne vise que les tournures qui affirment explicitement la réponse.
+  if (containsWholeNormalizedPhrase(card.question, answer)) {
+    return 'réponse révélée dans l’énoncé';
+  }
+  return null;
 }
 
 /**
@@ -365,8 +416,34 @@ export interface QuestionCandidate {
  * langue dans les journaux.
  */
 export function editorialRejectionReason(card: QuestionCandidate): string | null {
+  const format = card.format ?? 'mcq';
   const question = typeof card.question === 'string' ? card.question.trim() : '';
   if (question.length < 10) return 'énoncé absent ou trop court';
+  if (question.length > MAX_ADULT_QUESTION_LENGTH) {
+    return `énoncé de plus de ${MAX_ADULT_QUESTION_LENGTH} caractères`;
+  }
+  if (hasDecorativePrefix(question)) return 'préfixe artificiel interdit';
+
+  // Les formats sans quatre propositions ont leurs propres contrôles : les
+  // règles de distracteurs (échos, noms propres, association…) n'ont pas de sens
+  // sans quatre options à départager.
+  if (format === 'boolean') {
+    const reason = booleanRejectionReason(card);
+    if (reason) return reason;
+    const correct = card.options[card.correctAnswerIndex]?.trim() ?? '';
+    if (merelyRestatesQuestion({ question, explanation: card.explanation }, correct)) {
+      return 'explication non informative';
+    }
+    return null;
+  }
+  if (format === 'open') {
+    const reason = openRejectionReason(card);
+    if (reason) return reason;
+    if (merelyRestatesQuestion({ question, explanation: card.explanation }, card.answer ?? '')) {
+      return 'explication non informative';
+    }
+    return null;
+  }
 
   if (!Array.isArray(card.options) || card.options.length !== 4) return 'il faut 4 choix';
   if (card.options.some((option) => typeof option !== 'string' || !option.trim())) {
@@ -380,14 +457,10 @@ export function editorialRejectionReason(card: QuestionCandidate): string | null
     return 'bonne réponse invalide';
   }
 
-  if (question.length > MAX_ADULT_QUESTION_LENGTH) {
-    return `énoncé de plus de ${MAX_ADULT_QUESTION_LENGTH} caractères`;
-  }
   if (card.options.some((option) => option.trim().length > MAX_ADULT_OPTION_LENGTH)) {
     return `choix de plus de ${MAX_ADULT_OPTION_LENGTH} caractères`;
   }
 
-  if (hasDecorativePrefix(question)) return 'préfixe artificiel interdit';
   if (isAssociationFormat(question, card.options)) return 'format d’association interdit';
   if (isArtificialFillIn(question)) return 'question à trou artificielle';
   if (hasGrammarHintAroundBlank(question)) return 'indice grammatical autour d’un blanc';

@@ -10,6 +10,17 @@ export type CategoryId =
 
 export type DifficultyLevel = 'enfant' | 'ado' | 'adulte';
 
+/**
+ * Format d'une carte.
+ * - `mcq` (défaut, implicite si absent) : quatre propositions, un index correct.
+ * - `boolean` : deux propositions « Vrai » / « Faux ».
+ * - `open` : aucune proposition ; la réponse (`answer`) est révélée puis jugée à
+ *   voix haute. Le joueur qui répond soumet 0 (réussi) ou -1 (raté), si bien que
+ *   l'évaluation serveur (`optionIndex === correctAnswerIndex`, avec un index
+ *   correct fixé à 0) reste identique aux autres formats.
+ */
+export type QuestionFormat = 'mcq' | 'boolean' | 'open';
+
 export type BonusType = 'fifty_fifty';
 
 export type PlayerBonuses = Partial<Record<BonusType, number>>;
@@ -34,6 +45,14 @@ export interface Question {
   explanation?: string;
   difficulty: DifficultyLevel;
   themePack?: string;
+  /** Absent = `mcq`, pour que les cartes historiques restent inchangées. */
+  format?: QuestionFormat;
+  /**
+   * Réponse canonique des cartes `open`, révélée au moment du jugement. Comme la
+   * solution des autres formats, elle est retirée de l'état public envoyé aux
+   * joueurs qui ne doivent pas la voir.
+   */
+  answer?: string;
 }
 
 export interface AvatarOption {

@@ -180,3 +180,73 @@ test('the editorial contract rejects a card that quotes its answer’s name', ()
     'nom propre de la bonne réponse cité dans l’énoncé',
   );
 });
+
+// --- Formats variés : Vrai/Faux et questions ouvertes ----------------------
+
+test('a well-formed true/false card is accepted', () => {
+  assert.equal(
+    editorialRejectionReason({
+      format: 'boolean',
+      question: 'Un ver de terre possède plusieurs cœurs.',
+      options: ['Vrai', 'Faux'],
+      correctAnswerIndex: 0,
+      explanation: 'Il en a cinq paires, de simples anneaux musculaires qui poussent le sang.',
+    }),
+    null,
+  );
+});
+
+test('a true/false card must offer exactly Vrai and Faux', () => {
+  assert.equal(
+    editorialRejectionReason({
+      format: 'boolean',
+      question: 'Un ver de terre possède plusieurs cœurs.',
+      options: ['Oui', 'Non'],
+      correctAnswerIndex: 0,
+      explanation: 'Il en a cinq paires qui poussent le sang dans ses vaisseaux.',
+    }),
+    'les deux choix doivent être « Vrai » et « Faux »',
+  );
+});
+
+test('a well-formed open card is accepted', () => {
+  assert.equal(
+    editorialRejectionReason({
+      format: 'open',
+      question: 'Comment nomme-t-on la peur des hauteurs ?',
+      options: [],
+      correctAnswerIndex: 0,
+      answer: 'L’acrophobie',
+      explanation: 'À ne pas confondre avec l’agoraphobie, la peur des espaces ouverts.',
+    }),
+    null,
+  );
+});
+
+test('an open card whose answer appears in the question is rejected', () => {
+  assert.equal(
+    editorialRejectionReason({
+      format: 'open',
+      question: 'Quelle est la capitale, Paris, de la France ?',
+      options: [],
+      correctAnswerIndex: 0,
+      answer: 'Paris',
+      explanation: 'Elle est traversée par la Seine et compte plus de deux millions d’habitants.',
+    }),
+    'réponse révélée dans l’énoncé',
+  );
+});
+
+test('an open card may not carry options', () => {
+  assert.equal(
+    editorialRejectionReason({
+      format: 'open',
+      question: 'Comment nomme-t-on la peur des hauteurs ?',
+      options: ['L’acrophobie', 'L’agoraphobie'],
+      correctAnswerIndex: 0,
+      answer: 'L’acrophobie',
+      explanation: 'À ne pas confondre avec l’agoraphobie, la peur des espaces ouverts.',
+    }),
+    'une carte ouverte n’a aucune proposition',
+  );
+});

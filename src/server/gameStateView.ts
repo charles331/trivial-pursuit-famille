@@ -1,9 +1,10 @@
 import { GameState, Question } from '../types';
 import { isCardReadAloud, resolveReaderId } from './turnRoles';
 
-export interface PublicQuestion extends Omit<Question, 'correctAnswerIndex' | 'explanation'> {
+export interface PublicQuestion extends Omit<Question, 'correctAnswerIndex' | 'explanation' | 'answer'> {
   correctAnswerIndex?: number;
   explanation?: string;
+  answer?: string;
 }
 
 export interface PublicGameState extends Omit<
@@ -45,9 +46,9 @@ export function createGameStateView(
 
   let publicQuestion: PublicQuestion | null = null;
   if (currentQuestion) {
-    const { correctAnswerIndex, explanation, ...questionWithoutSolution } = currentQuestion;
+    const { correctAnswerIndex, explanation, answer, ...questionWithoutSolution } = currentQuestion;
     publicQuestion = maySeeSolution
-      ? { ...questionWithoutSolution, correctAnswerIndex, explanation }
+      ? { ...questionWithoutSolution, correctAnswerIndex, explanation, answer }
       : questionWithoutSolution;
   }
 

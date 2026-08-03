@@ -58,8 +58,15 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   // get put flat on the table between two questions, and a permanently
   // highlighted answer was simply read by the player who had to guess it.
   const [isSolutionHeld, setIsSolutionHeld] = useState(false);
+  // Carte ouverte : la réponse canonique n'est dévoilée qu'après un geste franc
+  // du lecteur, avant qu'il ne juge la réponse orale.
+  const [openRevealed, setOpenRevealed] = useState(false);
 
   const category = CATEGORIES[question.categoryId] || CATEGORIES.histoire;
+  const format = question.format ?? 'mcq';
+  const isMcqFormat = format === 'mcq';
+  const isBooleanFormat = format === 'boolean';
+  const isOpenFormat = format === 'open';
 
   // Determine if current client is the active player
   const isIActivePlayer = !localReaderReady && (isMyTurn || (currentUserId ? activePlayer.id === currentUserId : false) || activePlayer.id.startsWith('local_'));
@@ -98,7 +105,12 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   const solutionIndex = typeof question.correctAnswerIndex === 'number'
     ? question.correctAnswerIndex
     : null;
-  const canHoldToReveal = isIReader && !isAnswered && solutionIndex !== null;
+  // Le maintien-pour-révéler ne concerne que les cartes à options : une carte
+  // ouverte a son propre dévoilement, suivi d'un jugement réussi / raté.
+  const canHoldToReveal = isIReader && !isAnswered && solutionIndex !== null && !isOpenFormat;
+  // Qui détient la réponse d'une carte ouverte (le lecteur) peut la révéler puis
+  // trancher. Le serveur retire `answer` à tout autre client.
+  const canJudgeOpen = isOpenFormat && !isAnswered && canAnswer && typeof question.answer === 'string';
 
   // Respect the host's choice in every mode. In local reader mode the timer
   // already waits until the device has been handed over and the reader is ready.
@@ -197,6 +209,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
     setLocalReaderReady(false);
     setSelectedIdx(null);
     setIsSolutionHeld(false);
+    setOpenRevealed(false);
   }, [question.id]);
 
   // Release the solution from anywhere, not only from the button: a finger that
@@ -345,7 +358,10 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                   Carte masquée
                 </h3>
                 <p className="mt-0.5 text-xs font-semibold leading-snug text-purple-700 dark:text-purple-300">
-                  Écoutez <strong>{readerPlayer.name}</strong>, répondez de vive voix, puis touchez l’option choisie.
+                  Écoutez <strong>{readerPlayer.name}</strong> et répondez de vive voix
+                  {isOpenFormat
+                    ? ' ; le lecteur validera votre réponse.'
+                    : ', puis touchez l’option choisie.'}
                 </p>
               </div>
             </div>
@@ -355,7 +371,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
             </p>
           )}
 
-          {bonusesEnabled && canAnswer && !isAnswered && (
+          {bonusesEnabled && canAnswer && !isAnswered && isMcqFormat && (
             <div className="flex items-center justify-between gap-2 rounded-xl border border-pink-300/70 bg-pink-50/70 p-2 dark:border-pink-800 dark:bg-pink-950/30">
               <div className="min-w-0 text-[11px] font-bold leading-snug text-pink-900 dark:text-pink-200">
                 {activeQuestionBonus
@@ -416,7 +432,65 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
             </div>
           )}
 
-          {/* Option Choices Grid */}
+          {/* Carte ouverte : dévoilement de la réponse puis jugement, réservé au
+              client qui détient la solution (le lecteur). */}
+          {isOpenFormat && !isAnswered && canJudgeOpen && (
+            <div className="space-y-2 rounded-2xl border-2 border-emerald-500/50 bg-emerald-50/70 p-3 dark:bg-emerald-950/30">
+              {!openRevealed ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundManager.playClick();
+                    setOpenRevealed(true);
+                  }}
+                  className="tap-target flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-500/60 bg-white py-2.5 text-sm font-black text-emerald-700 dark:bg-slate-800 dark:text-emerald-300"
+                >
+                  <Eye className="h-4 w-4" /> Révéler la réponse
+                </button>
+              ) : (
+                <>
+                  <p className="text-sm font-bold leading-snug text-emerald-900 dark:text-emerald-100">
+                    Réponse&nbsp;: <span className="font-black">{question.answer}</span>
+                  </p>
+                  <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                    {activePlayer.name} avait-il bon ?
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => { soundManager.playClick(); onSubmitAnswer(0); }}
+                      className="tap-target flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500 py-2.5 text-sm font-black text-white hover:bg-emerald-400"
+                    >
+                      <CheckCircle2 className="h-4 w-4" /> Réussi
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { soundManager.playClick(); onSubmitAnswer(-1); }}
+                      className="tap-target flex items-center justify-center gap-1.5 rounded-xl bg-red-500 py-2.5 text-sm font-black text-white hover:bg-red-400"
+                    >
+                      <XCircle className="h-4 w-4" /> Raté
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Carte ouverte, après jugement : la réponse canonique pour tous. */}
+          {isOpenFormat && isAnswered && (
+            <div className="rounded-2xl border-2 border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
+              <p className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Réponse attendue
+              </p>
+              <p className="mt-0.5 text-base font-black text-slate-900 dark:text-white">
+                {question.answer ?? '—'}
+              </p>
+            </div>
+          )}
+
+          {/* Option Choices Grid — QCM et Vrai/Faux. Vide (donc masqué) pour les
+              cartes ouvertes, qui n'ont aucune proposition. */}
+          {!isOpenFormat && (
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {question.options.map((opt, idx) => {
               const isEliminated = hiddenOptionIndexes.includes(idx) && !isAnswered;
@@ -454,20 +528,22 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                     !isAnswered && canAnswer ? 'active:scale-[0.98]' : ''
                   }`}
                 >
-                  <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-extrabold shadow-inner ${
-                    isAnswered && isCorrect
-                      ? 'bg-white/20 text-white'
-                      : isReaderHighlight
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'
-                  }`}>
-                    {LETTERS[idx]}
-                  </span>
+                  {isMcqFormat && (
+                    <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-extrabold shadow-inner ${
+                      isAnswered && isCorrect
+                        ? 'bg-white/20 text-white'
+                        : isReaderHighlight
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'
+                    }`}>
+                      {LETTERS[idx]}
+                    </span>
+                  )}
 
                   <span className="min-w-0 flex-1 font-semibold leading-snug">
                     {isEliminated
                       ? `Réponse ${LETTERS[idx]} éliminée`
-                      : isCardMasked && !isAnswered ? `Option ${LETTERS[idx]}` : opt}
+                      : isCardMasked && !isAnswered && isMcqFormat ? `Option ${LETTERS[idx]}` : opt}
                   </span>
 
                   {isAnswered && isCorrect && <CheckCircle2 className="h-4 w-4 shrink-0 text-white" />}
@@ -477,6 +553,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
               );
             })}
           </div>
+          )}
 
           {/* Explanation & Result Banner */}
           {lastAnswerResult && (
@@ -508,8 +585,11 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
          </div>
         </div>
 
-        {/* Action bar: pinned so the only thing left to do is always in reach. */}
-        {canAnswer && (
+        {/* Action bar: pinned so the only thing left to do is always in reach.
+            Sur une carte ouverte non encore jugée, le geste (révéler / réussi /
+            raté) vit dans le corps : la barre ne réapparaît qu'après le verdict,
+            pour passer au joueur suivant. */}
+        {canAnswer && !(isOpenFormat && !isAnswered) && (
           <div className="shrink-0 border-t border-slate-200 bg-white/95 px-3 py-2.5 backdrop-blur max-sm:pb-[max(0.625rem,env(safe-area-inset-bottom))] dark:border-slate-800 dark:bg-slate-900/95">
             {isAnswered ? (
               <button
@@ -536,7 +616,11 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                   onClick={handleConfirmAnswer}
                   className="tap-target w-full rounded-2xl bg-amber-500 py-3 text-sm font-black text-slate-950 shadow-lg transition-colors hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  {selectedIdx === null ? 'Choisissez une réponse' : `Valider la réponse ${LETTERS[selectedIdx]}`}
+                  {selectedIdx === null
+                    ? 'Choisissez une réponse'
+                    : isMcqFormat
+                      ? `Valider la réponse ${LETTERS[selectedIdx]}`
+                      : `Valider : ${question.options[selectedIdx]}`}
                 </button>
                 <p className="mt-1.5 hidden text-center text-[11px] text-slate-500 sm:block dark:text-slate-400">
                   Vous pouvez changer de choix avant de valider.

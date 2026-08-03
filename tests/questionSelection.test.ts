@@ -6,6 +6,7 @@ import {
   activeThemeKeys,
   customPackTurnIsDue,
   pickQuestionForPlayer,
+  shuffleQuestionOptions,
 } from '../src/server/questionSelection';
 import { CategoryId, DifficultyLevel, GameState, Question } from '../src/types';
 import { createGameState, testQuestion } from './fixtures';
@@ -342,4 +343,25 @@ test('la part du thème est bornée : plancher garanti, plafond une carte sur de
   assert.equal(customPackTurnIsDue(2, 1, () => 0), false);
   // En avance sur la part cible : la banque officielle reprend la main.
   assert.equal(customPackTurnIsDue(5, 2, () => 0), false);
+});
+
+test('le mélange préserve l\'ordre Vrai/Faux et n\'altère pas une carte ouverte', () => {
+  const booleanCard: Question = {
+    id: 'b1', categoryId: 'sciences', difficulty: 'adulte', format: 'boolean',
+    question: 'Un ver de terre possède plusieurs cœurs.',
+    options: ['Vrai', 'Faux'], correctAnswerIndex: 0,
+  };
+  // random qui inverserait tout s'il était consulté : il ne doit pas l'être.
+  const shuffledBoolean = shuffleQuestionOptions(booleanCard, () => 0.99);
+  assert.deepEqual(shuffledBoolean.options, ['Vrai', 'Faux']);
+  assert.equal(shuffledBoolean.correctAnswerIndex, 0);
+
+  const openCard: Question = {
+    id: 'o1', categoryId: 'sciences', difficulty: 'adulte', format: 'open',
+    question: 'Comment nomme-t-on la peur des hauteurs ?',
+    options: [], correctAnswerIndex: 0, answer: 'L\'acrophobie',
+  };
+  const shuffledOpen = shuffleQuestionOptions(openCard, () => 0.99);
+  assert.deepEqual(shuffledOpen.options, []);
+  assert.equal(shuffledOpen.correctAnswerIndex, 0);
 });
