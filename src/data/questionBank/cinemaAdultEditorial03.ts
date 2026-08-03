@@ -25,7 +25,7 @@ const D: Q[] = [
 ["Quel film de Fritz Lang met en scène un réseau criminel piloté depuis un asile ?",["Le Testament du docteur Mabuse","M le Maudit","Les Espions","La Femme sur la Lune"],0,"Le film fut interdit en Allemagne peu après l'arrivée des nazis au pouvoir."],
 ["Quel cinéaste a réalisé Le Guépard ?",["Luchino Visconti","Vittorio De Sica","Roberto Rossellini","Michelangelo Antonioni"],0,"Burt Lancaster incarne le prince Salina pendant le Risorgimento."],
 ["Qui joue l'institutrice dans The Lost Daughter ?",["Olivia Colman","Jessie Buckley","Dakota Johnson","Maggie Gyllenhaal"],0,"Colman incarne Leda adulte; Jessie Buckley joue le personnage jeune."],
-["Quel film de Sembène critique une bourgeoisie corrompue par l'impuissance de son héros ?",["Xala","Ceddo","Moolaadé","Camp de Thiaroye"],0,"Le mot wolof xala désigne la malédiction frappant le personnage."],
+["Comment s'appellent les récompenses du cinéma belge francophone ?",["Les Magritte","Les Ensor","Les Joseph","Les Bayard"],0,"Créés en 2011, ils empruntent leur nom au peintre surréaliste ; les Ensor distinguent de leur côté le cinéma flamand."],
 ["Quel film d'animation utilise des silhouettes découpées de Lotte Reiniger ?",["Les Aventures du prince Ahmed","Le Roman de Renard","La Bergère et le Ramoneur","Fantasmagorie"],0,"Sorti en 1926, il compte parmi les plus anciens longs métrages animés conservés."],
 ["Quel film de Kathryn Bigelow suit une équipe de déminage en Irak ?",["Démineurs","Zero Dark Thirty","Detroit","K-19"],0,"Bigelow fut la première femme récompensée par l'Oscar de la réalisation."],
 ["Qui joue la gouvernante dans Les Innocents de Jack Clayton ?",["Deborah Kerr","Julie Harris","Simone Signoret","Ingrid Bergman"],0,"Le film adapte Le Tour d'écrou de Henry James."],

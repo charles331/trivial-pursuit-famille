@@ -134,7 +134,7 @@ Quelle grandeur correspond à l’énergie transférée par unité de temps ?|La
 Quelle unité mesure une inductance électrique ?|Le henry|Le farad|Le weber|Le tesla|Une bobine de un henry s’oppose fortement aux variations rapides de courant.
 Quelle unité mesure une pression ?|Le pascal|Le newton|Le tesla|Le watt|Un pascal équivaut à une force d’un newton répartie sur un mètre carré.
 Quelle particule élémentaire appartient à la famille des leptons chargés et est la plus légère ?|L’électron|Le muon|Le tau|Le neutrino tau|Le muon et le tau ont la même charge que l’électron mais sont beaucoup plus massifs.
-Quelle particule est l’antiparticule de l’électron ?|Le positon|Le proton|Le neutrino|Le muon|Le positon a la même masse que l’électron mais une charge positive.
+Sur quelle planète une journée dure-t-elle plus longtemps qu’une année ?|Vénus|Mercure|Mars|Jupiter|Sa rotation est si lente qu’un jour vénusien dépasse son année ; le Soleil s’y lève d’ailleurs à l’ouest.
 Quelle interaction maintient les quarks liés dans les protons ?|L’interaction forte|L’interaction faible|L’électromagnétisme|La gravitation|Les gluons sont les bosons médiateurs de l’interaction forte.
 Quelle interaction est responsable de la désintégration bêta ?|L’interaction faible|L’interaction forte|La gravitation|L’électromagnétisme|La désintégration bêta transforme notamment un neutron en proton ou inversement.
 Quel effet décrit l’émission d’électrons par un matériau éclairé ?|L’effet photoélectrique|L’effet Doppler|L’effet Hall|L’effet Joule|L’énergie des électrons émis dépend de la fréquence de la lumière incidente.
