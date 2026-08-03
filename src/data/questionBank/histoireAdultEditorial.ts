@@ -131,9 +131,9 @@ const FACTS: EditorialFact[] = [
     'Réuni en 1814-1815, le congrès de Vienne restaura un équilibre entre les grandes puissances.',
   ],
   [
-    'Quelle bataille de 1824 scella l’indépendance de l’essentiel de l’Amérique du Sud espagnole ?',
-    'Ayacucho', 'Carabobo', 'Chacabuco', 'Boyacá',
-    'La victoire d’Ayacucho, au Pérou, mit fin au principal pouvoir militaire espagnol en Amérique du Sud.',
+    'Combien de temps dura le conflit anglo-zanzibarite de 1896, la plus courte guerre connue ?',
+    'Environ quarante minutes', 'Environ trois jours', 'Environ deux semaines', 'Environ six mois',
+    'Le bombardement britannique du palais du sultan écrasa la résistance avant même la première heure.',
   ],
   [
     'Quel texte de 1830 proclama l’indépendance de la Belgique ?',
