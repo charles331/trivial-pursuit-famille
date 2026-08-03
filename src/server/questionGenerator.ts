@@ -33,11 +33,12 @@ const CARD_JSON_SCHEMA = {
       enum: [...CATEGORY_IDS],
     },
     question: { type: 'string' },
+    // Le nombre de propositions dépend du format : quatre pour un QCM, deux pour
+    // un vrai/faux, aucune pour une question ouverte. La validation aval
+    // (editorialRejectionReason) contrôle la forme propre à chaque format.
     options: {
       type: 'array',
       items: { type: 'string' },
-      minItems: 4,
-      maxItems: 4,
     },
     correctAnswerIndex: {
       type: 'integer',
@@ -49,6 +50,12 @@ const CARD_JSON_SCHEMA = {
       type: 'string',
       enum: ['enfant', 'ado', 'adulte'],
     },
+    format: {
+      type: 'string',
+      enum: ['mcq', 'boolean', 'open'],
+    },
+    // Réponse attendue d'une carte ouverte ; chaîne vide pour les autres formats.
+    answer: { type: 'string' },
   },
   required: [
     'categoryId',
@@ -57,6 +64,8 @@ const CARD_JSON_SCHEMA = {
     'correctAnswerIndex',
     'explanation',
     'difficulty',
+    'format',
+    'answer',
   ],
   additionalProperties: false,
 } as const;
@@ -75,6 +84,8 @@ const GEMINI_PACK_SCHEMA = {
       correctAnswerIndex: { type: Type.INTEGER },
       explanation: { type: Type.STRING },
       difficulty: { type: Type.STRING, enum: ['enfant', 'ado', 'adulte'] },
+      format: { type: Type.STRING, enum: ['mcq', 'boolean', 'open'] },
+      answer: { type: Type.STRING },
     },
     required: [
       'categoryId',
@@ -83,6 +94,8 @@ const GEMINI_PACK_SCHEMA = {
       'correctAnswerIndex',
       'explanation',
       'difficulty',
+      'format',
+      'answer',
     ],
   },
 };
@@ -144,6 +157,12 @@ Structure imposée :${anglePart}
 - Exactement 4 options par question, une seule correcte (correctAnswerIndex entre 0 et 3), distracteurs plausibles et de même famille sémantique.
 - "explanation" : une anecdote courte qui APPREND quelque chose de neuf, absent de l'énoncé et de la bonne réponse. Une explication qui répète la question est refusée.
 
+Format des cartes (champ "format") :
+- Par défaut "mcq" : quatre propositions comme ci-dessus, "answer" laissé vide ("").
+- Tu peux, pour une petite part des cartes (environ une sur six au maximum), choisir un autre format lorsqu'il sert mieux le fait :
+  - "boolean" : une affirmation à trancher. Mets "options" à ["Vrai", "Faux"] exactement et "correctAnswerIndex" à 0 (Vrai) ou 1 (Faux), "answer" vide. Idéal pour un fait surprenant qui n'a pas trois distracteurs crédibles.
+  - "open" : aucune proposition. Mets "options" à [], "correctAnswerIndex" à 0, et la réponse attendue dans "answer" (courte, sans ambiguïté, 80 caractères maximum). La réponse ne doit jamais figurer dans l'énoncé. Réserve ce format aux questions dont la réponse tient en un mot ou une expression.
+
 Calibrage des niveaux :
 - "enfant" : fait concret et visuel, énoncé de 12 mots maximum.
 - "ado" : pas plus long qu'une carte enfant, mais plus daté et plus situé (une année, un lieu, un nom précis).
@@ -152,7 +171,7 @@ Calibrage des niveaux :
 Contraintes de forme, éliminatoires :
 - Énoncé autoportant : la question doit se comprendre seule et nommer explicitement son sujet (l'animal, l'œuvre, le lieu, la personne ou l'époque dont elle parle). Le joueur ne voit que l'énoncé et les options, jamais l'explication ni un contexte implicite. Interdit : « Chez quel sexe les antennes sont-elles les plus plumeuses ? » (quel animal ?) ; écris plutôt « Chez le moustique, quel sexe porte les antennes les plus plumeuses ? ».
 - Énoncé de ${MAX_ADULT_QUESTION_LENGTH} caractères maximum, chaque option de ${MAX_ADULT_OPTION_LENGTH} caractères maximum.
-- Interdit : le format « quelle association question-réponse est correcte ? », les paires dans les options, les questions à trou, les préfixes décoratifs (« Question flash : »), les questions vrai/faux.
+- Interdit : le format « quelle association question-réponse est correcte ? », les paires dans les options, les questions à trou, les préfixes décoratifs (« Question flash : »).
 - Interdit : révéler la bonne réponse dans l'énoncé, et les quatre options réduites à quatre nombres nus.
 - Deux options ne doivent jamais être identiques.
 - Aucune question en double ni reformulation d'une autre question du lot.

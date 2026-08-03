@@ -101,6 +101,13 @@ export function pickQuestionForPlayer(
   const usedIds = new Set(state.usedQuestionIds);
   const pickOne = (list: Question[]): Question => list[Math.floor(random() * list.length)];
 
+  // Les questions ouvertes n'apparaissent qu'en mode lecteur : hors de ce mode,
+  // la solution est masquée au joueur actif et personne ne pourrait juger sa
+  // réponse orale. Le garde-fou vaut pour les packs IA comme pour la banque.
+  const readerMode = state.settings.isReaderMode === true;
+  const servableFormat = (question: Question): boolean =>
+    !((question.format ?? 'mcq') === 'open' && !readerMode);
+
   const serve = (question: Question, categoryId: CategoryId): Question => {
     state.usedQuestionIds.push(question.id);
     return shuffleQuestionOptions({ ...question, categoryId }, random);
@@ -121,7 +128,8 @@ export function pickQuestionForPlayer(
       const candidates = packQuestions.filter(
         (question) => !usedIds.has(question.id)
           && normalizeCategoryId(question.categoryId) === targetCategory
-          && question.difficulty === playerDifficulty,
+          && question.difficulty === playerDifficulty
+          && servableFormat(question),
       );
       if (candidates.length > 0) {
         return serve(pickOne(candidates), targetCategory);
@@ -130,13 +138,9 @@ export function pickQuestionForPlayer(
   }
 
   // 2. Banque officielle. Les thèmes actifs en sont exclus : leur part est
-  //    déjà tenue par l'étape 1, et un second tirage la ferait déborder. Les
-  //    questions ouvertes n'apparaissent qu'en mode lecteur : hors de ce mode,
-  //    la solution est masquée au joueur actif, personne ne pourrait juger sa
-  //    réponse orale.
-  const readerMode = state.settings.isReaderMode === true;
+  //    déjà tenue par l'étape 1, et un second tirage la ferait déborder.
   const isEligible = (question: Question): boolean => {
-    if ((question.format ?? 'mcq') === 'open' && !readerMode) return false;
+    if (!servableFormat(question)) return false;
     return activeThemes.size === 0 || !belongsToActiveTheme(question, activeThemes);
   };
 

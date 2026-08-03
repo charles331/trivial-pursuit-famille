@@ -234,3 +234,43 @@ test('une vraie question scientifique contenant un androïde reste en sciences',
 
   assert.equal(correctObviousGeneratedCategory(scienceCard).categoryId, 'sciences');
 });
+
+test('le générateur peut produire une carte vrai/faux et une carte ouverte', () => {
+  const booleanCard = card({
+    id: 'gen_bool',
+    format: 'boolean',
+    question: 'Le village gaulois a réellement existé.',
+    options: ['Vrai', 'Faux'],
+    correctAnswerIndex: 1,
+    answer: '',
+    explanation: 'Goscinny et Uderzo l’ont entièrement inventé, sans modèle archéologique.',
+  });
+  const openCard = card({
+    id: 'gen_open',
+    format: 'open',
+    question: 'Quel druide prépare la potion magique du village ?',
+    options: [],
+    correctAnswerIndex: 0,
+    answer: 'Panoramix',
+    explanation: 'Son nom vient du mot « panoramique » ; il cueille le gui avec une serpe d’or.',
+  });
+
+  const pack = assembleGeneratedPack([booleanCard, openCard], 30);
+  assert.equal(pack.rejections.size, 0);
+  assert.equal(pack.questions.length, 2);
+});
+
+test('une carte vrai/faux mal formée est écartée par l’assemblage', () => {
+  const bad = card({
+    id: 'gen_bad_bool',
+    format: 'boolean',
+    question: 'Le village gaulois a réellement existé.',
+    options: ['Oui', 'Non'],
+    correctAnswerIndex: 0,
+    answer: '',
+    explanation: 'Goscinny et Uderzo l’ont entièrement inventé sans modèle réel.',
+  });
+  const pack = assembleGeneratedPack([bad], 30);
+  assert.equal(pack.questions.length, 0);
+  assert.ok(reasons(pack.rejections).includes('les deux choix doivent être « Vrai » et « Faux »'));
+});

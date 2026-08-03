@@ -59,7 +59,9 @@ export interface PackAssemblyResult {
 }
 
 export function answerKeyOf(question: Question): string {
-  const answer = question.options[question.correctAnswerIndex] ?? '';
+  const answer = (question.format ?? 'mcq') === 'open'
+    ? (question.answer ?? '')
+    : (question.options[question.correctAnswerIndex] ?? '');
   return `${question.categoryId}|${comparableAnswer(answer)}`;
 }
 
@@ -155,7 +157,7 @@ export function assembleGeneratedPack(
       continue;
     }
 
-    if (isBareNumberCard(candidate.options)) {
+    if ((candidate.format ?? 'mcq') === 'mcq' && isBareNumberCard(candidate.options)) {
       if (bareCards >= maxBareCards) {
         reject('quatre options numériques nues');
         continue;
