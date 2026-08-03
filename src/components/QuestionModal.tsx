@@ -58,6 +58,10 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   // get put flat on the table between two questions, and a permanently
   // highlighted answer was simply read by the player who had to guess it.
   const [isSolutionHeld, setIsSolutionHeld] = useState(false);
+  // Vrai/Faux en mode lecteur : les deux choix restent cachés tant que le
+  // lecteur n'a pas révélé au moins une fois la bonne réponse. Le premier
+  // maintien les déverrouille ; ils restent ensuite affichés pour trancher.
+  const [hasRevealedOnce, setHasRevealedOnce] = useState(false);
 
   const category = CATEGORIES[question.categoryId] || CATEGORIES.histoire;
   const format = question.format ?? 'mcq';
@@ -206,6 +210,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
     setLocalReaderReady(false);
     setSelectedIdx(null);
     setIsSolutionHeld(false);
+    setHasRevealedOnce(false);
   }, [question.id]);
 
   // Release the solution from anywhere, not only from the button: a finger that
@@ -213,7 +218,10 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   // be left on screen because a pointerup landed somewhere else.
   useEffect(() => {
     if (!isSolutionHeld) return;
-    const release = () => setIsSolutionHeld(false);
+    // Relâcher masque la réponse et, du même coup, déverrouille les choix
+    // Vrai/Faux : ils n'apparaissent qu'une fois le lecteur passé par la
+    // révélation, sans jamais décaler la mise en page pendant le maintien.
+    const release = () => { setIsSolutionHeld(false); setHasRevealedOnce(true); };
     window.addEventListener('pointerup', release);
     window.addEventListener('pointercancel', release);
     window.addEventListener('blur', release);
@@ -391,22 +399,24 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
           )}
 
           {/* Hold-to-reveal: the reader checks the answer without exposing it to
-              the table. Nothing is highlighted until the button is held. */}
+              the table. Nothing is highlighted until the button is held. Sur une
+              carte Vrai/Faux, ce premier dévoilement déverrouille aussi les deux
+              choix, cachés jusque-là. */}
           {canHoldToReveal && solutionIndex !== null && (
-            <div className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-50/70 p-1.5 dark:bg-emerald-950/30">
+            <div className="flex items-center gap-2.5 rounded-xl border border-emerald-500/40 bg-emerald-50/70 p-2 dark:bg-emerald-950/30">
               <button
                 type="button"
                 aria-label="Maintenir pour afficher la réponse"
                 aria-pressed={isSolutionHeld}
                 onContextMenu={event => event.preventDefault()}
                 onPointerDown={() => setIsSolutionHeld(true)}
-                onPointerLeave={() => setIsSolutionHeld(false)}
+                onPointerLeave={() => { setIsSolutionHeld(false); setHasRevealedOnce(true); }}
                 onKeyDown={event => {
                   if (event.key === ' ' || event.key === 'Enter') setIsSolutionHeld(true);
                 }}
-                onKeyUp={() => setIsSolutionHeld(false)}
+                onKeyUp={() => { setIsSolutionHeld(false); setHasRevealedOnce(true); }}
                 onBlur={() => setIsSolutionHeld(false)}
-                className={`tap-target flex shrink-0 select-none touch-manipulation items-center gap-1.5 rounded-lg border px-2.5 text-[11px] font-black uppercase tracking-wide transition-colors ${
+                className={`tap-target flex shrink-0 select-none touch-manipulation items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-black uppercase tracking-wide transition-colors ${
                   isSolutionHeld
                     ? 'border-emerald-500 bg-emerald-500 text-white'
                     : 'border-emerald-500/50 bg-white text-emerald-700 dark:bg-slate-800 dark:text-emerald-300'
@@ -416,13 +426,19 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                 {isSolutionHeld ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
                 Révéler
               </button>
-              <p className="min-w-0 flex-1 text-[11px] font-bold leading-snug text-emerald-800 dark:text-emerald-200">
+              <p className="min-w-0 flex-1 leading-snug text-emerald-800 dark:text-emerald-200">
                 {isSolutionHeld ? (
-                  <>
-                    Réponse&nbsp;: <strong>{LETTERS[solutionIndex]}</strong> — {question.options[solutionIndex]}
-                  </>
+                  <span className="text-lg font-black">
+                    {isBooleanFormat
+                      ? question.options[solutionIndex]
+                      : <>{LETTERS[solutionIndex]} — {question.options[solutionIndex]}</>}
+                  </span>
                 ) : (
-                  'Réponse cachée. Maintenez le bouton pour la voir.'
+                  <span className="text-[11px] font-bold">
+                    {isBooleanFormat
+                      ? 'Réponse cachée. Maintenez pour la voir et afficher les choix.'
+                      : 'Réponse cachée. Maintenez le bouton pour la voir.'}
+                  </span>
                 )}
               </p>
             </div>
@@ -500,9 +516,13 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
             </div>
           )}
 
-          {/* Option Choices Grid — QCM et Vrai/Faux. Vide (donc masqué) pour les
-              cartes ouvertes, qui n'ont aucune proposition. */}
-          {!isOpenFormat && (
+          {/* Option Choices Grid — QCM et Vrai/Faux. Masquée pour les cartes
+              ouvertes (aucune proposition) et, sur une carte Vrai/Faux en mode
+              lecteur, tant que le lecteur n'a pas révélé une première fois la
+              bonne réponse. Une fois la carte répondue, elle réapparaît pour
+              afficher le résultat. */}
+          {!isOpenFormat
+            && (isAnswered || !isBooleanFormat || !canHoldToReveal || hasRevealedOnce) && (
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {question.options.map((opt, idx) => {
               const isEliminated = hiddenOptionIndexes.includes(idx) && !isAnswered;
