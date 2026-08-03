@@ -27,7 +27,7 @@ interface QuestionModalProps {
   allPlayers?: Player[];
   currentUserId?: string;
   onSubmitAnswer: (optionIndex: number) => void;
-  onUseBonus: () => void;
+  onUseBonus: (bonusType: BonusType) => void;
   onNextTurn: () => void;
   bonusesEnabled?: boolean;
   bonusAwardedThisTurn?: BonusType | null;
@@ -237,6 +237,8 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   const timerPercent = effectiveTimerSeconds > 0 ? (timeLeft / effectiveTimerSeconds) * 100 : 100;
   const showTimer = effectiveTimerSeconds > 0 && !isAnswered;
   const fiftyFiftyCount = activePlayer.bonuses?.fifty_fifty ?? 0;
+  const jokerCount = activePlayer.bonuses?.camembert_joker ?? 0;
+  const jokerArmed = activeQuestionBonus?.type === 'camembert_joker';
   const hiddenOptionIndexes = activeQuestionBonus?.type === 'fifty_fifty'
     ? activeQuestionBonus.hiddenOptionIndexes
     : [];
@@ -347,10 +349,11 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
          <div className="my-auto space-y-3">
 
           {/* Question Text */}
-          {bonusAwardedThisTurn === 'fifty_fifty' && (
+          {bonusAwardedThisTurn && (
             <div className="flex items-center gap-2 rounded-xl border border-pink-300 bg-pink-50 p-2.5 text-xs font-black text-pink-900 dark:border-pink-800 dark:bg-pink-950/40 dark:text-pink-200">
               <Gift className="h-4 w-4 shrink-0" />
-              Case Surprise : {activePlayer.name} gagne un 50/50 à conserver !
+              Boîte surprise : {activePlayer.name} gagne{' '}
+              {bonusAwardedThisTurn === 'camembert_joker' ? 'un Joker camembert' : 'un 50/50'} à conserver !
             </div>
           )}
 
@@ -375,25 +378,49 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
             </p>
           )}
 
-          {bonusesEnabled && canAnswer && !isAnswered && isMcqFormat && (
-            <div className="flex items-center justify-between gap-2 rounded-xl border border-pink-300/70 bg-pink-50/70 p-2 dark:border-pink-800 dark:bg-pink-950/30">
-              <div className="min-w-0 text-[11px] font-bold leading-snug text-pink-900 dark:text-pink-200">
-                {activeQuestionBonus
-                  ? '50/50 utilisé : deux mauvaises réponses ont été éliminées.'
-                  : `Inventaire de ${activePlayer.name} : ${fiftyFiftyCount} × 50/50`}
-              </div>
-              {!activeQuestionBonus && (
-                <button
-                  type="button"
-                  disabled={fiftyFiftyCount < 1}
-                  onClick={() => {
-                    soundManager.playClick();
-                    onUseBonus();
-                  }}
-                  className="tap-target shrink-0 rounded-lg bg-pink-500 px-3 text-xs font-black text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Utiliser
-                </button>
+          {bonusesEnabled && canAnswer && !isAnswered
+            && ((isMcqFormat && (fiftyFiftyCount > 0 || activeQuestionBonus?.type === 'fifty_fifty'))
+              || jokerCount > 0 || jokerArmed) && (
+            <div className="space-y-1.5 rounded-xl border border-pink-300/70 bg-pink-50/70 p-2 dark:border-pink-800 dark:bg-pink-950/30">
+              {/* 50/50 — QCM uniquement : il faut au moins deux distracteurs. */}
+              {isMcqFormat && (fiftyFiftyCount > 0 || activeQuestionBonus?.type === 'fifty_fifty') && (
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0 text-[11px] font-bold leading-snug text-pink-900 dark:text-pink-200">
+                    {activeQuestionBonus?.type === 'fifty_fifty'
+                      ? '50/50 utilisé : deux mauvaises réponses ont été éliminées.'
+                      : `🎯 50/50 × ${fiftyFiftyCount}`}
+                  </div>
+                  {!activeQuestionBonus && (
+                    <button
+                      type="button"
+                      disabled={fiftyFiftyCount < 1}
+                      onClick={() => { soundManager.playClick(); onUseBonus('fifty_fifty'); }}
+                      className="tap-target shrink-0 rounded-lg bg-pink-500 px-3 py-1 text-xs font-black text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Utiliser
+                    </button>
+                  )}
+                </div>
+              )}
+              {/* Joker camembert — tous formats : une bonne réponse vaut un camembert. */}
+              {(jokerCount > 0 || jokerArmed) && (
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0 text-[11px] font-bold leading-snug text-pink-900 dark:text-pink-200">
+                    {jokerArmed
+                      ? '🧀 Joker armé : une bonne réponse rapporte un camembert !'
+                      : `🧀 Joker camembert × ${jokerCount}`}
+                  </div>
+                  {!activeQuestionBonus && (
+                    <button
+                      type="button"
+                      disabled={jokerCount < 1}
+                      onClick={() => { soundManager.playClick(); onUseBonus('camembert_joker'); }}
+                      className="tap-target shrink-0 rounded-lg bg-amber-500 px-3 py-1 text-xs font-black text-slate-950 shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Utiliser
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           )}

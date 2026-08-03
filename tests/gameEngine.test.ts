@@ -67,6 +67,34 @@ test('a correct answer on a regular tile grants an extra turn', () => {
   assert.equal(state.phase, 'rolling');
 });
 
+test('the camembert joker earns a wedge on a regular tile', () => {
+  const state = createGameState();
+  state.players[0].currentTileId = 2; // case Sciences, sans camembert
+  state.activeQuestionBonus = {
+    type: 'camembert_joker', playerId: state.players[0].id, hiddenOptionIndexes: [],
+  };
+
+  const result = resolveAnswer(state, testSettings, testBoard, 1);
+
+  assert.equal(result.isCorrect, true);
+  assert.equal(result.earnedWedge, 'sciences');
+  assert.deepEqual(state.players[0].wedges, ['sciences']);
+});
+
+test('the joker does nothing on a wrong answer', () => {
+  const state = createGameState();
+  state.players[0].currentTileId = 2;
+  state.activeQuestionBonus = {
+    type: 'camembert_joker', playerId: state.players[0].id, hiddenOptionIndexes: [],
+  };
+
+  const result = resolveAnswer(state, testSettings, testBoard, 0);
+
+  assert.equal(result.isCorrect, false);
+  assert.equal(result.earnedWedge, null);
+  assert.deepEqual(state.players[0].wedges, []);
+});
+
 test('a correct answer on an already-owned camembert grants an extra turn', () => {
   const state = createGameState();
   state.players[0].wedges = ['histoire'];

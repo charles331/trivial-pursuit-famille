@@ -21,7 +21,13 @@ export type DifficultyLevel = 'enfant' | 'ado' | 'adulte';
  */
 export type QuestionFormat = 'mcq' | 'boolean' | 'open';
 
-export type BonusType = 'fifty_fifty';
+/**
+ * Bonus conservables, gagnés sur les cases Surprise (boîte mystère).
+ * - `fifty_fifty` : élimine deux mauvaises réponses (QCM uniquement).
+ * - `camembert_joker` : une bonne réponse rapporte un camembert de la catégorie
+ *   de la case, même hors d'une case camembert.
+ */
+export type BonusType = 'fifty_fifty' | 'camembert_joker';
 
 export type PlayerBonuses = Partial<Record<BonusType, number>>;
 

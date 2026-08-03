@@ -40,9 +40,15 @@ export function resolveAnswer(
   }
 
   const tile = board.tiles.find(candidate => candidate.id === activePlayer.currentTileId);
+  // Le Joker camembert transforme n'importe quelle case en case camembert le
+  // temps d'une bonne réponse : le joueur décroche un camembert là où il ne
+  // gagnerait normalement que le droit de rejouer.
+  const jokerActive = state.activeQuestionBonus?.type === 'camembert_joker'
+    && state.activeQuestionBonus.playerId === activePlayer.id;
+  const isCamembertTile = tile?.type === 'camembert' || tile?.isCamembert;
   let earnedWedge: CategoryId | null = null;
-  if (isCorrect && (tile?.type === 'camembert' || tile?.isCamembert)) {
-    const category = tile.categoryId || question.categoryId;
+  if (isCorrect && (isCamembertTile || jokerActive)) {
+    const category = tile?.categoryId || question.categoryId;
     if (!activePlayer.wedges.includes(category)) {
       activePlayer.wedges.push(category);
       earnedWedge = category;

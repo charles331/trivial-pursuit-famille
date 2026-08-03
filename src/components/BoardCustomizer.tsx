@@ -265,7 +265,7 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
           <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
             {settings.enableBonuses ? (
               <span className="font-semibold text-pink-700 dark:text-pink-300">
-                Les cases Surprise donnent un 50/50. Chaque joueur peut le conserver et l&apos;utiliser pendant la question de son choix.
+                Les cases Surprise sont des boîtes mystère : elles offrent au hasard un 50/50 (éliminer deux mauvaises réponses) ou un Joker camembert (une bonne réponse rapporte un camembert, même hors case camembert). Chaque joueur conserve ses bonus et les utilise quand il veut.
               </span>
             ) : (
               <span>

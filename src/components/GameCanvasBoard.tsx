@@ -1063,7 +1063,12 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
                     {player.wedges.length}/{target} camemberts
                     {gameState.settings.enableBonuses && (player.bonuses?.fifty_fifty ?? 0) > 0 && (
                       <span className="ml-1.5 font-bold text-pink-400">
-                        · 🎁 50/50 × {player.bonuses?.fifty_fifty}
+                        · 🎯 50/50 × {player.bonuses?.fifty_fifty}
+                      </span>
+                    )}
+                    {gameState.settings.enableBonuses && (player.bonuses?.camembert_joker ?? 0) > 0 && (
+                      <span className="ml-1.5 font-bold text-amber-400">
+                        · 🧀 Joker × {player.bonuses?.camembert_joker}
                       </span>
                     )}
                   </div>

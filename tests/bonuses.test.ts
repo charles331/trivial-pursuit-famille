@@ -2,28 +2,53 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   awardSurpriseBonus,
+  bonusCount,
   fiftyFiftyCount,
+  useBonus,
   useFiftyFiftyBonus,
 } from '../src/server/bonuses';
 import { createGameState } from './fixtures';
 
+// Roster = [fifty_fifty, camembert_joker] : un tirage à 0 donne le premier, un
+// tirage proche de 1 le second.
+const rollFiftyFifty = () => 0;
+const rollJoker = () => 0.99;
+
 test('bonus mode is opt-in and surprise tiles do nothing while disabled', () => {
   const state = createGameState();
 
-  assert.equal(awardSurpriseBonus(state), false);
+  assert.equal(awardSurpriseBonus(state), null);
   assert.equal(fiftyFiftyCount(state.players[0]), 0);
   assert.equal(state.bonusAwardedThisTurn, undefined);
 });
 
-test('each surprise landing adds a stored 50/50 to the active player', () => {
+test('a surprise box grants the drawn bonus to the active player', () => {
   const state = createGameState();
   state.settings.enableBonuses = true;
 
-  assert.equal(awardSurpriseBonus(state), true);
-  assert.equal(awardSurpriseBonus(state), true);
-  assert.equal(fiftyFiftyCount(state.players[0]), 2);
-  assert.equal(state.bonusAwardedThisTurn, 'fifty_fifty');
+  assert.equal(awardSurpriseBonus(state, rollFiftyFifty), 'fifty_fifty');
+  assert.equal(awardSurpriseBonus(state, rollJoker), 'camembert_joker');
+  assert.equal(fiftyFiftyCount(state.players[0]), 1);
+  assert.equal(bonusCount(state.players[0], 'camembert_joker'), 1);
+  assert.equal(state.bonusAwardedThisTurn, 'camembert_joker');
   assert.equal(fiftyFiftyCount(state.players[1]), 0);
+});
+
+test('the camembert joker arms itself for the current question, whatever the format', () => {
+  const state = createGameState();
+  state.settings.enableBonuses = true;
+  state.players[0].bonuses = { camembert_joker: 1 };
+  state.currentQuestion = {
+    id: 'b', categoryId: 'sciences', difficulty: 'adulte', format: 'boolean',
+    question: 'Le soleil est une étoile.', options: ['Vrai', 'Faux'], correctAnswerIndex: 0,
+  };
+
+  assert.equal(useBonus(state, 'camembert_joker'), true);
+  assert.equal(state.activeQuestionBonus?.type, 'camembert_joker');
+  assert.deepEqual(state.activeQuestionBonus?.hiddenOptionIndexes, []);
+  assert.equal(bonusCount(state.players[0], 'camembert_joker'), 0);
+  // Un seul bonus armé par question.
+  assert.equal(useBonus(state, 'camembert_joker'), false);
 });
 
 test('50/50 consumes one bonus and hides exactly two wrong answers', () => {

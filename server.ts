@@ -34,19 +34,20 @@ import { activeThemeKeys, pickQuestionForPlayer } from './src/server/questionSel
 import { previewOrigin, withAbsolutePreviewImages } from './src/server/previewMeta.js';
 import { createQuestionGenerator } from './src/server/questionGenerator.js';
 import { DEFAULT_GENERATED_PACK_COUNT } from './src/config/generatedPack.js';
-import { awardSurpriseBonus, useFiftyFiftyBonus } from './src/server/bonuses.js';
+import { BONUS_ROSTER, awardSurpriseBonus, useBonus } from './src/server/bonuses.js';
 import {
   DEFAULT_BONUS_MODE,
   DEFAULT_QUESTION_TIMER_SECONDS,
   DEFAULT_READER_MODE,
 } from './src/config/gameSettings.js';
-import { 
-  GameState, 
-  Player, 
-  GameSettings, 
-  Question, 
-  CategoryId, 
-  DifficultyLevel 
+import {
+  BonusType,
+  GameState,
+  Player,
+  GameSettings,
+  Question,
+  CategoryId,
+  DifficultyLevel
 } from './src/types.js';
 
 const app = express();
@@ -963,8 +964,12 @@ io.on('connection', (socket: Socket) => {
       return;
     }
 
-    if (tile.type === 'surprise' && awardSurpriseBonus(room.gameState)) {
-      room.gameState.lastTurnEventMessage = `🎁 ${activePlayer.name} gagne un bonus 50/50 à utiliser quand il le souhaite !`;
+    const surpriseBonus = tile.type === 'surprise' ? awardSurpriseBonus(room.gameState) : null;
+    if (surpriseBonus) {
+      const label = surpriseBonus === 'camembert_joker'
+        ? 'un Joker camembert (une bonne réponse rapporte un camembert !)'
+        : 'un 50/50';
+      room.gameState.lastTurnEventMessage = `🎁 Boîte surprise : ${activePlayer.name} gagne ${label}`;
     }
 
     // Pick question according to tile category or player's difficulty
@@ -987,9 +992,10 @@ io.on('connection', (socket: Socket) => {
   // the correct answer never needs to be sent to the answering player's client.
   socket.on('use-bonus', (data: { roomCode: string; bonusType: string }) => {
     const room = getRoom(data.roomCode);
-    if (!room || isPaused(room) || data.bonusType !== 'fifty_fifty') return;
+    if (!room || isPaused(room)) return;
+    if (!BONUS_ROSTER.includes(data.bonusType as BonusType)) return;
     if (!isPlayerAllowedToAnswer(room, socket.id)) return;
-    if (!useFiftyFiftyBonus(room.gameState)) return;
+    if (!useBonus(room.gameState, data.bonusType as BonusType)) return;
 
     emitGameState(room);
     saveRooms(rooms);

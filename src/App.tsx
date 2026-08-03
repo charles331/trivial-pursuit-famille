@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { 
-  GameState, 
-  GameSettings, 
-  Player, 
-  EmojiReaction, 
-  CategoryId, 
-  Question 
+import {
+  BonusType,
+  GameState,
+  GameSettings,
+  Player,
+  EmojiReaction,
+  CategoryId,
+  Question
 } from './types';
 import { BOARD_PRESETS } from './data/boards';
 import { Lobby } from './components/Lobby';
@@ -276,9 +277,9 @@ export default function App() {
     }
   };
 
-  const handleUseBonus = () => {
+  const handleUseBonus = (bonusType: BonusType) => {
     if (socket && gameState) {
-      socket.emit('use-bonus', { roomCode: gameState.roomCode, bonusType: 'fifty_fifty' });
+      socket.emit('use-bonus', { roomCode: gameState.roomCode, bonusType });
     }
   };
 
