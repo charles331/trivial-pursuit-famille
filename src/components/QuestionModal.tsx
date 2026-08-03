@@ -447,22 +447,23 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
           {/* Carte ouverte : la réponse ne s'affiche que tant que le lecteur
               MAINTIENT le bouton. Un téléphone posé sur la table, un doigt qui
               glisse ou un passage en arrière-plan la re-cachent aussitôt (voir
-              l'effet qui écoute pointerup/blur/visibilitychange). Le lecteur lit
-              la réponse, relâche, puis tranche réussi / raté. */}
+              l'effet qui écoute pointerup/blur/visibilitychange). Comme sur une
+              carte Vrai/Faux, les boutons Réussi / Raté ne se déverrouillent
+              qu'une fois la réponse révélée une première fois. */}
           {isOpenFormat && !isAnswered && canJudgeOpen && (
             <div className="space-y-2.5 rounded-2xl border-2 border-emerald-500/50 bg-emerald-50/70 p-3 dark:bg-emerald-950/30">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <button
                   type="button"
                   aria-label="Maintenir pour afficher la réponse"
                   aria-pressed={isSolutionHeld}
                   onContextMenu={event => event.preventDefault()}
                   onPointerDown={() => setIsSolutionHeld(true)}
-                  onPointerLeave={() => setIsSolutionHeld(false)}
+                  onPointerLeave={() => { setIsSolutionHeld(false); setHasRevealedOnce(true); }}
                   onKeyDown={event => {
                     if (event.key === ' ' || event.key === 'Enter') setIsSolutionHeld(true);
                   }}
-                  onKeyUp={() => setIsSolutionHeld(false)}
+                  onKeyUp={() => { setIsSolutionHeld(false); setHasRevealedOnce(true); }}
                   onBlur={() => setIsSolutionHeld(false)}
                   className={`tap-target flex shrink-0 select-none touch-manipulation items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-black uppercase tracking-wide transition-colors ${
                     isSolutionHeld
@@ -474,33 +475,39 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                   {isSolutionHeld ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
                   Révéler
                 </button>
-                <p className="min-w-0 flex-1 text-[11px] font-bold leading-snug text-emerald-800 dark:text-emerald-200">
+                <p className="min-w-0 flex-1 leading-snug text-emerald-800 dark:text-emerald-200">
                   {isSolutionHeld ? (
-                    <>Réponse&nbsp;: <span className="font-black">{question.answer}</span></>
+                    <span className="text-lg font-black">{question.answer}</span>
                   ) : (
-                    'Réponse cachée. Maintenez le bouton pour la voir.'
+                    <span className="text-[11px] font-bold">
+                      Réponse cachée. Maintenez pour la voir et afficher le jugement.
+                    </span>
                   )}
                 </p>
               </div>
-              <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
-                {activePlayer.name} avait-il bon ?
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => { soundManager.playClick(); onSubmitAnswer(0); }}
-                  className="tap-target flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500 py-2.5 text-sm font-black text-white hover:bg-emerald-400"
-                >
-                  <CheckCircle2 className="h-4 w-4" /> Réussi
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { soundManager.playClick(); onSubmitAnswer(-1); }}
-                  className="tap-target flex items-center justify-center gap-1.5 rounded-xl bg-red-500 py-2.5 text-sm font-black text-white hover:bg-red-400"
-                >
-                  <XCircle className="h-4 w-4" /> Raté
-                </button>
-              </div>
+              {hasRevealedOnce && (
+                <>
+                  <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                    {activePlayer.name} avait-il bon ?
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => { soundManager.playClick(); onSubmitAnswer(0); }}
+                      className="tap-target flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500 py-2.5 text-sm font-black text-white hover:bg-emerald-400"
+                    >
+                      <CheckCircle2 className="h-4 w-4" /> Réussi
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { soundManager.playClick(); onSubmitAnswer(-1); }}
+                      className="tap-target flex items-center justify-center gap-1.5 rounded-xl bg-red-500 py-2.5 text-sm font-black text-white hover:bg-red-400"
+                    >
+                      <XCircle className="h-4 w-4" /> Raté
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
