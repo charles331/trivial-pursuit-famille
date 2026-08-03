@@ -317,5 +317,5 @@ if (errors.length > 0) {
   console.log(`Moules : aucun énoncé adulte réutilisé plus de ${MAX_SKELETON_REUSE} fois par catégorie.`);
   console.log('Énoncés : aucun ne cite le nom propre qui désigne sa bonne réponse.');
   console.log('Niveaux : aucune carte enfant recopiée au niveau ado ou adulte.');
-  console.log(`Volume adulte : exactement ${ADULT_EDITORIAL_TARGET_PER_CATEGORY} cartes relues par catégorie.`);
+  console.log(`Volume adulte : exactement ${ADULT_EDITORIAL_TARGET_PER_CATEGORY} cartes QCM relues par catégorie (les formats variés forment un pool séparé).`);
 }
