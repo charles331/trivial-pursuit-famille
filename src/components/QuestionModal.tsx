@@ -511,6 +511,27 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
             </div>
           )}
 
+          {/* Filet de sécurité : une carte ouverte se juge par un lecteur, qui
+              seul reçoit la réponse. `resolveReaderId` bascule déjà le rôle vers
+              le joueur connecté suivant si le lecteur se déconnecte. Mais s'il
+              ne reste plus aucun autre joueur connecté, personne ne peut valider
+              et, sans minuteur, la carte se bloquerait. Le joueur actif peut
+              alors la passer (comptée manquée) au lieu de rester coincé. */}
+          {isOpenFormat && !isAnswered && canAnswer && !canJudgeOpen && readerId === null && (
+            <div className="space-y-2 rounded-2xl border-2 border-amber-400 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950/40">
+              <p className="text-xs font-semibold leading-snug text-amber-900 dark:text-amber-200">
+                Aucun autre joueur connecté ne peut lire ni valider cette question ouverte.
+              </p>
+              <button
+                type="button"
+                onClick={() => { soundManager.playClick(); onSubmitAnswer(-1); }}
+                className="tap-target w-full rounded-xl bg-amber-500 py-2.5 text-sm font-black text-slate-950 hover:bg-amber-400"
+              >
+                Passer la question
+              </button>
+            </div>
+          )}
+
           {/* Carte ouverte, après jugement : la réponse canonique pour tous. */}
           {isOpenFormat && isAnswered && (
             <div className="rounded-2xl border-2 border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
