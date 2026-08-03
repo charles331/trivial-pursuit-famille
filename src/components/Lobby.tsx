@@ -4,6 +4,14 @@ import { AvatarPicker } from './AvatarPicker';
 import { soundManager } from '../utils/sound';
 import { AVATARS } from '../data/avatars';
 import { BOARD_PRESETS } from '../data/boards';
+import {
+  DEFAULT_PROFILE,
+  loadStoredProfile,
+  mergeStoredProfile,
+  PROFILE_STORAGE_KEY,
+  saveStoredProfile,
+  StoredProfile,
+} from '../utils/profileStorage';
 import { 
   Users, Play, Plus, Copy, Check, Sparkles, Smartphone, Globe, Shield, 
   Crown, Wand2, QrCode, LogOut, Trash2, SlidersHorizontal, ChevronDown
@@ -13,55 +21,11 @@ const BoardCustomizer = React.lazy(() =>
   import('./BoardCustomizer').then(module => ({ default: module.BoardCustomizer }))
 );
 
-/**
- * Dernier profil utilisé sur cet appareil, retenu d'une partie à l'autre pour
- * ne pas le ressaisir. C'est purement local au navigateur : rien n'est envoyé
- * au serveur, et chaque appareil garde le sien.
- */
-const PROFILE_STORAGE_KEY = 'tp_fam_profile';
-
-interface StoredProfile {
-  name: string;
-  avatarId: string;
-  color: string;
-  difficulty: DifficultyLevel;
-}
-
-// Au tout premier passage, le prénom reste vide (placeholder) plutôt que « Joueur 1 ».
-const DEFAULT_PROFILE: StoredProfile = { name: '', avatarId: 'lion', color: '#EF4444', difficulty: 'adulte' };
-
 const DIFFICULTY_LABEL: Record<DifficultyLevel, string> = {
   enfant: '🎈 Enfant',
   ado: '🚀 Ado',
   adulte: '🏆 Adulte',
 };
-
-function loadStoredProfile(): StoredProfile {
-  if (typeof window === 'undefined') return DEFAULT_PROFILE;
-  try {
-    const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
-    if (!raw) return DEFAULT_PROFILE;
-    const parsed = JSON.parse(raw) as Partial<StoredProfile> | null;
-    return {
-      name: typeof parsed?.name === 'string' ? parsed.name : DEFAULT_PROFILE.name,
-      avatarId: typeof parsed?.avatarId === 'string' ? parsed.avatarId : DEFAULT_PROFILE.avatarId,
-      color: typeof parsed?.color === 'string' ? parsed.color : DEFAULT_PROFILE.color,
-      difficulty: parsed?.difficulty === 'enfant' || parsed?.difficulty === 'ado' || parsed?.difficulty === 'adulte'
-        ? parsed.difficulty
-        : DEFAULT_PROFILE.difficulty,
-    };
-  } catch {
-    return DEFAULT_PROFILE;
-  }
-}
-
-function saveStoredProfile(profile: StoredProfile): void {
-  try {
-    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
-  } catch {
-    // Un stockage indisponible (navigation privée, quota) ne doit pas bloquer le jeu.
-  }
-}
 
 interface LobbyProps {
   gameState: GameState | null;
@@ -181,6 +145,24 @@ export const Lobby: React.FC<LobbyProps> = ({
     });
     setLocalName('');
     setShowAddLocalModal(false);
+  };
+
+  const handlePrimaryProfileUpdate = (updated: Partial<StoredProfile>) => {
+    const currentProfile: StoredProfile = {
+      name: me?.name ?? playerName,
+      avatarId: me?.avatarId ?? avatarId,
+      color: me?.color ?? color,
+      difficulty: me?.difficulty ?? difficulty,
+    };
+    const nextProfile = mergeStoredProfile(currentProfile, updated);
+
+    setPlayerName(nextProfile.name);
+    setAvatarId(nextProfile.avatarId);
+    setColor(nextProfile.color);
+    setDifficulty(nextProfile.difficulty);
+    saveStoredProfile(nextProfile);
+    setHasSavedProfile(true);
+    onUpdatePlayer(updated);
   };
 
   const handleCopyInviteLink = () => {
@@ -405,14 +387,7 @@ export const Lobby: React.FC<LobbyProps> = ({
                     avatarId={me?.avatarId || avatarId}
                     selectedColor={me?.color || color}
                     difficulty={me?.difficulty || difficulty}
-                    onUpdate={(updated) => {
-                      if (updated.name !== undefined) setPlayerName(updated.name);
-                      if (updated.avatarId) setAvatarId(updated.avatarId);
-                      if (updated.color) setColor(updated.color);
-                      if (updated.difficulty) setDifficulty(updated.difficulty);
-
-                      onUpdatePlayer(updated);
-                    }}
+                    onUpdate={handlePrimaryProfileUpdate}
                   />
                 </div>
               )}
