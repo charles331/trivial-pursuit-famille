@@ -58,9 +58,6 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   // get put flat on the table between two questions, and a permanently
   // highlighted answer was simply read by the player who had to guess it.
   const [isSolutionHeld, setIsSolutionHeld] = useState(false);
-  // Carte ouverte : la réponse canonique n'est dévoilée qu'après un geste franc
-  // du lecteur, avant qu'il ne juge la réponse orale.
-  const [openRevealed, setOpenRevealed] = useState(false);
 
   const category = CATEGORIES[question.categoryId] || CATEGORIES.histoire;
   const format = question.format ?? 'mcq';
@@ -209,7 +206,6 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
     setLocalReaderReady(false);
     setSelectedIdx(null);
     setIsSolutionHeld(false);
-    setOpenRevealed(false);
   }, [question.id]);
 
   // Release the solution from anywhere, not only from the button: a finger that
@@ -432,47 +428,63 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
             </div>
           )}
 
-          {/* Carte ouverte : dévoilement de la réponse puis jugement, réservé au
-              client qui détient la solution (le lecteur). */}
+          {/* Carte ouverte : la réponse ne s'affiche que tant que le lecteur
+              MAINTIENT le bouton. Un téléphone posé sur la table, un doigt qui
+              glisse ou un passage en arrière-plan la re-cachent aussitôt (voir
+              l'effet qui écoute pointerup/blur/visibilitychange). Le lecteur lit
+              la réponse, relâche, puis tranche réussi / raté. */}
           {isOpenFormat && !isAnswered && canJudgeOpen && (
-            <div className="space-y-2 rounded-2xl border-2 border-emerald-500/50 bg-emerald-50/70 p-3 dark:bg-emerald-950/30">
-              {!openRevealed ? (
+            <div className="space-y-2.5 rounded-2xl border-2 border-emerald-500/50 bg-emerald-50/70 p-3 dark:bg-emerald-950/30">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    soundManager.playClick();
-                    setOpenRevealed(true);
+                  aria-label="Maintenir pour afficher la réponse"
+                  aria-pressed={isSolutionHeld}
+                  onContextMenu={event => event.preventDefault()}
+                  onPointerDown={() => setIsSolutionHeld(true)}
+                  onPointerLeave={() => setIsSolutionHeld(false)}
+                  onKeyDown={event => {
+                    if (event.key === ' ' || event.key === 'Enter') setIsSolutionHeld(true);
                   }}
-                  className="tap-target flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-500/60 bg-white py-2.5 text-sm font-black text-emerald-700 dark:bg-slate-800 dark:text-emerald-300"
+                  onKeyUp={() => setIsSolutionHeld(false)}
+                  onBlur={() => setIsSolutionHeld(false)}
+                  className={`tap-target flex shrink-0 select-none touch-manipulation items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-black uppercase tracking-wide transition-colors ${
+                    isSolutionHeld
+                      ? 'border-emerald-500 bg-emerald-500 text-white'
+                      : 'border-emerald-500/50 bg-white text-emerald-700 dark:bg-slate-800 dark:text-emerald-300'
+                  }`}
+                  style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none' }}
                 >
-                  <Eye className="h-4 w-4" /> Révéler la réponse
+                  {isSolutionHeld ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                  Révéler
                 </button>
-              ) : (
-                <>
-                  <p className="text-sm font-bold leading-snug text-emerald-900 dark:text-emerald-100">
-                    Réponse&nbsp;: <span className="font-black">{question.answer}</span>
-                  </p>
-                  <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
-                    {activePlayer.name} avait-il bon ?
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => { soundManager.playClick(); onSubmitAnswer(0); }}
-                      className="tap-target flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500 py-2.5 text-sm font-black text-white hover:bg-emerald-400"
-                    >
-                      <CheckCircle2 className="h-4 w-4" /> Réussi
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { soundManager.playClick(); onSubmitAnswer(-1); }}
-                      className="tap-target flex items-center justify-center gap-1.5 rounded-xl bg-red-500 py-2.5 text-sm font-black text-white hover:bg-red-400"
-                    >
-                      <XCircle className="h-4 w-4" /> Raté
-                    </button>
-                  </div>
-                </>
-              )}
+                <p className="min-w-0 flex-1 text-[11px] font-bold leading-snug text-emerald-800 dark:text-emerald-200">
+                  {isSolutionHeld ? (
+                    <>Réponse&nbsp;: <span className="font-black">{question.answer}</span></>
+                  ) : (
+                    'Réponse cachée. Maintenez le bouton pour la voir.'
+                  )}
+                </p>
+              </div>
+              <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                {activePlayer.name} avait-il bon ?
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => { soundManager.playClick(); onSubmitAnswer(0); }}
+                  className="tap-target flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500 py-2.5 text-sm font-black text-white hover:bg-emerald-400"
+                >
+                  <CheckCircle2 className="h-4 w-4" /> Réussi
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { soundManager.playClick(); onSubmitAnswer(-1); }}
+                  className="tap-target flex items-center justify-center gap-1.5 rounded-xl bg-red-500 py-2.5 text-sm font-black text-white hover:bg-red-400"
+                >
+                  <XCircle className="h-4 w-4" /> Raté
+                </button>
+              </div>
             </div>
           )}
 
