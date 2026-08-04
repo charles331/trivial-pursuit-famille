@@ -311,11 +311,15 @@ export const VARIABLE_FORMAT_PILOT: Question[] = [
     categoryId: 'cinema',
     difficulty: 'adulte',
     format: 'open',
-    question: 'Quel studio d’animation japonais a été fondé par Hayao Miyazaki ?',
+    // Une carte ouverte est le format le plus dur du jeu : il n'y a rien à
+    // éliminer, il faut produire la réponse. Une attribution y devient donc
+    // impitoyable — « fondé par Miyazaki » ne souffle pas le mot « Ghibli ».
+    // On demande à la place un terme de métier que l'énoncé décrit entièrement.
+    question: 'Comment appelle-t-on l’animation obtenue en photographiant des objets image par image ?',
     options: [],
     correctAnswerIndex: 0,
-    answer: 'Le studio Ghibli',
-    explanation: 'Fondé en 1985, il est à l’origine de « Mon voisin Totoro » et du « Voyage de Chihiro ».',
+    answer: 'Le stop motion (ou animation en volume)',
+    explanation: 'Wallace et Gromit, en pâte à modeler, ont demandé des mois pour quelques minutes de film.',
   },
   {
     id: 'var_open_013',

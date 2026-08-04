@@ -132,6 +132,14 @@ const REPLACEMENTS: Replacement[] = [
   ['sport_adulte_curated_06_037', 'Quel coureur belge a remporté le championnat du monde sur route en 2022 ?', 'Remco Evenepoel', 'Wout van Aert', 'Philippe Gilbert', 'Greg Van Avermaet', 'Remco Evenepoel s’imposa en solitaire à Wollongong en Australie.'],
   ['sport_adulte_curated_06_044', 'Quel sport pratique l’équipe nationale belge surnommée les Red Lions ?', 'Le hockey sur gazon', 'Le rugby', 'Le handball', 'Le volley-ball', 'Les Red Lions ont été champions olympiques à Tokyo.'],
   ['sport_adulte_curated_06_046', 'Quel gardien belge joua au Bayern Munich dans les années 1980 ?', 'Jean-Marie Pfaff', 'Michel Preud’homme', 'Thibaut Courtois', 'Geert De Vlieger', 'Jean-Marie Pfaff remporta notamment trois championnats d’Allemagne avec le Bayern.'],
+  // --- Cartes signalées « trop compliquées » lors d'une partie d'août 2026 ----
+  // Quatre reproches distincts, et un enseignement : une seule de ces cartes était
+  // détectée par la note de fun. Les autres avaient une forme irréprochable et un
+  // sujet dont personne à table n'avait jamais entendu parler.
+  ['art_adulte_editorial_04_015', 'Comment appelle-t-on la bulle qui contient les paroles d’un personnage de bande dessinée ?', 'Le phylactère', 'La vignette', 'La planche', 'Le cartouche', 'Le mot vient des bandelettes portant des inscriptions dans l’art religieux médiéval.'],
+  ['cin_adulte_editorial_final_027', 'Combien de Palmes d’or les frères Dardenne, cinéastes belges, ont-ils remportées ?', 'Deux', 'Une', 'Quatre', 'Aucune', 'Rosetta en 1999 et L’Enfant en 2005, tous deux tournés autour de Seraing et Liège.'],
+  ['sci_adulte_editorial_final_034', 'Laquelle des quatre interactions fondamentales est responsable de la radioactivité ?', 'L’interaction faible', 'L’interaction forte', 'L’électromagnétisme', 'La gravitation', 'Elle seule change la nature d’une particule : un neutron devient proton en émettant un électron.'],
+  ['art_adulte_editorial_07_023', 'Dans quelle série François Schuiten et Benoît Peeters imaginent-ils des villes impossibles ?', 'Les Cités obscures', 'Blake et Mortimer', 'Thorgal', 'Le Chat', 'Schuiten a aussi dessiné des stations du métro bruxellois et le pavillon belge de l’Expo 2000.'],
 ];
 
 const BY_ID = new Map(REPLACEMENTS.map((replacement) => [replacement[0], replacement]));

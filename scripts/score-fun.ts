@@ -86,7 +86,16 @@ const CRITERIA: Criterion[] = [
     label: 'Chemin de raisonnement',
     weight: 30,
     score: (card) => {
-      if ((card.format ?? 'mcq') !== 'mcq') return 1; // vrai/faux et ouvertes : pas de leurre
+      // Les formats sans quatre propositions n'ont pas de leurre, mais ce n'est
+      // pas pour autant un chemin de raisonnement offert. Une carte ouverte est
+      // au contraire le format le plus dur du jeu : il n'y a rien à éliminer, il
+      // faut produire la réponse. Le barème la créditait d'un 1 plein, ce qui a
+      // masqué une carte d'attribution en format ouvert — « quel studio fondé par
+      // Miyazaki ? » sans aucune option — notée 88 % alors qu'elle a bloqué la
+      // table. Un vrai/faux, lui, se raisonne à partir de l'affirmation posée.
+      const format = card.format ?? 'mcq';
+      if (format === 'boolean') return 0.9;
+      if (format === 'open') return 0.6;
       if (isPersonNameLotteryCard(card.question, card.options)) return 0;
       if (isBareYearCard(card.question, card.options)) return 0;
       if (isBareNumberCard(card.options)) return 0.45;
