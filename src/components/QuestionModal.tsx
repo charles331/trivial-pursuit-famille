@@ -62,6 +62,14 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   // lecteur n'a pas révélé au moins une fois la bonne réponse. Le premier
   // maintien les déverrouille ; ils restent ensuite affichés pour trancher.
   const [hasRevealedOnce, setHasRevealedOnce] = useState(false);
+  // Boîte mystère : le bonus gagné se dévoile en lançant une roue. Le serveur a
+  // déjà décidé du résultat ; la roue ne fait que le révéler avec du panache.
+  const [wheelAngle, setWheelAngle] = useState(0);
+  const [wheelSpinning, setWheelSpinning] = useState(false);
+  const [wheelSpun, setWheelSpun] = useState(false);
+  // L'inventaire des bonus vit dans un popup ouvert par un bouton en bas de
+  // carte, au lieu d'occuper en permanence l'espace de la question.
+  const [bonusPickerOpen, setBonusPickerOpen] = useState(false);
 
   const category = CATEGORIES[question.categoryId] || CATEGORIES.histoire;
   const format = question.format ?? 'mcq';
@@ -211,6 +219,10 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
     setSelectedIdx(null);
     setIsSolutionHeld(false);
     setHasRevealedOnce(false);
+    setWheelAngle(0);
+    setWheelSpinning(false);
+    setWheelSpun(false);
+    setBonusPickerOpen(false);
   }, [question.id]);
 
   // Release the solution from anywhere, not only from the button: a finger that
@@ -239,6 +251,27 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   const fiftyFiftyCount = activePlayer.bonuses?.fifty_fifty ?? 0;
   const jokerCount = activePlayer.bonuses?.camembert_joker ?? 0;
   const jokerArmed = activeQuestionBonus?.type === 'camembert_joker';
+  // Un 50/50 ne sert qu'aux QCM (il faut au moins deux distracteurs) ; le Joker
+  // vaut pour tous les formats.
+  const hasUsableBonus = (isMcqFormat && fiftyFiftyCount > 0) || jokerCount > 0;
+
+  // La roue tourne cinq tours puis s'arrête sur le bonus déjà décidé côté
+  // serveur. Six quartiers alternent 50/50 et Joker ; on vise un quartier au
+  // hasard du bon type pour que la roue paraisse libre.
+  const spinBonusWheel = () => {
+    if (wheelSpinning || wheelSpun) return;
+    const segments = bonusAwardedThisTurn === 'camembert_joker' ? [1, 3, 5] : [0, 2, 4];
+    const target = segments[Math.floor(Math.random() * segments.length)];
+    const landing = 360 * 5 - (target * 60 + 30);
+    setWheelSpinning(true);
+    setWheelAngle(landing);
+    soundManager.playClick();
+    window.setTimeout(() => {
+      setWheelSpinning(false);
+      setWheelSpun(true);
+      soundManager.playCorrect();
+    }, 3600);
+  };
   const hiddenOptionIndexes = activeQuestionBonus?.type === 'fifty_fifty'
     ? activeQuestionBonus.hiddenOptionIndexes
     : [];
@@ -348,12 +381,56 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-3 py-3 sm:px-5 sm:py-4">
          <div className="my-auto space-y-3">
 
-          {/* Question Text */}
-          {bonusAwardedThisTurn && (
+          {/* Boîte mystère : le joueur actif lance la roue pour révéler son
+              bonus. Les autres voient seulement le résultat annoncé. */}
+          {bonusAwardedThisTurn && isIActivePlayer && (
+            <div className="flex flex-col items-center gap-2 rounded-2xl border border-pink-300 bg-pink-50/80 p-3 dark:border-pink-800 dark:bg-pink-950/40">
+              <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-pink-800 dark:text-pink-300">
+                <Gift className="h-3.5 w-3.5" /> Boîte surprise
+              </div>
+              <div className="relative h-36 w-36">
+                {/* Aiguille fixe, pointant vers le haut de la roue. */}
+                <div className="absolute left-1/2 top-[-2px] z-10 h-0 w-0 -translate-x-1/2 border-x-8 border-t-[14px] border-x-transparent border-t-slate-900 dark:border-t-white" />
+                <div
+                  className="h-full w-full rounded-full border-4 border-white shadow-lg dark:border-slate-700"
+                  style={{
+                    background: 'conic-gradient(#ec4899 0deg 60deg, #f59e0b 60deg 120deg, #ec4899 120deg 180deg, #f59e0b 180deg 240deg, #ec4899 240deg 300deg, #f59e0b 300deg 360deg)',
+                    transform: `rotate(${wheelAngle}deg)`,
+                    transition: wheelSpinning ? 'transform 3.5s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
+                  }}
+                >
+                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                    <span
+                      key={i}
+                      className="absolute left-1/2 top-1/2 text-lg"
+                      style={{ transform: `translate(-50%, -50%) rotate(${i * 60 + 30}deg) translateY(-46px) rotate(-${i * 60 + 30}deg)` }}
+                    >
+                      {i % 2 === 0 ? '🎯' : '🧀'}
+                    </span>
+                  ))}
+                </div>
+                <div className="absolute left-1/2 top-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-slate-200 bg-white shadow dark:border-slate-600 dark:bg-slate-800" />
+              </div>
+              {wheelSpun ? (
+                <p className="text-center text-sm font-black text-pink-900 dark:text-pink-100">
+                  🎉 Vous gagnez {bonusAwardedThisTurn === 'camembert_joker' ? 'un Joker camembert' : 'un 50/50'} !
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  disabled={wheelSpinning}
+                  onClick={spinBonusWheel}
+                  className="tap-target rounded-xl bg-pink-500 px-5 py-2 text-sm font-black text-white shadow-sm hover:bg-pink-400 disabled:opacity-60"
+                >
+                  {wheelSpinning ? 'La roue tourne…' : 'Lancer la roue 🎡'}
+                </button>
+              )}
+            </div>
+          )}
+          {bonusAwardedThisTurn && !isIActivePlayer && (
             <div className="flex items-center gap-2 rounded-xl border border-pink-300 bg-pink-50 p-2.5 text-xs font-black text-pink-900 dark:border-pink-800 dark:bg-pink-950/40 dark:text-pink-200">
               <Gift className="h-4 w-4 shrink-0" />
-              Boîte surprise : {activePlayer.name} gagne{' '}
-              {bonusAwardedThisTurn === 'camembert_joker' ? 'un Joker camembert' : 'un 50/50'} à conserver !
+              Boîte surprise : {activePlayer.name} tente sa chance à la roue !
             </div>
           )}
 
@@ -378,50 +455,13 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
             </p>
           )}
 
-          {bonusesEnabled && canAnswer && !isAnswered
-            && ((isMcqFormat && (fiftyFiftyCount > 0 || activeQuestionBonus?.type === 'fifty_fifty'))
-              || jokerCount > 0 || jokerArmed) && (
-            <div className="space-y-1.5 rounded-xl border border-pink-300/70 bg-pink-50/70 p-2 dark:border-pink-800 dark:bg-pink-950/30">
-              {/* 50/50 — QCM uniquement : il faut au moins deux distracteurs. */}
-              {isMcqFormat && (fiftyFiftyCount > 0 || activeQuestionBonus?.type === 'fifty_fifty') && (
-                <div className="flex items-center justify-between gap-2">
-                  <div className="min-w-0 text-[11px] font-bold leading-snug text-pink-900 dark:text-pink-200">
-                    {activeQuestionBonus?.type === 'fifty_fifty'
-                      ? '50/50 utilisé : deux mauvaises réponses ont été éliminées.'
-                      : `🎯 50/50 × ${fiftyFiftyCount}`}
-                  </div>
-                  {!activeQuestionBonus && (
-                    <button
-                      type="button"
-                      disabled={fiftyFiftyCount < 1}
-                      onClick={() => { soundManager.playClick(); onUseBonus('fifty_fifty'); }}
-                      className="tap-target shrink-0 rounded-lg bg-pink-500 px-3 py-1 text-xs font-black text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      Utiliser
-                    </button>
-                  )}
-                </div>
-              )}
-              {/* Joker camembert — tous formats : une bonne réponse vaut un camembert. */}
-              {(jokerCount > 0 || jokerArmed) && (
-                <div className="flex items-center justify-between gap-2">
-                  <div className="min-w-0 text-[11px] font-bold leading-snug text-pink-900 dark:text-pink-200">
-                    {jokerArmed
-                      ? '🧀 Joker armé : une bonne réponse rapporte un camembert !'
-                      : `🧀 Joker camembert × ${jokerCount}`}
-                  </div>
-                  {!activeQuestionBonus && (
-                    <button
-                      type="button"
-                      disabled={jokerCount < 1}
-                      onClick={() => { soundManager.playClick(); onUseBonus('camembert_joker'); }}
-                      className="tap-target shrink-0 rounded-lg bg-amber-500 px-3 py-1 text-xs font-black text-slate-950 shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      Utiliser
-                    </button>
-                  )}
-                </div>
-              )}
+          {/* Bonus armé : un rappel discret, l'inventaire vivant désormais dans
+              un popup ouvert depuis le bas de la carte. */}
+          {activeQuestionBonus && !isAnswered && (
+            <div className="rounded-xl border border-pink-300/70 bg-pink-50/70 p-2 text-center text-[11px] font-black text-pink-900 dark:border-pink-800 dark:bg-pink-950/30 dark:text-pink-200">
+              {activeQuestionBonus.type === 'camembert_joker'
+                ? '🧀 Joker armé : une bonne réponse rapporte un camembert !'
+                : '🎯 50/50 utilisé : deux mauvaises réponses ont été éliminées.'}
             </div>
           )}
 
@@ -672,6 +712,24 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
          </div>
         </div>
 
+        {/* Bonus : un bouton pinné en bas ouvre le popup d'inventaire, au lieu
+            d'afficher la liste en permanence sur la carte. Il disparaît une fois
+            un bonus armé (un seul par question). */}
+        {bonusesEnabled && canAnswer && !isAnswered && !activeQuestionBonus && hasUsableBonus && (
+          <div className="shrink-0 border-t border-slate-200 bg-white/95 px-3 pt-2 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
+            <button
+              type="button"
+              onClick={() => { soundManager.playClick(); setBonusPickerOpen(true); }}
+              className="tap-target flex w-full items-center justify-center gap-2 rounded-xl border-2 border-pink-300 bg-pink-50 py-2 text-sm font-black text-pink-700 hover:bg-pink-100 dark:border-pink-800 dark:bg-pink-950/40 dark:text-pink-300"
+            >
+              <Gift className="h-4 w-4" /> Utiliser un bonus
+              <span className="rounded-full bg-pink-500 px-1.5 text-[11px] font-black text-white">
+                {(isMcqFormat ? fiftyFiftyCount : 0) + jokerCount}
+              </span>
+            </button>
+          </div>
+        )}
+
         {/* Action bar: pinned so the only thing left to do is always in reach.
             Sur une carte ouverte non encore jugée, le geste (révéler / réussi /
             raté) vit dans le corps : la barre ne réapparaît qu'après le verdict,
@@ -714,6 +772,65 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                 </p>
               </>
             )}
+          </div>
+        )}
+
+        {/* Popup de choix des bonus, ouvert depuis le bouton du bas. */}
+        {bonusPickerOpen && (
+          <div
+            className="absolute inset-0 z-40 flex items-end justify-center bg-black/50 p-4 sm:items-center"
+            onClick={() => setBonusPickerOpen(false)}
+          >
+            <div
+              className="w-full max-w-sm space-y-2 rounded-2xl bg-white p-4 shadow-2xl dark:bg-slate-900"
+              onClick={event => event.stopPropagation()}
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-black text-slate-900 dark:text-white">Utiliser un bonus</h3>
+                <button
+                  type="button"
+                  aria-label="Fermer"
+                  onClick={() => setBonusPickerOpen(false)}
+                  className="tap-target rounded-lg px-2 text-lg font-black text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {isMcqFormat && fiftyFiftyCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => { soundManager.playClick(); onUseBonus('fifty_fifty'); setBonusPickerOpen(false); }}
+                  className="tap-target flex w-full items-center gap-3 rounded-xl border-2 border-pink-300 bg-pink-50 p-3 text-left hover:bg-pink-100 dark:border-pink-800 dark:bg-pink-950/40"
+                >
+                  <span className="text-2xl">🎯</span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-black text-pink-900 dark:text-pink-100">50/50 × {fiftyFiftyCount}</span>
+                    <span className="block text-[11px] font-semibold text-pink-700 dark:text-pink-300">Élimine deux mauvaises réponses</span>
+                  </span>
+                </button>
+              )}
+
+              {jokerCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => { soundManager.playClick(); onUseBonus('camembert_joker'); setBonusPickerOpen(false); }}
+                  className="tap-target flex w-full items-center gap-3 rounded-xl border-2 border-amber-300 bg-amber-50 p-3 text-left hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/40"
+                >
+                  <span className="text-2xl">🧀</span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-black text-amber-900 dark:text-amber-100">Joker camembert × {jokerCount}</span>
+                    <span className="block text-[11px] font-semibold text-amber-700 dark:text-amber-300">Une bonne réponse rapporte un camembert, où que tu sois</span>
+                  </span>
+                </button>
+              )}
+
+              {!hasUsableBonus && (
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  Aucun bonus utilisable sur cette carte.
+                </p>
+              )}
+            </div>
           </div>
         )}
       </div>
