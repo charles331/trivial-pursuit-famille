@@ -48,6 +48,63 @@ const NARRATIVE = /pourquoi|comment|que fait|que se passe|quelle particularité|
 const ADMINISTRATIVE = /traité|convention|directive|organisme|institution|accord|protocole|sommet|commission|décret|ordonnance|réforme|statut|charte/i;
 
 /**
+ * Mots outils que la capitale d'un début de phrase ne transforme pas en nom propre.
+ */
+const NAME_STOP_WORDS = new Set([
+  'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'au', 'aux', 'et', 'ou',
+  'dans', 'pour', 'par', 'sur', 'quel', 'quelle', 'quels', 'quelles', 'qui',
+  'que', 'comment', 'combien', 'pourquoi', 'quand', 'the', 'of',
+]);
+
+function properNamesOf(text: string): string[] {
+  return text
+    .split(/[^\p{L}\p{N}\u2019'-]+/u)
+    .filter((word) => /^[A-ZÀ-Ý]/.test(word))
+    .map((word) => normalize(word))
+    .filter((word) => word.length >= 4 && !NAME_STOP_WORDS.has(word));
+}
+
+/**
+ * Combien de cartes du corpus mentionnent chaque nom propre.
+ *
+ * C'est le contournement de l'angle mort que je croyais infranchissable : aucun
+ * vocabulaire ne dit qu'un sujet est inconnu de la table, mais la **récurrence**
+ * le dit. Un sujet familier revient — Napoléon, Hugo, Star Wars apparaissent des
+ * dizaines de fois dans les 5 400 cartes. Un sujet de festival n'apparaît qu'une
+ * fois : « Merata Mita », « Ekvtimishvili », « lagune Ébrié » sont des hapax.
+ *
+ * Mesuré sur les cartes réellement rejetées en partie, la séparation est nette :
+ * elles plafonnent à 1 ou 2 occurrences, là où les cartes jugées bonnes vont de 5
+ * à 99.
+ */
+const nameFrequency = (() => {
+  const counts = new Map<string, number>();
+  for (const card of QUESTIONS_DATABASE) {
+    const seen = new Set(properNamesOf(
+      `${card.question} ${card.options.join(' ')} ${card.explanation ?? ''}`,
+    ));
+    for (const name of seen) counts.set(name, (counts.get(name) ?? 0) + 1);
+  }
+  return counts;
+})();
+
+/**
+ * Plafond d'ancrage imposé par la notoriété du sujet : un énoncé bâti sur des
+ * noms propres que le corpus ne mentionne nulle part ailleurs ne peut pas être
+ * considéré comme proche de la table, quelle que soit sa forme.
+ */
+function notorietyCeiling(question: string): number {
+  const names = properNamesOf(question);
+  // Un énoncé sans nom propre ne demande de reconnaître personne : rien à plafonner.
+  if (names.length === 0) return 1;
+  const best = Math.max(...names.map((name) => nameFrequency.get(name) ?? 1));
+  if (best <= 1) return 0.2;
+  if (best <= 2) return 0.3;
+  if (best <= 4) return 0.5;
+  return 1;
+}
+
+/**
  * Ce qui distingue réellement chaque option des trois autres.
  *
  * Les mots présents dans les quatre options ne départagent rien : « Le traité
@@ -128,10 +185,17 @@ const CRITERIA: Criterion[] = [
       // Beaufort / La magnitude de moment », où la quatrième option sort du
       // moule : les options ne partagent alors pas toutes le même préfixe, et le
       // joueur a bel et bien de quoi raisonner.
+      // La notoriété plafonne aussi le raisonnement, et pas seulement l'ancrage :
+      // on ne raisonne pas sur un sujet qu'on ne reconnaît pas. « Quel
+      // documentaire de Merata Mita filme une occupation māorie ? » a des options
+      // rédigées et un indice descriptif — la forme est irréprochable — mais qui
+      // n'a jamais entendu parler de cette réalisatrice n'a rien à en tirer. Sans
+      // ce plafond, la carte gardait la note pleine sur le critère le plus lourd.
+      const ceiling = notorietyCeiling(card.question);
       const discriminating = discriminatingParts(card.options);
       const wordy = discriminating.filter((part) => part.split(/\s+/).filter(Boolean).length >= 3).length;
-      if (wordy >= 3) return 1;
-      if (wordy >= 1) return 0.85;
+      if (wordy >= 3) return Math.min(1, ceiling);
+      if (wordy >= 1) return Math.min(0.85, ceiling);
       // Quatre noms propres nus — quatre pays, quatre villes, quatre titres — se
       // reconnaissent plus qu'ils ne se déduisent. Moins sévère que la loterie de
       // personnes : ces entités-là sont au moins familières.
@@ -160,9 +224,12 @@ const CRITERIA: Criterion[] = [
     weight: 15,
     score: (card) => {
       const text = `${card.question} ${card.options.join(' ')} ${card.explanation ?? ''}`;
-      if (FRANCOPHONE.test(text)) return 1;
-      if (ANGLO.test(text)) return 0.35;
-      return 0.7;
+      const base = FRANCOPHONE.test(text) ? 1 : ANGLO.test(text) ? 0.35 : 0.7;
+      // Le vocabulaire ne suffisait pas : un film géorgien ou un documentaire
+      // māori n'est ni francophone ni anglo-saxon, il était donc jugé « neutre »
+      // à 0,7 alors qu'il est nulle part pour la table. La notoriété du sujet
+      // plafonne maintenant l'ancrage.
+      return Math.min(base, notorietyCeiling(card.question));
     },
   },
   {

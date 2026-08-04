@@ -146,6 +146,20 @@ const REPLACEMENTS: Replacement[] = [
   // fait, lui, est magnifique : il explique pourquoi le Brésil parle portugais.
   // On garde donc le traité, nommé dans l'énoncé, et on interroge sa conséquence.
   ['his_adulte_editorial_04_028', 'Quelle conséquence durable eut le traité de Tordesillas, qui partagea le Nouveau Monde ?', 'Le Brésil devint portugais, le reste du continent espagnol', 'Les Pays-Bas obtinrent les Antilles', 'La France renonça au Canada', 'L’Angleterre reçut l’Amérique du Nord', 'La ligne passait à 370 lieues des îles du Cap-Vert, laissant la pointe est du Brésil au Portugal.'],
+  // --- Cartes signalées trop pointues, seconde salve --------------------------
+  // Deux cartes relevées en partie, plus les quatre pires du même bloc de cinéma
+  // d'auteur. Le défaut commun est la notoriété du sujet : la forme était bonne,
+  // mais personne à table n'avait entendu parler de la réalisatrice, du lieu ni du
+  // compositeur. On garde le domaine et on ancre le sujet.
+  ['geo_adulte_editorial_03_017', 'Quelle est la plus grande ville de Côte d’Ivoire, cœur économique de l’Afrique de l’Ouest ?', 'Abidjan', 'Dakar', 'Bamako', 'Accra', 'Yamoussoukro est la capitale politique, mais Abidjan concentre l’économie et près de six millions d’habitants.'],
+  ['cin_adulte_editorial_final_022', 'Quel film culte belge en noir et blanc suit un tueur en série filmé par une équipe de télévision ?', 'C’est arrivé près de chez vous', 'Le Huitième Jour', 'Toto le héros', 'Le Tout Nouveau Testament', 'Tourné avec très peu de moyens en 1992, il a révélé Benoît Poelvoorde.'],
+
+  // Attributions nues de musiques de film : quatre compositeurs de la même époque
+  // ne se départagent pas. On interroge la musique elle-même.
+  ['cin_adulte_editorial_final_001', 'Quel instrument porte à lui seul la musique stridente de la scène de la douche dans « Psychose » ?', 'Le violon', 'La trompette', 'L’orgue', 'La batterie', 'Bernard Herrmann n’a écrit toute la partition que pour des cordes, sans aucun cuivre.'],
+  ['cin_adulte_editorial_final_002', 'Quel animal donne son nom au film et au dessin animé dont la musique de Henry Mancini est culte ?', 'La panthère', 'Le lion', 'Le renard', 'Le lynx', 'Le générique animé a eu tellement de succès qu’il a engendré sa propre série.'],
+  ['cin_adulte_editorial_final_003', 'Quelle particularité rare a le film « Les Parapluies de Cherbourg », de Jacques Demy ?', 'Tous les dialogues sont chantés', 'Il est entièrement muet', 'Il a été tourné en une seule prise', 'Il n’a aucun décor', 'Michel Legrand a composé une partition continue, du premier au dernier plan.'],
+  ['cin_adulte_editorial_final_006', 'Dans quelle ville pluvieuse et surpeuplée se déroule le film « Blade Runner » ?', 'Los Angeles', 'New York', 'Tokyo', 'Chicago', 'Le film situe l’action en 2019, une date depuis longtemps dépassée.'],
 ];
 
 const BY_ID = new Map(REPLACEMENTS.map((replacement) => [replacement[0], replacement]));
