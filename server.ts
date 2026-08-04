@@ -1043,6 +1043,10 @@ io.on('connection', (socket: Socket) => {
     const question = pickQuestionForPlayer(room.gameState, categoryId as CategoryId, activePlayer.difficulty);
 
     room.gameState.currentQuestion = question;
+    // Le rappel de la carte précédente s'effface ici, et pas au changement de
+    // tour : c'est précisément l'intervalle pendant lequel la table doit pouvoir
+    // finir de lire le « Le saviez-vous ? ».
+    room.gameState.lastQuestionRecap = null;
     room.gameState.phase = 'question';
     // Sur une case Surprise, le minuteur ne démarre pas tout de suite : la roue
     // doit d'abord tourner. On laisse `questionStartTime` en attente (null) et

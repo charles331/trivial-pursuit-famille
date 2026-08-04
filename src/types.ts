@@ -210,6 +210,25 @@ export interface GameState {
   surpriseSpinThisTurn?: boolean;
   /** Effet déjà appliqué à la question en cours. */
   activeQuestionBonus?: ActiveQuestionBonus | null;
+  /**
+   * Résumé de la carte qui vient d'être jouée, conservé jusqu'à ce que la
+   * suivante soit tirée.
+   *
+   * Le « Le saviez-vous ? » n'existait que dans le modal de question : dès que
+   * quelqu'un passait au joueur suivant, il disparaissait de tous les écrans à la
+   * fois. À trois joueurs, celui qui n'avait ni répondu ni lu n'avait pas le temps
+   * de le lire. Le rappel n'expose que des données d'une carte déjà tranchée : il
+   * ne divulgue donc rien.
+   */
+  lastQuestionRecap?: {
+    categoryId: CategoryId;
+    question: string;
+    answer: string;
+    explanation?: string;
+    /** Qui répondait, pour situer le rappel dans le tour de table. */
+    playerName: string;
+    isCorrect: boolean;
+  } | null;
   /** Partie mise en pause par l'organisateur : le salon est gardé plus longtemps. */
   isPaused?: boolean;
   /** Instant de la mise en pause, qui sert à décaler le minuteur à la reprise. */
