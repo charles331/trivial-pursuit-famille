@@ -12,7 +12,7 @@ import {
   normalize as normalizeText,
 } from './src/data/questionRules.js';
 import { checkStore, loadRooms, startRoomPersistence, saveRooms, ROOM_STORE_PATH } from './roomStore.js';
-import { advanceTurn, calculateMoves, removePlayerFromGame, resolveAnswer, togglePauseState } from './src/server/gameEngine.js';
+import { advanceTurn, calculateMoves, removePlayerFromGame, resetGameForNewRound, resolveAnswer, togglePauseState } from './src/server/gameEngine.js';
 import {
   beginFirstPlayerDraw,
   pendingRollers,
@@ -780,6 +780,26 @@ io.on('connection', (socket: Socket) => {
     console.log(`[Pack IA] ${data.questions.length} questions ajoutées pour "${data.themeName}" dans le salon ${data.roomCode}`);
   });
 
+  /**
+   * Retour au salon depuis l'écran de victoire.
+   *
+   * Le bouton était câblé sur `leave-room`, si bien que l'organisateur qui venait
+   * de gagner fermait le salon pour toute la table : « l'organisateur a fermé le
+   * salon ». Ce n'est pas la même intention — on veut revenir régler la partie et
+   * en relancer une, pas s'en aller.
+   */
+  socket.on('return-to-lobby', (data: { roomCode: string }) => {
+    const room = getRoom(data.roomCode);
+    if (!room || room.hostSocketId !== socket.id) return;
+    if (room.gameState.phase === 'lobby') return;
+
+    resetGameForNewRound(room.gameState);
+    room.gameState.phase = 'lobby';
+    emitGameState(room);
+    saveRooms(rooms);
+    console.log(`[Room] ${room.code} revient au salon`);
+  });
+
   // Start Game
   socket.on('start-game', (data: { roomCode: string }) => {
     const room = getRoom(data.roomCode);
@@ -803,6 +823,11 @@ io.on('connection', (socket: Socket) => {
       }
     });
 
+    // Une nouvelle manche repart de zéro : camemberts, pions, scores et bonus.
+    // Sans cela, « Rejouer » après une victoire redonnait la main au vainqueur
+    // avec tous ses camemberts déjà en poche.
+    resetGameForNewRound(room.gameState);
+
     // Collect all custom questions from custom packs added to the room
     const customQuestions: Question[] = [];
     if (room.gameState.customPacks) {
@@ -813,10 +838,6 @@ io.on('connection', (socket: Socket) => {
 
     // Shuffle questions pool on game start (custom pack questions included first)
     room.gameState.questionsPool = shuffled([...customQuestions, ...QUESTIONS_DATABASE]);
-    room.gameState.usedQuestionIds = [];
-    room.gameState.bonusAwardedThisTurn = null;
-    room.gameState.surpriseSpinThisTurn = false;
-    room.gameState.activeQuestionBonus = null;
 
     // Le premier joueur n'est plus l'organisateur d'office : tout le monde
     // lance le dé une fois et le meilleur lancer ouvre la partie. Une partie

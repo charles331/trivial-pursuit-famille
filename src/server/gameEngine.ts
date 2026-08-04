@@ -106,6 +106,46 @@ export function advanceTurn(state: GameState): void {
 }
 
 /**
+ * Remet la table à zéro pour une nouvelle manche, en gardant les joueurs, les
+ * réglages et les paquets de thèmes.
+ *
+ * `start-game` ne réinitialisait que le réservoir de questions : ni les
+ * camemberts, ni les pions, ni les scores, ni les bonus. Rejouer après une
+ * victoire repartait donc avec le vainqueur détenant déjà tous ses camemberts,
+ * prêt à gagner au premier passage par le centre.
+ *
+ * La phase n'est pas fixée ici : l'appelant décide s'il repart vers le lobby ou
+ * vers une nouvelle partie.
+ */
+export function resetGameForNewRound(state: GameState): void {
+  state.activePlayerIndex = 0;
+  state.diceValue = null;
+  state.possibleMoves = [];
+  state.selectedTileId = null;
+  state.currentQuestion = null;
+  state.questionStartTime = null;
+  state.lastAnswerResult = null;
+  state.winnerId = null;
+  state.lastTurnEventMessage = null;
+  state.usedQuestionIds = [];
+  state.bonusAwardedThisTurn = null;
+  state.surpriseSpinThisTurn = false;
+  state.activeQuestionBonus = null;
+  state.firstPlayerDraw = null;
+  state.isPaused = false;
+  state.pausedAt = null;
+
+  for (const player of state.players) {
+    player.wedges = [];
+    player.currentTileId = 0;
+    player.score = 0;
+    player.correctAnswersCount = 0;
+    player.totalAnswersCount = 0;
+    player.bonuses = {};
+  }
+}
+
+/**
  * Retire un joueur de la partie en cours et rend la main proprement.
  *
  * Le retrait est plus délicat qu'une simple suppression du tableau, parce que le

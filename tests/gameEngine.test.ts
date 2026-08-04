@@ -4,6 +4,7 @@ import {
   advanceTurn,
   calculateMoves,
   removePlayerFromGame,
+  resetGameForNewRound,
   resolveAnswer,
   togglePauseState,
 } from '../src/server/gameEngine';
@@ -205,4 +206,51 @@ test('removing the last player in the list wraps the turn back to the first', ()
   assert.equal(state.players.length, 1);
   assert.equal(state.activePlayerIndex, 0);
   assert.equal(state.phase, 'rolling');
+});
+
+// --- Rejouer et revenir au salon ---------------------------------------------
+// « J'ai gagné, j'ai fait retour au salon et ça a marqué : l'organisateur a fermé
+// le salon. » Le bouton pointait sur `leave-room`. Et « Rejouer » ne remettait
+// rien à zéro : le vainqueur repartait avec tous ses camemberts.
+
+test('a new round wipes wedges, pawns, scores and bonuses', () => {
+  const state = createGameState({ phase: 'game_over', winnerId: 'host' });
+  state.players[0].wedges = ['histoire', 'sciences'];
+  state.players[0].currentTileId = 7;
+  state.players[0].score = 400;
+  state.players[0].correctAnswersCount = 4;
+  state.players[0].totalAnswersCount = 6;
+  state.players[0].bonuses = { fifty_fifty: 2, camembert_joker: 1 };
+  state.players[1].wedges = ['art'];
+
+  resetGameForNewRound(state);
+
+  for (const player of state.players) {
+    assert.deepEqual(player.wedges, []);
+    assert.equal(player.currentTileId, 0);
+    assert.equal(player.score, 0);
+    assert.equal(player.correctAnswersCount, 0);
+    assert.equal(player.totalAnswersCount, 0);
+    assert.deepEqual(player.bonuses, {});
+  }
+  assert.equal(state.winnerId, null);
+  assert.equal(state.currentQuestion, null);
+  assert.equal(state.activePlayerIndex, 0);
+  assert.deepEqual(state.usedQuestionIds, []);
+  assert.equal(state.firstPlayerDraw, null);
+  // La phase reste à l'appelant : revenir au salon et relancer ne visent pas la
+  // même destination.
+  assert.equal(state.phase, 'game_over');
+});
+
+test('a new round keeps the table and its settings', () => {
+  const state = createGameState({ phase: 'game_over' });
+  const names = state.players.map((player) => player.name);
+
+  resetGameForNewRound(state);
+
+  assert.deepEqual(state.players.map((player) => player.name), names);
+  assert.equal(state.settings.roomCode, 'FAM-TEST');
+  assert.equal(state.settings.wedgesToWin, 1);
+  assert.equal(state.questionsPool.length > 0, true);
 });
