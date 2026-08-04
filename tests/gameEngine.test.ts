@@ -29,6 +29,17 @@ test('a correct camembert answer updates score and awards one wedge', () => {
   assert.deepEqual(state.players[0].wedges, ['histoire']);
 });
 
+test('resolving an answer turns off the surprise wheel flag', () => {
+  // La roue surprise ne doit pas se relancer une fois la question tranchée :
+  // le drapeau tombe dès la résolution, sans attendre le tour suivant, pour que
+  // la phase « evaluating » ne réaffiche jamais la roue.
+  const state = createGameState({ surpriseSpinThisTurn: true, bonusAwardedThisTurn: 'fifty_fifty' });
+  resolveAnswer(state, testSettings, testBoard, 1);
+
+  assert.equal(state.phase, 'evaluating');
+  assert.equal(state.surpriseSpinThisTurn, false);
+});
+
 test('a wrong answer advances to the next player', () => {
   const state = createGameState({
     bonusAwardedThisTurn: 'fifty_fifty',

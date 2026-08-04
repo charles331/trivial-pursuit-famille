@@ -68,6 +68,13 @@ export function resolveAnswer(
     state.phase = 'evaluating';
   }
 
+  // La roue surprise est un rituel d'avant-question. Une fois la réponse
+  // résolue, elle n'a plus lieu d'être : on éteint le drapeau ici, et non
+  // seulement au tour suivant (`advanceTurn`). Sinon la phase « evaluating »
+  // remonte un nouveau modal (état local réinitialisé) qui, voyant encore
+  // `surpriseSpinThisTurn` vrai, relançait la roue une seconde fois.
+  state.surpriseSpinThisTurn = false;
+
   state.lastAnswerResult = {
     playerId: activePlayer.id,
     isCorrect,
