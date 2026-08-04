@@ -457,6 +457,7 @@ export default function App() {
             onUseBonus={handleUseBonus}
             onNextTurn={handleNextTurn}
             onSurpriseWheelDone={handleSurpriseWheelDone}
+            wedgesToWin={gameState.settings.wedgesToWin}
             bonusesEnabled={gameState.settings.enableBonuses === true}
             bonusAwardedThisTurn={gameState.bonusAwardedThisTurn}
             surpriseSpinThisTurn={gameState.surpriseSpinThisTurn}
@@ -483,6 +484,7 @@ export default function App() {
             onUseBonus={handleUseBonus}
             onNextTurn={handleNextTurn}
             onSurpriseWheelDone={handleSurpriseWheelDone}
+            wedgesToWin={gameState.settings.wedgesToWin}
             bonusesEnabled={gameState.settings.enableBonuses === true}
             bonusAwardedThisTurn={gameState.bonusAwardedThisTurn}
             surpriseSpinThisTurn={gameState.surpriseSpinThisTurn}

@@ -4,6 +4,7 @@ import {
   awardSurpriseBonus,
   bonusCount,
   fiftyFiftyCount,
+  jokerCanEarnWedge,
   useBonus,
   useFiftyFiftyBonus,
 } from '../src/server/bonuses';
@@ -100,4 +101,61 @@ test('50/50 is available only during a live question', () => {
 
   assert.equal(useFiftyFiftyBonus(state), false);
   assert.equal(fiftyFiftyCount(state.players[0]), 1);
+});
+
+// --- Un Joker qui ne peut rien rapporter --------------------------------------
+// Signalé en partie : « j'ai gagné un joker pour avoir un camembert, mais je les
+// ai déjà tous ». Il était alors consommé en silence, sans effet.
+
+test('the joker is worthless once every wedge is owned', () => {
+  assert.equal(jokerCanEarnWedge([], 'histoire', 6), true);
+  assert.equal(
+    jokerCanEarnWedge(
+      ['histoire', 'geographie', 'cinema', 'sciences', 'art', 'sports'],
+      'popculture',
+      6,
+    ),
+    false,
+  );
+});
+
+test('the joker is worthless on a category already collected', () => {
+  // Le camembert existe déjà : le rejouer ne donnerait rien, alors qu'il vaudra
+  // son prix sur une autre case.
+  assert.equal(jokerCanEarnWedge(['histoire'], 'histoire', 6), false);
+  assert.equal(jokerCanEarnWedge(['histoire'], 'sciences', 6), true);
+});
+
+test('a joker that cannot earn anything is not consumed', () => {
+  const state = createGameState();
+  state.settings.enableBonuses = true;
+  state.players[0].bonuses = { camembert_joker: 1 };
+  // La carte en cours est en histoire, catégorie déjà acquise.
+  state.players[0].wedges = ['histoire'];
+
+  assert.equal(useBonus(state, 'camembert_joker'), false);
+  assert.equal(state.activeQuestionBonus, undefined);
+  // Il reste en poche pour une case dont le camembert manque encore.
+  assert.equal(bonusCount(state.players[0], 'camembert_joker'), 1);
+});
+
+test('the wheel hands a 50/50 instead of a dead joker', () => {
+  const state = createGameState();
+  state.settings.enableBonuses = true;
+  state.settings.wedgesToWin = 1;
+  state.players[0].wedges = ['histoire']; // le compte est fait
+
+  // rollJoker viserait le quartier Joker : il devient un 50/50, utile jusqu'au bout.
+  assert.equal(awardSurpriseBonus(state, rollJoker), 'fifty_fifty');
+  assert.equal(fiftyFiftyCount(state.players[0]), 1);
+  assert.equal(bonusCount(state.players[0], 'camembert_joker'), 0);
+});
+
+test('the wheel still hands a joker to a player who can use it', () => {
+  const state = createGameState();
+  state.settings.enableBonuses = true;
+  state.settings.wedgesToWin = 6;
+
+  assert.equal(awardSurpriseBonus(state, rollJoker), 'camembert_joker');
+  assert.equal(bonusCount(state.players[0], 'camembert_joker'), 1);
 });
