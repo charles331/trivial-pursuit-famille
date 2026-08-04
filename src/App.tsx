@@ -289,6 +289,21 @@ export default function App() {
     }
   };
 
+  // Revenir au salon n'est pas quitter : la table reste, les réglages restent, et
+  // l'organisateur peut relancer. Le bouton pointait sur `leave-room`, qui fermait
+  // le salon pour tout le monde quand c'était l'organisateur qui venait de gagner.
+  const handleReturnToLobby = () => {
+    if (socket && gameState) {
+      socket.emit('return-to-lobby', { roomCode: gameState.roomCode });
+    }
+  };
+
+  const handleRemovePlayer = (playerId: string) => {
+    if (socket && gameState) {
+      socket.emit('remove-player', { roomCode: gameState.roomCode, playerId });
+    }
+  };
+
   const handleSurpriseWheelDone = () => {
     if (socket && gameState) {
       socket.emit('start-question-timer', { roomCode: gameState.roomCode });
@@ -408,6 +423,7 @@ export default function App() {
         onTogglePause={handleTogglePause}
         isHost={isHostPlayer}
         currentUserId={currentUserId}
+        onRemovePlayer={handleRemovePlayer}
       />
 
       {/* Main Game Stage */}
@@ -450,6 +466,7 @@ export default function App() {
             onUseBonus={handleUseBonus}
             onNextTurn={handleNextTurn}
             onSurpriseWheelDone={handleSurpriseWheelDone}
+            wedgesToWin={gameState.settings.wedgesToWin}
             bonusesEnabled={gameState.settings.enableBonuses === true}
             bonusAwardedThisTurn={gameState.bonusAwardedThisTurn}
             surpriseSpinThisTurn={gameState.surpriseSpinThisTurn}
@@ -476,6 +493,7 @@ export default function App() {
             onUseBonus={handleUseBonus}
             onNextTurn={handleNextTurn}
             onSurpriseWheelDone={handleSurpriseWheelDone}
+            wedgesToWin={gameState.settings.wedgesToWin}
             bonusesEnabled={gameState.settings.enableBonuses === true}
             bonusAwardedThisTurn={gameState.bonusAwardedThisTurn}
             surpriseSpinThisTurn={gameState.surpriseSpinThisTurn}
@@ -490,7 +508,8 @@ export default function App() {
           <VictoryModal
             gameState={gameState}
             onPlayAgain={handleStartGame}
-            onReturnToLobby={handleLeaveGame}
+            onReturnToLobby={handleReturnToLobby}
+            isHost={isHostPlayer}
           />
         </React.Suspense>
       )}

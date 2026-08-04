@@ -9,12 +9,15 @@ interface VictoryModalProps {
   gameState: GameState;
   onPlayAgain: () => void;
   onReturnToLobby: () => void;
+  /** Relancer ou revenir au salon appartient à l'organisateur seul. */
+  isHost?: boolean;
 }
 
 export const VictoryModal: React.FC<VictoryModalProps> = ({
   gameState,
   onPlayAgain,
-  onReturnToLobby
+  onReturnToLobby,
+  isHost = false
 }) => {
   const winner = gameState.players.find(p => p.id === gameState.winnerId) || gameState.players[0];
   const avatar = AVATARS.find(a => a.id === winner.avatarId) || AVATARS[0];
@@ -101,7 +104,14 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Buttons — le serveur réserve les deux à l'organisateur. Les
+            afficher à tout le monde produisait un clic sans effet et sans
+            explication : les autres attendent, et on le leur dit. */}
+        {!isHost ? (
+          <p className="pt-2 text-center text-xs font-semibold text-slate-400">
+            L’organisateur peut relancer une partie ou ramener la table au salon.
+          </p>
+        ) : (
         <div className="flex flex-col sm:flex-row gap-3 pt-2">
           <button
             onClick={onPlayAgain}
@@ -116,6 +126,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
             <Home className="w-4 h-4" /> Retour au Salon
           </button>
         </div>
+        )}
       </div>
     </div>
   );

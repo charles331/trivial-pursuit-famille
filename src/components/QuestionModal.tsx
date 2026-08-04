@@ -4,7 +4,7 @@ import { CATEGORIES } from '../data/categories';
 import { PlayerWedgeBadge } from './PlayerWedgeBadge';
 import { LiveSpotlight } from './LiveSpotlight';
 import { resolveReaderId } from '../server/turnRoles';
-import { SURPRISE_WHEEL } from '../server/bonuses';
+import { SURPRISE_WHEEL, jokerCanEarnWedge } from '../server/bonuses';
 import { soundManager } from '../utils/sound';
 import { resolveQuestionTimerSeconds } from '../utils/questionTimer';
 import { Timer, CheckCircle2, XCircle, Sparkles, HelpCircle, ArrowRight, Eye, EyeOff, BookOpen, Gift } from 'lucide-react';
@@ -32,6 +32,8 @@ interface QuestionModalProps {
   onNextTurn: () => void;
   /** Le joueur actif signale la fin de la roue surprise pour lancer le minuteur. */
   onSurpriseWheelDone?: () => void;
+  /** Nombre de camemberts requis pour gagner : dit si le Joker sert encore. */
+  wedgesToWin?: number;
   bonusesEnabled?: boolean;
   bonusAwardedThisTurn?: BonusType | null;
   surpriseSpinThisTurn?: boolean;
@@ -53,6 +55,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   onUseBonus,
   onNextTurn,
   onSurpriseWheelDone,
+  wedgesToWin = 6,
   bonusesEnabled = false,
   bonusAwardedThisTurn = null,
   surpriseSpinThisTurn = false,
@@ -121,6 +124,10 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   const surpriseTimerPending = surpriseSpinThisTurn === true
     && (questionStartTime === null || questionStartTime === undefined);
   const canAnswer = isMyTurn || isIReader;
+  // Dépenser un bonus n'est pas répondre : le lecteur peut trancher une réponse
+  // orale, mais l'inventaire appartient au joueur actif seul. En pass & play, un
+  // seul appareil circule et c'est le joueur actif qui l'a en main.
+  const canUseBonus = isIActivePlayer || isLocalMode;
   // The server strips the solution from everyone but the reader, so this is
   // absent for spectators even though the type says otherwise.
   const solutionIndex = typeof question.correctAnswerIndex === 'number'
@@ -267,7 +274,13 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   const jokerArmed = activeQuestionBonus?.type === 'camembert_joker';
   // Un 50/50 ne sert qu'aux QCM (il faut au moins deux distracteurs) ; le Joker
   // vaut pour tous les formats.
-  const hasUsableBonus = (isMcqFormat && fiftyFiftyCount > 0) || jokerCount > 0;
+  // Un Joker ne vaut quelque chose que s'il peut encore rapporter un camembert :
+  // celui qui les a tous, ou qui possède déjà celui de cette catégorie, le
+  // dépenserait à vide. La même règle vaut côté serveur, qui refuse de le
+  // consommer — ici elle évite d'abord de le proposer.
+  const jokerCanEarn = jokerCanEarnWedge(activePlayer.wedges, question.categoryId, wedgesToWin);
+  const jokerUsable = jokerCount > 0 && jokerCanEarn;
+  const hasUsableBonus = (isMcqFormat && fiftyFiftyCount > 0) || jokerUsable;
 
   // La roue tourne cinq tours puis s'arrête sur le quartier déjà décidé côté
   // serveur (bonus ou case vide). On vise au hasard l'un des quartiers du bon
@@ -687,8 +700,14 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
 
         {/* Bonus : un bouton pinné en bas ouvre le popup d'inventaire, au lieu
             d'afficher la liste en permanence sur la carte. Il disparaît une fois
-            un bonus armé (un seul par question). */}
-        {bonusesEnabled && canAnswer && !isAnswered && !activeQuestionBonus && hasUsableBonus && (
+            un bonus armé (un seul par question).
+
+            Réservé à celui dont c'est le tour, et non à `canAnswer` : ce dernier
+            inclut le lecteur, qui voyait donc l'inventaire de la personne qu'il
+            interrogeait et pouvait dépenser son 50/50 à sa place. Un bonus est un
+            choix tactique, il n'appartient qu'au joueur actif. En pass & play
+            l'appareil est partagé, et c'est bien lui qui le tient. */}
+        {bonusesEnabled && canUseBonus && !isAnswered && !activeQuestionBonus && hasUsableBonus && (
           <div className="shrink-0 border-t border-slate-200 bg-white/95 px-3 pt-2 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
             <button
               type="button"
@@ -815,8 +834,11 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
           </div>
         )}
 
-        {/* Popup de choix des bonus, ouvert depuis le bouton du bas. */}
-        {bonusPickerOpen && (
+        {/* Popup de choix des bonus, ouvert depuis le bouton du bas. Le garde
+            `canUseBonus` est répété ici : le bouton est déjà réservé au joueur
+            actif, mais un popup resté ouvert au moment où la main change ne doit
+            pas laisser dépenser le bonus de quelqu'un d'autre. */}
+        {bonusPickerOpen && canUseBonus && (
           <div
             className="absolute inset-0 z-40 flex items-end justify-center bg-black/50 p-4 sm:items-center"
             onClick={() => setBonusPickerOpen(false)}
@@ -851,7 +873,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                 </button>
               )}
 
-              {jokerCount > 0 && (
+              {jokerUsable && (
                 <button
                   type="button"
                   onClick={() => { soundManager.playClick(); onUseBonus('camembert_joker'); setBonusPickerOpen(false); }}
@@ -865,7 +887,25 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                 </button>
               )}
 
-              {!hasUsableBonus && (
+              {/* Un joker en poche mais sans effet ici : on le dit, plutôt que de
+                  le faire disparaître sans explication. */}
+              {jokerCount > 0 && !jokerCanEarn && (
+                <div className="flex w-full items-center gap-3 rounded-xl border-2 border-slate-200 bg-slate-50 p-3 text-left opacity-70 dark:border-slate-700 dark:bg-slate-800/60">
+                  <span className="text-2xl grayscale">🧀</span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-black text-slate-700 dark:text-slate-200">
+                      Joker camembert × {jokerCount}
+                    </span>
+                    <span className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                      {activePlayer.wedges.length >= wedgesToWin
+                        ? 'Vous avez déjà tous vos camemberts : gardez-le, il ne rapporterait rien.'
+                        : 'Vous avez déjà le camembert de cette catégorie. Il servira sur une autre case.'}
+                    </span>
+                  </span>
+                </div>
+              )}
+
+              {!hasUsableBonus && jokerCount === 0 && (
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                   Aucun bonus utilisable sur cette carte.
                 </p>

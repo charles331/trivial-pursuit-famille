@@ -1,4 +1,4 @@
-import { BonusType, GameState, Player } from '../types';
+import { BonusType, CategoryId, GameState, Player } from '../types';
 
 export const FIFTY_FIFTY_BONUS = 'fifty_fifty' as const;
 export const CAMEMBERT_JOKER_BONUS = 'camembert_joker' as const;
@@ -20,6 +20,33 @@ export const SURPRISE_WHEEL: (BonusType | null)[] = [
   FIFTY_FIFTY_BONUS,
   null,
 ];
+
+/**
+ * Le Joker camembert peut-il encore rapporter quelque chose à ce joueur ?
+ *
+ * Signalé en partie : « j'ai gagné un joker pour avoir un camembert, mais je les
+ * ai déjà tous ». Le joker ne faisait alors rien du tout — et pire, il était
+ * consommé en silence, puisque `resolveAnswer` n'ajoute un camembert que si le
+ * joueur ne l'a pas déjà. Un bonus qui se dépense sans effet est une punition
+ * déguisée en récompense.
+ *
+ * Deux cas où il ne sert à rien :
+ *  - le joueur a déjà tous les camemberts qu'il lui faut pour gagner ;
+ *  - il possède déjà celui de la catégorie posée à ce tour-ci — le joker le
+ *    rejouerait à vide, alors qu'il vaudra son prix sur une autre case.
+ *
+ * La case camembert n'est volontairement pas exclue : le joker y ferait doublon,
+ * mais le joueur qui l'arme quand même n'y perd rien, la bonne réponse lui
+ * rapportant de toute façon le camembert.
+ */
+export function jokerCanEarnWedge(
+  wedges: readonly CategoryId[],
+  questionCategoryId: CategoryId,
+  wedgesToWin: number,
+): boolean {
+  if (wedges.length >= wedgesToWin) return false;
+  return !wedges.includes(questionCategoryId);
+}
 
 export function bonusCount(player: Player, type: BonusType): number {
   const count = player.bonuses?.[type];
@@ -46,7 +73,15 @@ export function awardSurpriseBonus(
   const player = state.players[state.activePlayerIndex];
   if (!player) return null;
 
-  const outcome = SURPRISE_WHEEL[Math.floor(random() * SURPRISE_WHEEL.length)] ?? null;
+  const drawn = SURPRISE_WHEEL[Math.floor(random() * SURPRISE_WHEEL.length)] ?? null;
+  // La roue ne remet pas un lot mort. Le joueur qui a déjà tous ses camemberts
+  // n'a plus rien à en faire : il repart avec un 50/50, utile jusqu'au bout.
+  // Le quartier visé par l'animation suit, le client cherchant un quartier du
+  // type annoncé dans `bonusAwardedThisTurn`.
+  const outcome = drawn === CAMEMBERT_JOKER_BONUS
+    && player.wedges.length >= state.settings.wedgesToWin
+    ? FIFTY_FIFTY_BONUS
+    : drawn;
   if (outcome) {
     player.bonuses = {
       ...player.bonuses,
@@ -92,7 +127,17 @@ export function useBonus(
       [wrongIndexes[index], wrongIndexes[swapWith]] = [wrongIndexes[swapWith], wrongIndexes[index]];
     }
     hiddenOptionIndexes = wrongIndexes.slice(0, 2).sort((a, b) => a - b);
-  } else if (type !== CAMEMBERT_JOKER_BONUS) {
+  } else if (type === CAMEMBERT_JOKER_BONUS) {
+    // Un joker qui ne peut rien rapporter n'est pas consommé : il reste en poche
+    // pour une case dont le camembert manque encore.
+    if (!jokerCanEarnWedge(
+      player.wedges,
+      state.currentQuestion.categoryId,
+      state.settings.wedgesToWin,
+    )) {
+      return false;
+    }
+  } else {
     return false;
   }
 

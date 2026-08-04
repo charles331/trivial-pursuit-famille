@@ -12,7 +12,7 @@ import {
   normalize as normalizeText,
 } from './src/data/questionRules.js';
 import { checkStore, loadRooms, startRoomPersistence, saveRooms, ROOM_STORE_PATH } from './roomStore.js';
-import { advanceTurn, calculateMoves, resolveAnswer, togglePauseState } from './src/server/gameEngine.js';
+import { advanceTurn, calculateMoves, removePlayerFromGame, resetGameForNewRound, resolveAnswer, togglePauseState } from './src/server/gameEngine.js';
 import {
   beginFirstPlayerDraw,
   pendingRollers,
@@ -636,6 +636,44 @@ io.on('connection', (socket: Socket) => {
     emitGameState(room);
   });
 
+  /**
+   * L'organisateur retire un joueur, y compris en pleine partie.
+   *
+   * Il n'existait aucun moyen de le faire : seul le départ volontaire
+   * (`leave-room`) sortait quelqu'un d'une partie lancée, et `remove-local-player`
+   * est bloqué hors du lobby. Une famille où un enfant va se coucher restait donc
+   * avec un pion inerte qui prenait son tour à chaque passage.
+   *
+   * L'organisateur ne peut pas se retirer lui-même par ce chemin : partir ferme le
+   * salon pour tout le monde, ce qui est une autre décision et passe par
+   * « Quitter ».
+   */
+  socket.on('remove-player', (data: { roomCode: string; playerId: string }) => {
+    const room = getRoom(data.roomCode);
+    if (!room || room.hostSocketId !== socket.id) return;
+    if (!data.playerId || data.playerId === room.hostSocketId) return;
+
+    const player = room.gameState.players.find(candidate => candidate.id === data.playerId);
+    if (!player) return;
+    const removedName = player.name;
+
+    if (!removePlayerFromGame(room.gameState, data.playerId)) return;
+
+    // Le siège d'un joueur en ligne libère aussi son socket et son jeton : sans
+    // cela il se reconnecterait dans un salon qui ne l'attend plus.
+    if (!data.playerId.startsWith('local_')) {
+      room.sockets.delete(data.playerId);
+      room.reconnectTokens.delete(data.playerId);
+      io.to(data.playerId).emit('room-left');
+      io.sockets.sockets.get(data.playerId)?.leave(room.code);
+    }
+
+    room.gameState.lastTurnEventMessage = `${removedName} a quitté la partie.`;
+    emitGameState(room);
+    saveRooms(rooms);
+    console.log(`[Room] ${removedName} retiré du salon ${room.code} par l'organisateur`);
+  });
+
   socket.on('remove-local-player', (data: { roomCode: string; playerId: string }) => {
     const room = getRoom(data.roomCode);
     if (!room || room.hostSocketId !== socket.id || !room.settings.isLocalMode || room.gameState.phase !== 'lobby') return;
@@ -742,6 +780,26 @@ io.on('connection', (socket: Socket) => {
     console.log(`[Pack IA] ${data.questions.length} questions ajoutées pour "${data.themeName}" dans le salon ${data.roomCode}`);
   });
 
+  /**
+   * Retour au salon depuis l'écran de victoire.
+   *
+   * Le bouton était câblé sur `leave-room`, si bien que l'organisateur qui venait
+   * de gagner fermait le salon pour toute la table : « l'organisateur a fermé le
+   * salon ». Ce n'est pas la même intention — on veut revenir régler la partie et
+   * en relancer une, pas s'en aller.
+   */
+  socket.on('return-to-lobby', (data: { roomCode: string }) => {
+    const room = getRoom(data.roomCode);
+    if (!room || room.hostSocketId !== socket.id) return;
+    if (room.gameState.phase === 'lobby') return;
+
+    resetGameForNewRound(room.gameState);
+    room.gameState.phase = 'lobby';
+    emitGameState(room);
+    saveRooms(rooms);
+    console.log(`[Room] ${room.code} revient au salon`);
+  });
+
   // Start Game
   socket.on('start-game', (data: { roomCode: string }) => {
     const room = getRoom(data.roomCode);
@@ -765,6 +823,11 @@ io.on('connection', (socket: Socket) => {
       }
     });
 
+    // Une nouvelle manche repart de zéro : camemberts, pions, scores et bonus.
+    // Sans cela, « Rejouer » après une victoire redonnait la main au vainqueur
+    // avec tous ses camemberts déjà en poche.
+    resetGameForNewRound(room.gameState);
+
     // Collect all custom questions from custom packs added to the room
     const customQuestions: Question[] = [];
     if (room.gameState.customPacks) {
@@ -775,10 +838,6 @@ io.on('connection', (socket: Socket) => {
 
     // Shuffle questions pool on game start (custom pack questions included first)
     room.gameState.questionsPool = shuffled([...customQuestions, ...QUESTIONS_DATABASE]);
-    room.gameState.usedQuestionIds = [];
-    room.gameState.bonusAwardedThisTurn = null;
-    room.gameState.surpriseSpinThisTurn = false;
-    room.gameState.activeQuestionBonus = null;
 
     // Le premier joueur n'est plus l'organisateur d'office : tout le monde
     // lance le dé une fois et le meilleur lancer ouvre la partie. Une partie
@@ -1018,7 +1077,14 @@ io.on('connection', (socket: Socket) => {
     const room = getRoom(data.roomCode);
     if (!room || isPaused(room)) return;
     if (!BONUS_ROSTER.includes(data.bonusType as BonusType)) return;
-    if (!isPlayerAllowedToAnswer(room, socket.id)) return;
+    // `isPlayerAllowedToAct` et non `isPlayerAllowedToAnswer` : le lecteur a le
+    // droit de trancher une réponse à voix haute, mais pas de dépenser un bonus
+    // qui n'est pas le sien. `useBonus` prélève sur le joueur actif, si bien que
+    // le lecteur consommait le 50/50 de la personne qu'il interrogeait — signalé
+    // en partie : « quand c'était à ma femme de jouer, j'avais la possibilité
+    // d'activer son bonus à sa place ». Un bonus est un choix tactique, il
+    // n'appartient qu'à celui dont c'est le tour.
+    if (!isPlayerAllowedToAct(room, socket.id)) return;
     if (!useBonus(room.gameState, data.bonusType as BonusType)) return;
 
     emitGameState(room);
