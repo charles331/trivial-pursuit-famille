@@ -121,6 +121,10 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   const surpriseTimerPending = surpriseSpinThisTurn === true
     && (questionStartTime === null || questionStartTime === undefined);
   const canAnswer = isMyTurn || isIReader;
+  // Dépenser un bonus n'est pas répondre : le lecteur peut trancher une réponse
+  // orale, mais l'inventaire appartient au joueur actif seul. En pass & play, un
+  // seul appareil circule et c'est le joueur actif qui l'a en main.
+  const canUseBonus = isIActivePlayer || isLocalMode;
   // The server strips the solution from everyone but the reader, so this is
   // absent for spectators even though the type says otherwise.
   const solutionIndex = typeof question.correctAnswerIndex === 'number'
@@ -687,8 +691,14 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
 
         {/* Bonus : un bouton pinné en bas ouvre le popup d'inventaire, au lieu
             d'afficher la liste en permanence sur la carte. Il disparaît une fois
-            un bonus armé (un seul par question). */}
-        {bonusesEnabled && canAnswer && !isAnswered && !activeQuestionBonus && hasUsableBonus && (
+            un bonus armé (un seul par question).
+
+            Réservé à celui dont c'est le tour, et non à `canAnswer` : ce dernier
+            inclut le lecteur, qui voyait donc l'inventaire de la personne qu'il
+            interrogeait et pouvait dépenser son 50/50 à sa place. Un bonus est un
+            choix tactique, il n'appartient qu'au joueur actif. En pass & play
+            l'appareil est partagé, et c'est bien lui qui le tient. */}
+        {bonusesEnabled && canUseBonus && !isAnswered && !activeQuestionBonus && hasUsableBonus && (
           <div className="shrink-0 border-t border-slate-200 bg-white/95 px-3 pt-2 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
             <button
               type="button"
@@ -815,8 +825,11 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
           </div>
         )}
 
-        {/* Popup de choix des bonus, ouvert depuis le bouton du bas. */}
-        {bonusPickerOpen && (
+        {/* Popup de choix des bonus, ouvert depuis le bouton du bas. Le garde
+            `canUseBonus` est répété ici : le bouton est déjà réservé au joueur
+            actif, mais un popup resté ouvert au moment où la main change ne doit
+            pas laisser dépenser le bonus de quelqu'un d'autre. */}
+        {bonusPickerOpen && canUseBonus && (
           <div
             className="absolute inset-0 z-40 flex items-end justify-center bg-black/50 p-4 sm:items-center"
             onClick={() => setBonusPickerOpen(false)}

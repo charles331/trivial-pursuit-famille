@@ -1056,7 +1056,14 @@ io.on('connection', (socket: Socket) => {
     const room = getRoom(data.roomCode);
     if (!room || isPaused(room)) return;
     if (!BONUS_ROSTER.includes(data.bonusType as BonusType)) return;
-    if (!isPlayerAllowedToAnswer(room, socket.id)) return;
+    // `isPlayerAllowedToAct` et non `isPlayerAllowedToAnswer` : le lecteur a le
+    // droit de trancher une réponse à voix haute, mais pas de dépenser un bonus
+    // qui n'est pas le sien. `useBonus` prélève sur le joueur actif, si bien que
+    // le lecteur consommait le 50/50 de la personne qu'il interrogeait — signalé
+    // en partie : « quand c'était à ma femme de jouer, j'avais la possibilité
+    // d'activer son bonus à sa place ». Un bonus est un choix tactique, il
+    // n'appartient qu'à celui dont c'est le tour.
+    if (!isPlayerAllowedToAct(room, socket.id)) return;
     if (!useBonus(room.gameState, data.bonusType as BonusType)) return;
 
     emitGameState(room);
