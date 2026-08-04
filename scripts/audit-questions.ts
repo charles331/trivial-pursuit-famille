@@ -11,6 +11,8 @@ import {
   hasGrammarHintAroundBlank,
   isArtificialFillIn,
   isBareNumberCard,
+  isBareYearCard,
+  isPersonNameLotteryCard,
   leaksCorrectAnswer,
   merelyRestatesQuestion,
   normalize,
@@ -33,6 +35,17 @@ const CATEGORIES: CategoryId[] = [
 ];
 const DIFFICULTIES: DifficultyLevel[] = ['enfant', 'ado', 'adulte'];
 const ADULT_EDITORIAL_TARGET_PER_CATEGORY = 400;
+/**
+ * Budget de cartes ado jouées entre quatre noms de personnes, par catégorie.
+ *
+ * Le plafond n'est pas à zéro : « Qui a peint Guernica ? » ou « Qui a écrit Les
+ * Misérables ? » se défendent, parce que la bonne réponse est un nom que l'école
+ * et la maison rendent familier. Ce qui ne se défend pas, c'est d'en faire le
+ * ressort principal du niveau — le niveau ado en comptait 45 sur 135 dans la
+ * seule catégorie art. Le budget force à réserver ces cartes aux figures
+ * vraiment connues, et à interroger l'œuvre partout ailleurs.
+ */
+const MAX_ADO_PERSON_LOTTERY_PER_CATEGORY = 12;
 
 const errors: string[] = [];
 const editorialIssueCounts = new Map<string, number>();
@@ -232,6 +245,35 @@ for (const categoryId of CATEGORIES) {
   }
 }
 
+// --- Contrat éditorial du niveau ado ---------------------------------------
+// Le niveau ado n'avait qu'une seule règle — ne pas recopier la banque enfant —
+// là où le niveau adulte en compte une douzaine. Les deux contrôles ci-dessous
+// verrouillent le défaut qui rendait ce niveau injouable pour un enfant de dix
+// ans : la carte sans chemin de raisonnement, où l'on sait ou l'on tire au sort.
+for (const question of QUESTIONS_DATABASE) {
+  if (question.difficulty !== 'ado') continue;
+  // Aucune tolérance sur les millésimes : deux années voisines ne se déduisent
+  // jamais. L'année a sa place dans l'énoncé, pas dans les quatre options.
+  if (isBareYearCard(question.options)) {
+    editorialError(`Carte ado jouée entre quatre millésimes`, question.id);
+  }
+}
+
+for (const categoryId of CATEGORIES) {
+  const rows = QUESTIONS_DATABASE.filter(
+    (question) => question.categoryId === categoryId && question.difficulty === 'ado',
+  );
+  const lottery = rows.filter(
+    (question) => isPersonNameLotteryCard(question.question, question.options),
+  ).length;
+  if (lottery > MAX_ADO_PERSON_LOTTERY_PER_CATEGORY) {
+    errors.push(
+      `${categoryId} compte ${lottery} cartes ado jouées entre quatre noms de`
+        + ` personnes (maximum ${MAX_ADO_PERSON_LOTTERY_PER_CATEGORY})`,
+    );
+  }
+}
+
 // L'invariant « 400 cartes adultes relues, réponses équilibrées A/B/C/D » ne
 // vaut que pour les QCM : les formats vrai/faux et ouverts forment un pool
 // séparé, hors quota, résumé sous le tableau.
@@ -317,5 +359,9 @@ if (errors.length > 0) {
   console.log(`Moules : aucun énoncé adulte réutilisé plus de ${MAX_SKELETON_REUSE} fois par catégorie.`);
   console.log('Énoncés : aucun ne cite le nom propre qui désigne sa bonne réponse.');
   console.log('Niveaux : aucune carte enfant recopiée au niveau ado ou adulte.');
+  console.log(
+    'Qualité ado : aucune devinette de millésime, et au plus'
+      + ` ${MAX_ADO_PERSON_LOTTERY_PER_CATEGORY} cartes par catégorie jouées entre quatre noms de personnes.`,
+  );
   console.log(`Volume adulte : exactement ${ADULT_EDITORIAL_TARGET_PER_CATEGORY} cartes QCM relues par catégorie (les formats variés forment un pool séparé).`);
 }

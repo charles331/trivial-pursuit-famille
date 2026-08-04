@@ -89,6 +89,87 @@ const REPLACEMENTS: Replacement[] = [
   ['art_263', 'Quel est le juron favori du capitaine Haddock, dans les albums de Tintin ?', '« Mille millions de mille sabords ! »', '« Sacrebleu de sacrebleu ! »', '« Par tous les diables des mers ! »', '« Tonnerre de Zeus ! »', 'Hergé lui a inventé des centaines d’insultes, de « bachi-bouzouk » à « moule à gaufres ».'],
   ['art_264', 'Quelle est l’expression favorite de Titeuf, le héros de la BD de Zep ?', '« C’est pô juste ! »', '« Ça craint un max ! »', '« Oh la vache ! »', '« Tout roule ! »', 'Titeuf est né en 1992 sous le crayon du dessinateur suisse Zep.'],
   ['art_265', 'Quel est le métier de Tintin, dans les albums d’Hergé ?', 'Reporter', 'Policier', 'Médecin', 'Explorateur', 'On le voit pourtant très rarement écrire un article.'],
+
+  // --- Cinéma ---------------------------------------------------------------
+  // Le cinéma n'avait pas besoin d'être allégé partout : « qui est le père de
+  // Luke Skywalker ? » ou « la véritable identité de Batman » se jouent très
+  // bien à dix ans. Le défaut y était plus étroit — la distribution d'un film
+  // d'avant 2000 servie comme quatre noms d'acteurs, les compositeurs de
+  // musiques de film, et deux devinettes de millésime. On garde le film et on
+  // interroge son histoire ou son image.
+  ['cin_150', 'Dans Harry Potter, quelle matière le professeur Rogue enseigne-t-il à Poudlard ?', 'Les potions', 'La métamorphose', 'La divination', 'Le vol sur balai', 'Il rêve pourtant depuis toujours d’enseigner la défense contre les forces du Mal.'],
+  ['cin_157', 'Quelle arme lumineuse les chevaliers Jedi manient-ils dans Star Wars ?', 'Le sabre laser', 'L’arc à plasma', 'Le fouet électrique', 'La lance à photons', 'Sa couleur indique souvent le camp : bleue ou verte chez les Jedi, rouge chez leurs ennemis.'],
+  ['cin_183', 'Dans les films Marvel, qu’est-ce qui maintient Iron Man en vie et alimente son armure ?', 'Un réacteur dans sa poitrine', 'Un sérum injecté', 'Un marteau magique', 'Une morsure d’araignée', 'Tony Stark construit son premier réacteur en captivité, avec des pièces récupérées.'],
+  ['cin_185', 'Dans le film Mon voisin Totoro, qu’est-ce que Totoro ?', 'Un gros esprit de la forêt', 'Un ours de cirque', 'Un robot abandonné', 'Un chat errant', 'Le studio Ghibli, au Japon, a fait de ce personnage son emblème.'],
+  ['cin_191', 'Dans Retour vers le futur, quel véhicule sert de machine à voyager dans le temps ?', 'Une voiture DeLorean', 'Un vieux bus scolaire', 'Une moto', 'Un train à vapeur', 'Il lui faut atteindre 88 miles à l’heure pour effectuer le saut.'],
+  ['cin_201', 'Quels deux accessoires reconnaît-on immédiatement chez Indiana Jones ?', 'Un chapeau et un fouet', 'Une cape et une épée', 'Un arc et un carquois', 'Des lunettes et une canne', 'Son métier officiel est professeur d’archéologie.'],
+  ['cin_204', 'Dans Matrix, entre quelles deux pilules le héros doit-il choisir ?', 'La rouge et la bleue', 'La noire et la blanche', 'La verte et la jaune', 'La dorée et l’argentée', 'L’une fait découvrir la vérité, l’autre ramène à la vie ordinaire.'],
+  ['cin_208', 'Quelle arme Katniss maîtrise-t-elle dans Hunger Games ?', 'L’arc', 'L’épée', 'La lance', 'Le fouet', 'Elle a appris à chasser pour nourrir sa famille avant d’être choisie pour les Jeux.'],
+  ['cin_215', 'Dans Forrest Gump, quelle activité le héros pratique-t-il pendant des années à travers les États-Unis ?', 'La course à pied', 'La natation', 'Le vélo', 'L’escalade', 'Sa traversée du pays finit par lui attirer une foule de suiveurs.'],
+  ['cin_237', 'Quel sport pratique Rocky Balboa ?', 'La boxe', 'Le catch', 'L’haltérophilie', 'Le judo', 'Son entraînement dans les rues de Philadelphie est resté une scène culte.'],
+  ['cin_239', 'Qu’est-ce que le Terminator, dans le film qui porte son nom ?', 'Un robot venu du futur', 'Un extraterrestre', 'Un savant fou', 'Un soldat amnésique', 'Sous son apparence humaine se cache un squelette de métal.'],
+  ['cin_241', 'Dans le film The Mask, que provoque le masque vert quand le héros le met ?', 'Il le transforme en personnage déchaîné', 'Il le rend invisible', 'Il lui fait lire les pensées', 'Il le fait rajeunir', 'Le film mêle acteurs réels et effets numériques, encore rares en 1994.'],
+  ['cin_255', 'Dans Fantasia, quel rôle Mickey Mouse tient-il, entouré de balais qu’il n’arrive plus à arrêter ?', 'L’apprenti sorcier', 'Le chef d’orchestre', 'Le capitaine d’un navire', 'Le dompteur d’un cirque', 'La séquence illustre une musique de Paul Dukas, L’Apprenti sorcier.'],
+  ['cin_259', 'Comment appelle-t-on la musique composée spécialement pour accompagner un film ?', 'La bande originale', 'Le générique', 'Le playback', 'Le doublage', 'Certains thèmes, comme celui de Star Wars, sont devenus plus connus que les films.'],
+  ['cin_260', 'Dans Le Roi Lion, quel est le lien de parenté entre Simba et Mufasa ?', 'Mufasa est son père', 'Mufasa est son frère', 'Mufasa est son oncle', 'Mufasa est son grand-père', 'C’est son oncle Scar qui complote contre eux deux.'],
+  ['cin_264', 'Dans la saga Mission : Impossible, comment les agents reçoivent-ils traditionnellement leurs ordres ?', 'Par un message qui s’autodétruit', 'Par une lettre cachetée', 'Par un télégramme', 'Par une annonce dans le journal', 'La formule « Ce message s’autodétruira dans cinq secondes » vient de la série des années 1960.'],
+  ['cin_266', 'À quelle époque se déroule la comédie musicale Grease, avec ses blousons et ses grosses voitures américaines ?', 'Les années 1950', 'Les années 1920', 'Les années 1980', 'Les années 2000', 'Le film est sorti en 1978, vingt ans après l’époque qu’il met en scène.'],
+  ['cin_267', 'Que vient apprendre l’héroïne de Dirty Dancing pendant ses vacances en famille ?', 'La danse', 'L’équitation', 'La voile', 'Le piano', 'Le porté final du film est devenu l’une des images les plus imitées du cinéma.'],
+
+  // --- Histoire -------------------------------------------------------------
+  // C'est la catégorie la plus délicate : l'histoire est faite de noms et de
+  // dates. On garde donc les figures que l'école rend familières — Churchill,
+  // Anne Frank, Mandela, Gagarine, Clovis — et on retire deux choses : les neuf
+  // devinettes de millésime entre quatre années proches, et les figures que
+  // rien ne permet de départager (cinq navigateurs de suite, quatre généraux
+  // français, quatre rois médiévaux). L'événement reste, on interroge sa
+  // substance plutôt que son année.
+  ['his_136', 'Comment appelle-t-on les longs fossés creusés où les soldats vivaient et combattaient pendant la Première Guerre mondiale ?', 'Les tranchées', 'Les casemates', 'Les remparts', 'Les douves', 'Sur le front belge, l’armée inonda la plaine de l’Yser pour stopper l’avance allemande.'],
+  ['his_139', 'Quel pays l’Allemagne a-t-elle envahi en 1939, déclenchant la Seconde Guerre mondiale en Europe ?', 'La Pologne', 'La Norvège', 'La Grèce', 'L’Italie', 'La France et le Royaume-Uni déclarèrent la guerre à l’Allemagne deux jours plus tard.'],
+  ['his_157', 'Que séparait le mur de Berlin ?', 'Les deux moitiés de la ville, entre l’Est et l’Ouest', 'L’Allemagne et la Pologne', 'Deux quartiers religieux', 'La ville et son aéroport', 'Il fut construit en 1961 pour empêcher les habitants de l’Est de passer à l’Ouest.'],
+  ['his_158', 'Que firent les Berlinois dans la nuit du 9 novembre 1989 ?', 'Ils abattirent le mur à coups de pioche', 'Ils élurent un nouveau maire', 'Ils fermèrent les frontières', 'Ils organisèrent un référendum', 'L’Allemagne fut officiellement réunifiée moins d’un an plus tard.'],
+  ['his_165', 'Quel titre portait Nicolas II, renversé par la révolution russe de 1917 ?', 'Tsar', 'Sultan', 'Kaiser', 'Doge', 'Il fut le dernier souverain de l’empire russe.'],
+  ['his_168', 'De quel pays les treize colonies d’Amérique ont-elles proclamé leur indépendance en 1776 ?', 'La Grande-Bretagne', 'L’Espagne', 'La France', 'Les Pays-Bas', 'La France soutint les insurgés américains contre les troupes britanniques.'],
+  ['his_196', 'Dans quelle cathédrale Napoléon Bonaparte s’est-il fait sacrer empereur en 1804 ?', 'Notre-Dame de Paris', 'La cathédrale de Reims', 'La basilique Saint-Denis', 'La cathédrale de Chartres', 'Rompant avec la tradition des rois sacrés à Reims, il posa lui-même la couronne sur sa tête.'],
+  ['his_203', 'De quel pays le Congo était-il la colonie avant son indépendance en 1960 ?', 'La Belgique', 'La France', 'Le Portugal', 'Le Royaume-Uni', 'Le Congo devint indépendant le 30 juin 1960.'],
+  ['his_221', 'Quel nom porte aujourd’hui la ville autrefois appelée Constantinople ?', 'Istanbul', 'Athènes', 'Ankara', 'Le Caire', 'Sa chute en 1453 marque souvent la fin du Moyen Âge.'],
+  ['his_171', 'Que cherchaient les navigateurs portugais en contournant l’Afrique au XVe siècle ?', 'La route maritime des épices vers l’Inde', 'Un passage vers le pôle Nord', 'De nouvelles terres à cultiver', 'Une route vers l’Australie', 'Les épices valaient alors presque leur poids en or en Europe.'],
+  ['his_173', 'Quel continent les navigateurs européens ont-ils cartographié en dernier, au XVIIIe siècle ?', 'L’Australie', 'L’Afrique', 'L’Asie', 'L’Amérique du Sud', 'James Cook en cartographia la côte est lors de ses voyages dans le Pacifique.'],
+  ['his_174', 'D’où vient le nom du continent américain ?', 'Du prénom du navigateur Amerigo Vespucci', 'D’un mot amérindien', 'Du nom d’un roi espagnol', 'Du latin « terre nouvelle »', 'Vespucci comprit le premier qu’il s’agissait d’un continent inconnu, et non des Indes.'],
+  ['his_148', 'Dans quelle ville d’eaux du centre de la France s’installa, en 1940, le régime qui collabora avec l’Allemagne ?', 'Vichy', 'Lyon', 'Bordeaux', 'Tours', 'Le maréchal Pétain y dirigea l’État français jusqu’en 1944.'],
+  ['his_149', 'Comment appelait-on, en France, les mouvements clandestins qui luttaient contre l’occupation allemande ?', 'La Résistance', 'La Milice', 'La Légion', 'La Garde nationale', 'Jean Moulin unifia ces mouvements avant d’être arrêté en 1943.'],
+  ['his_201', 'Que fit adopter Victor Schoelcher en 1848, comme sous-secrétaire d’État aux colonies ?', 'L’abolition de l’esclavage', 'La gratuité de l’école', 'La liberté de la presse', 'Le droit de grève', 'Le décret fut signé le 27 avril 1848.'],
+  ['his_200', 'Quelle sorte de bataille fut Trafalgar, en 1805 ?', 'Une bataille navale', 'Un siège de ville', 'Une bataille de cavalerie', 'Une guerre de tranchées', 'La défaite de la flotte franco-espagnole mit fin au projet d’invasion de l’Angleterre.'],
+  ['his_187', 'Quelle langue François Ier imposa-t-il en 1539 pour remplacer le latin dans les actes officiels ?', 'Le français', 'L’italien', 'L’occitan', 'Le breton', 'L’ordonnance de Villers-Cotterêts fit du français la langue de l’administration.'],
+  ['his_213', 'Quelle religion, longtemps persécutée, fut autorisée dans l’Empire romain au début du IVe siècle ?', 'Le christianisme', 'L’islam', 'Le bouddhisme', 'L’hindouisme', 'L’empereur Constantin mit fin aux persécutions et se convertit lui-même.'],
+  ['his_217', 'Quel empereur, couronné en l’an 800, régna sur un vaste empire depuis Aix-la-Chapelle ?', 'Charlemagne', 'Clovis', 'Napoléon', 'Jules César', 'Sa capitale se trouve aujourd’hui en Allemagne, tout près de la frontière belge.'],
+  ['his_220', 'Que fit construire Philippe Auguste à Paris, qui devint plus tard un palais puis un musée ?', 'Le Louvre', 'Notre-Dame', 'Les Invalides', 'Le Panthéon', 'La forteresse médiévale est encore visible dans les sous-sols du musée.'],
+  ['his_208', 'Quel animal fut envoyé dans l’espace avant les premiers êtres humains ?', 'Une chienne', 'Un chat', 'Un cheval', 'Un dauphin', 'La chienne Laïka fut lancée par l’URSS en 1957.'],
+
+  // La carte de la capture d'écran, et les deux figures médicales que rien ne
+  // permettait de départager. Fleming faisait de surcroît doublon avec la banque
+  // ado de sciences, qui pose déjà la découverte de la pénicilline.
+  ['his_265', 'Que réclama l’infirmière Florence Nightingale pour faire chuter la mortalité dans les hôpitaux militaires ?', 'De l’hygiène et de l’air pur dans les salles', 'Des uniformes plus élégants', 'Des horaires de visite plus larges', 'Des lits individuels en fer', 'Ses relevés chiffrés convainquirent l’armée britannique de réformer ses hôpitaux.'],
+  ['his_226', 'Contre quelle maladie le tout premier vaccin de l’histoire a-t-il été mis au point ?', 'La variole', 'La grippe', 'La tuberculose', 'Le tétanos', 'Edward Jenner remarqua que les vachers ayant attrapé la variole des vaches ne tombaient pas malades.'],
+  ['his_237', 'Quel événement de 1830 a donné naissance à la Belgique indépendante ?', 'Une révolution contre le roi des Pays-Bas', 'Un mariage royal', 'Un traité signé à Vienne', 'Une guerre contre la France', 'Les combats du parc de Bruxelles menèrent à une indépendance reconnue en 1839.'],
+
+  // Cinéma : trois dernières loteries, dont Tolkien qui faisait doublon avec la
+  // banque ado d'art.
+  ['cin_146', 'Dans quelle maison de Poudlard Harry Potter et ses amis sont-ils répartis ?', 'Gryffondor', 'Serpentard', 'Poufsouffle', 'Serdaigle', 'Le Choixpeau magique hésite pourtant à envoyer Harry chez Serpentard.'],
+  ['cin_163', 'Où l’anneau doit-il être jeté pour être détruit, dans Le Seigneur des Anneaux ?', 'Dans les feux de la Montagne du Destin', 'Au fond de la Grande Mer', 'Dans les mines de la Moria', 'Sous les racines de l’Arbre blanc', 'Frodon et Sam mettent trois tomes à y parvenir.'],
+  ['cin_164', 'Dans quel pays la trilogie du Seigneur des Anneaux a-t-elle été tournée ?', 'La Nouvelle-Zélande', 'L’Irlande', 'La Norvège', 'Le Canada', 'Ses paysages en ont fait une destination touristique majeure.'],
+
+  // --- Dernières devinettes de millésime ------------------------------------
+  // Ces sept cartes fermaient la liste des tirages entre quatre années voisines,
+  // toutes catégories confondues. L'année passe dans l'énoncé, la substance de
+  // l'événement devient la question.
+  ['his_249', 'Quel droit les femmes françaises ont-elles obtenu en 1944, après en avoir été longtemps écartées ?', 'Le droit de vote', 'Le droit de travailler', 'Le droit d’aller à l’école', 'Le droit d’hériter', 'Elles votèrent pour la première fois aux élections municipales de 1945.'],
+  ['his_251', 'En quoi l’URSS s’est-elle transformée en cessant d’exister, fin 1991 ?', 'En une quinzaine de pays indépendants', 'En deux États rivaux', 'En une monarchie', 'En une colonie chinoise', 'La Russie est le plus vaste des États nés de cette dissolution.'],
+  ['his_263', 'Que cherchaient les dizaines de milliers de personnes parties en Californie à partir de 1848 ?', 'De l’or', 'Du pétrole', 'Des diamants', 'Des terres à blé', 'San Francisco passa de mille à vingt-cinq mille habitants en deux ans.'],
+  ['spo_137', 'Contre quelle équipe la France a-t-elle gagné la finale de la Coupe du monde de football en 1998 ?', 'Le Brésil', 'L’Italie', 'L’Allemagne', 'L’Argentine', 'Zinédine Zidane marqua deux buts de la tête au Stade de France.'],
+  ['spo_166', 'Dans quel sport le Français Victor Wembanyama s’est-il imposé aux États-Unis ?', 'Le basket-ball', 'Le football américain', 'Le hockey sur glace', 'Le baseball', 'Sa très grande taille en fait l’un des joueurs les plus surveillés de la NBA.'],
+  ['spo_198', 'Pourquoi les Jeux olympiques de Tokyo, prévus en 2020, ont-ils été reportés d’un an ?', 'À cause de la pandémie de Covid-19', 'À cause d’un tremblement de terre', 'À cause d’un boycott', 'À cause de travaux inachevés', 'C’était le premier report de Jeux olympiques en temps de paix.'],
+  ['pop_172', 'Qu’est-ce qui rendait le jeu Pokémon GO différent des jeux vidéo classiques ?', 'Il fallait se déplacer dehors pour jouer', 'Il se jouait uniquement à deux', 'Il n’avait aucune image', 'Il exigeait une console spéciale', 'Sorti en 2016, il utilise la réalité augmentée et la position du téléphone.'],
 ];
 
 const BY_ID = new Map(REPLACEMENTS.map((replacement) => [replacement[0], replacement]));

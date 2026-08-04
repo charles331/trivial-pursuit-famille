@@ -3,6 +3,8 @@ import test from 'node:test';
 import {
   echoesCorrectAnswer,
   editorialRejectionReason,
+  isBareYearCard,
+  isPersonNameLotteryCard,
   quotesAnswerProperName,
 } from '../src/data/questionRules';
 
@@ -248,5 +250,52 @@ test('an open card may not carry options', () => {
       explanation: 'À ne pas confondre avec l’agoraphobie, la peur des espaces ouverts.',
     }),
     'une carte ouverte n’a aucune proposition',
+  );
+});
+
+// --- Contrat éditorial du niveau ado ----------------------------------------
+// Les deux défauts qui rendaient le niveau ado injouable pour un enfant de dix
+// ans : la carte sans aucun chemin de raisonnement.
+
+test('four neighbouring years are recognised as a coin toss', () => {
+  assert.equal(isBareYearCard(['1914', '1905', '1912', '1918']), true);
+  assert.equal(isBareYearCard(['1977', '1983', '1971', '1985']), true);
+});
+
+test('a numeric answer that is not a year stays allowed', () => {
+  // « Combien d'os compte le squelette ? » garde toute sa place : l'ordre de
+  // grandeur se raisonne, contrairement à deux millésimes voisins.
+  assert.equal(isBareYearCard(['206', '150', '312', '98']), false);
+  assert.equal(isBareYearCard(['Quatre', 'Deux', 'Trois', 'Six']), false);
+});
+
+test('four person names behind a “who” prompt are a name lottery', () => {
+  assert.equal(
+    isPersonNameLotteryCard(
+      'Quelle infirmière britannique a fondé les soins infirmiers modernes ?',
+      ['Florence Nightingale', 'Clara Barton', 'Edith Cavell', 'Marie Curie'],
+    ),
+    true,
+  );
+});
+
+test('a card that asks about the work rather than the name is not a lottery', () => {
+  // La reprise du niveau ado repose entièrement sur ce basculement : le nom
+  // passe dans l'énoncé, la question porte sur ce que l'on peut déduire.
+  assert.equal(
+    isPersonNameLotteryCard(
+      'Pour quel vol Jean Valjean est-il envoyé au bagne, au début des Misérables ?',
+      ['Un morceau de pain', 'Un cheval', 'Une bourse d’or', 'Une paire de chandeliers'],
+    ),
+    false,
+  );
+  // Un énoncé qui ne réclame pas de personne échappe à la règle, même si ses
+  // options sont des noms propres : « Dans quelle maison de Poudlard… ? ».
+  assert.equal(
+    isPersonNameLotteryCard(
+      'Dans quelle maison de Poudlard Harry Potter est-il réparti ?',
+      ['Gryffondor', 'Serpentard', 'Poufsouffle', 'Serdaigle'],
+    ),
+    false,
   );
 });

@@ -350,6 +350,57 @@ export function isBareNumberCard(options: string[]): boolean {
   return options.every(isBareNumberOption);
 }
 
+/**
+ * Carte jouée entre quatre millésimes : « En quelle année… ? » suivi de 1905,
+ * 1912, 1918, 1914.
+ *
+ * Plus étroit que `isBareNumberCard`, qui accepte toute réponse chiffrée — « 206
+ * os », « quatre cavités » — et qui a sa place. Ici, aucun raisonnement ne
+ * départage deux années voisines : on retient la date, ou on tire au sort. Mieux
+ * vaut interroger la substance de l'événement en citant l'année dans l'énoncé.
+ */
+export function isBareYearCard(options: string[]): boolean {
+  if (options.length !== 4) return false;
+  return options.every((option) => /^\s*(1[0-9]{3}|20[0-9]{2})\s*$/.test(option));
+}
+
+/**
+ * Un énoncé qui réclame le nom d'une personne : « qui a peint… », « quel
+ * navigateur… », « quelle infirmière… ».
+ */
+const PERSON_PROMPT = new RegExp(
+  '(qui\\s+(a|est|était|fut|invent|peign|dirig|compos|écriv|réalis)'
+  + '|quel(le)?s?\\s+(écrivain|peintre|roi|reine|président|premier ministre|médecin'
+  + '|navigateur|explorateur|savant|scientifique|compositeur|acteur|actrice|réalisateur'
+  + '|chanteur|chanteuse|infirmière|militant|maréchal|amiral|empereur|impératrice'
+  + '|sculpteur|architecte|auteur|romancier|poète|dessinateur|inventeur|philosophe))',
+  'i',
+);
+
+/** Une option qui ressemble à un nom de personne : « Florence Nightingale ». */
+function looksLikePersonName(option: string): boolean {
+  const trimmed = option.trim().replace(/^(Le|La|L’|Les)\s+/i, '');
+  return /^[A-ZÀ-Ý][\wà-ÿ.’-]*(\s+(de|von|van|del|di|le|la|du|d’)?\s*[A-ZÀ-Ý][\wà-ÿ.’-]*)+$/
+    .test(trimmed);
+}
+
+/**
+ * Carte jouée à la loterie de noms propres : l'énoncé réclame un nom de personne
+ * et les quatre options sont des noms de personnes.
+ *
+ * C'est le défaut qui rendait le niveau ado injouable pour un enfant de dix ans :
+ * « Quelle infirmière britannique… ? » entre Barton, Cavell, Curie et
+ * Nightingale ne laisse aucun chemin de raisonnement — on sait, ou on tire au
+ * sort. La carte n'est pas fautive parce que son sujet est exigeant, mais parce
+ * qu'aucune déduction n'est possible : mieux vaut interroger l'œuvre ou le fait
+ * que le nom, en citant celui-ci dans l'énoncé.
+ */
+export function isPersonNameLotteryCard(question: string, options: string[]): boolean {
+  if (options.length !== 4) return false;
+  if (!PERSON_PROMPT.test(question)) return false;
+  return options.every(looksLikePersonName);
+}
+
 export interface QuestionCandidate {
   question: string;
   options: string[];
