@@ -305,6 +305,13 @@ export default function App() {
     }
   };
 
+  /** Réunit un doublon né d'une reconnexion ratée avec son siège d'origine. */
+  const handleMergePlayer = (sourcePlayerId: string, targetPlayerId: string) => {
+    if (socket && gameState) {
+      socket.emit('merge-player', { roomCode: gameState.roomCode, sourcePlayerId, targetPlayerId });
+    }
+  };
+
   const handleSurpriseWheelDone = () => {
     if (socket && gameState) {
       socket.emit('start-question-timer', { roomCode: gameState.roomCode });
@@ -425,6 +432,7 @@ export default function App() {
         isHost={isHostPlayer}
         currentUserId={currentUserId}
         onRemovePlayer={handleRemovePlayer}
+        onMergePlayer={handleMergePlayer}
       />
 
       {/* Main Game Stage */}
