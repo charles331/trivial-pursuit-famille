@@ -210,6 +210,20 @@ const REPLACEMENTS: Replacement[] = [
   // Histoire : cette carte posait le même fait que la banque d'art (le plafond
   // de la chapelle Sixtine). Remplacée par un repère belge.
   ['his_188', 'Que célèbre la fête nationale belge, le 21 juillet ?', 'Le serment du premier roi des Belges', 'La fin de la Seconde Guerre mondiale', 'La signature d’un traité européen', 'L’indépendance du Congo', 'Léopold Ier prêta serment sur la Constitution le 21 juillet 1831.'],
+
+  // --- Histoire ado : le fond du classement de la catégorie ------------------
+  // Ces neuf cartes formaient le bas du niveau ado en histoire, qui portait le
+  // pire ratio anglo-saxon du corpus : vingt-six cartes sur cent trente-cinq.
+  // Le sujet reste, on passe du nom à sa conséquence ou à sa substance.
+  ['his_176', 'Qu’arriva-t-il à l’Empire romain d’Occident en 476, marquant la fin de l’Antiquité ?', 'Son dernier empereur fut déposé', 'Sa capitale fut transférée à Constantinople', 'Il se convertit au christianisme', 'Il conquit toute la Germanie', 'L’Empire romain d’Orient, lui, survécut encore près de mille ans.'],
+  ['his_169', 'Quelle guerre déchira les États-Unis entre le Nord et le Sud, notamment à propos de l’esclavage ?', 'La guerre de Sécession', 'La guerre d’Indépendance', 'La guerre du Mexique', 'La guerre de 1812', 'Le président Abraham Lincoln y proclama l’abolition de l’esclavage en 1863.'],
+  ['his_170', 'Que prouva la première expédition à avoir fait le tour du monde, achevée en 1522 ?', 'Qu’on pouvait faire le tour de la Terre par la mer', 'Que l’Amérique est un continent', 'Que le Pacifique est peu profond', 'Que l’Afrique est une île', 'Magellan mourut en route : un seul de ses cinq navires revint au port.'],
+  ['his_224', 'Que Galilée fut-il contraint de renier lors de son procès, en 1633 ?', 'Que la Terre tourne autour du Soleil', 'Que la Lune est couverte de cratères', 'Que Jupiter possède des satellites', 'Que les comètes sont des astres', 'La légende lui prête ce murmure : « Et pourtant, elle tourne ».'],
+  ['his_228', 'Combien de langues officielles la Belgique compte-t-elle ?', 'Trois', 'Deux', 'Quatre', 'Une seule', 'Le néerlandais, le français et l’allemand, cette dernière parlée à l’est du pays.'],
+  ['his_146', 'Que promit Winston Churchill aux Britanniques en devenant Premier ministre, en 1940 ?', 'Du sang, du labeur, des larmes et de la sueur', 'La paix dans l’honneur', 'Un empire pour mille ans', 'Des terres et du pain', 'Il refusa toute négociation avec l’Allemagne après la chute de la France.'],
+  ['his_162', 'Que réclamait la marche sur Washington de 1963, où fut prononcé le discours « I have a dream » ?', 'La fin de la ségrégation raciale', 'La fin de la guerre du Vietnam', 'Le droit de vote des femmes', 'La journée de huit heures', 'Martin Luther King reçut le prix Nobel de la paix l’année suivante.'],
+  ['his_202', 'De quoi le capitaine Dreyfus était-il accusé, dans l’affaire qui divisa la France ?', 'D’espionnage au profit de l’Allemagne', 'De désertion devant l’ennemi', 'De vol dans les caisses de l’armée', 'De complot contre le président', 'Émile Zola le défendit dans son article « J’accuse…! », en 1898.'],
+  ['his_269', 'Combien de temps dura la première traversée de l’Atlantique en avion, seul et sans escale ?', 'Environ trente-trois heures', 'Environ huit heures', 'Environ trois jours', 'Environ une semaine', 'Charles Lindbergh se posa au Bourget, près de Paris, en mai 1927.'],
 ];
 
 const BY_ID = new Map(REPLACEMENTS.map((replacement) => [replacement[0], replacement]));

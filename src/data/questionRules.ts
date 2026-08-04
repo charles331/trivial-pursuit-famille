@@ -359,10 +359,23 @@ export function isBareNumberCard(options: string[]): boolean {
  * départage deux années voisines : on retient la date, ou on tire au sort. Mieux
  * vaut interroger la substance de l'événement en citant l'année dans l'énoncé.
  */
-export function isBareYearCard(options: string[]): boolean {
+/** Un énoncé qui réclame explicitement une date : « en quelle année… ? ». */
+const YEAR_PROMPT = /en quelle année|quelle année|en quel siècle|quel siècle|à quelle date/i;
+
+export function isBareYearCard(question: string, options: string[]): boolean {
   if (options.length !== 4) return false;
-  return options.every((option) => /^\s*(1[0-9]{3}|20[0-9]{2})\s*$/.test(option));
+  // C'est l'énoncé, et non le nombre de chiffres, qui dit s'il s'agit d'un
+  // millésime. Se fier aux seuls chiffres signalait à tort le matricule 007 de
+  // James Bond, les 501 points des fléchettes et les 151 Pokémon d'origine.
+  if (!YEAR_PROMPT.test(question)) return false;
+  // Deux échappatoires, toutes deux couvertes par un test : un préfixe court
+  // déguise le millésime (« En 476 »), et l'Antiquité s'écrit sur trois chiffres
+  // — « 395 » contre « 476 » se devine tout autant que « 1977 » contre « 1983 ».
+  return options.every(
+    (option) => /^\s*(?:en\s+|vers\s+|l[’']an\s+)?[0-9]{3,4}\s*$/i.test(option),
+  );
 }
+
 
 /**
  * Un énoncé qui réclame le nom d'une personne : « qui a peint… », « quel

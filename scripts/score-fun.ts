@@ -88,7 +88,7 @@ const CRITERIA: Criterion[] = [
     score: (card) => {
       if ((card.format ?? 'mcq') !== 'mcq') return 1; // vrai/faux et ouvertes : pas de leurre
       if (isPersonNameLotteryCard(card.question, card.options)) return 0;
-      if (isBareYearCard(card.options)) return 0;
+      if (isBareYearCard(card.question, card.options)) return 0;
       if (isBareNumberCard(card.options)) return 0.45;
       // Des options rédigées (groupes de mots) laissent éliminer par le sens ;
       // quatre mots isolés laissent surtout reconnaître ou deviner.

@@ -259,15 +259,20 @@ test('an open card may not carry options', () => {
 // ans : la carte sans aucun chemin de raisonnement.
 
 test('four neighbouring years are recognised as a coin toss', () => {
-  assert.equal(isBareYearCard(['1914', '1905', '1912', '1918']), true);
-  assert.equal(isBareYearCard(['1977', '1983', '1971', '1985']), true);
+  assert.equal(isBareYearCard('En quelle année la guerre a-t-elle éclaté ?', ['1914', '1905', '1912', '1918']), true);
+  assert.equal(isBareYearCard('En quelle année est sorti le premier Star Wars ?', ['1977', '1983', '1971', '1985']), true);
+  // Un préfixe et trois chiffres ne déguisent pas la devinette.
+  assert.equal(isBareYearCard('En quelle année l’Empire romain d’Occident s’est-il effondré ?', ['En 395', 'En 800', 'En 1453', 'En 476']), true);
 });
 
 test('a numeric answer that is not a year stays allowed', () => {
   // « Combien d'os compte le squelette ? » garde toute sa place : l'ordre de
   // grandeur se raisonne, contrairement à deux millésimes voisins.
-  assert.equal(isBareYearCard(['206', '150', '312', '98']), false);
-  assert.equal(isBareYearCard(['Quatre', 'Deux', 'Trois', 'Six']), false);
+  assert.equal(isBareYearCard('Combien d’os compte le squelette ?', ['206', '150', '312', '98']), false);
+  assert.equal(isBareYearCard('Combien de cavités compte le cœur ?', ['Quatre', 'Deux', 'Trois', 'Six']), false);
+  // C'est l'énoncé qui décide : ces nombres ne sont pas des millésimes.
+  assert.equal(isBareYearCard('Quel est le matricule de James Bond ?', ['001', '700', '070', '007']), false);
+  assert.equal(isBareYearCard('Aux fléchettes, à combien de points commence une partie ?', ['501', '1000', '300', '100']), false);
 });
 
 test('four person names behind a “who” prompt are a name lottery', () => {

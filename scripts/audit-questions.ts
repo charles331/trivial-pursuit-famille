@@ -258,7 +258,7 @@ for (const question of QUESTIONS_DATABASE) {
   if (question.difficulty !== 'ado') continue;
   // Aucune tolérance sur les millésimes : deux années voisines ne se déduisent
   // jamais. L'année a sa place dans l'énoncé, pas dans les quatre options.
-  if (isBareYearCard(question.options)) {
+  if (isBareYearCard(question.question, question.options)) {
     editorialError(`Carte ado jouée entre quatre millésimes`, question.id);
   }
 }

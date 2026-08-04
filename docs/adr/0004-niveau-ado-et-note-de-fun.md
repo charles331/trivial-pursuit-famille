@@ -162,3 +162,45 @@ notes du niveau enfant d'avant et d'après ce changement ne sont pas comparables
 Celles des niveaux ado et adulte le restent, et la validation du barème continue de
 séparer les cartes rejetées en partie de leurs remplaçantes (53/43/60 % contre
 81/86/86 %).
+
+## Suite — passe sur l'histoire (août 2026)
+
+Même méthode, même forme de résultat : un bloc portait presque tout le déficit.
+Les 40 cartes de `histoireAdultPilot.ts` — le lot pilote, écrit avant l'ADR 0001 et
+jamais relu — sortaient à **62,1 %**, dix points sous tous les autres lots.
+
+Son défaut est un style, pas un sujet : l'énoncé télégraphique de livre-quiz, qui
+pose un fait nu et aligne quatre noms propres. « Quel amiral britannique mourut à
+Trafalgar ? », « Quelle reine britannique régna de 1837 à 1901 ? » cumulaient les
+deux reproches les plus fréquents en partie. Le même fichier montrait pourtant ce
+qui marche : ses meilleures cartes portent un indice déductible — « Quel canal
+inauguré en 1869 relie Méditerranée et mer Rouge ? » se raisonne par la géographie.
+
+Dix-huit cartes adultes sont passées du nom à sa **conséquence** : ce que Colomb
+cherchait plutôt que son nom, ce que la révocation de l'édit de Nantes a provoqué
+plutôt que le roi qui l'a signée, pourquoi Sainte-Hélène plutôt que quelle île. Deux
+cartes purement britanniques et interchangeables ont été recentrées sur la Belgique
+(les forts de Liège et de Namur en 1914).
+
+Neuf cartes ado ont suivi : ce niveau portait le pire ratio anglo-saxon du corpus,
+vingt-six cartes sur cent trente-cinq.
+
+Résultat : histoire ado 73,2 → 75,2 %, adulte 73,8 → 74,8 %.
+
+### Le détecteur de millésimes avait deux échappatoires
+
+`his_176` proposait « En 395 / En 800 / En 1453 / En 476 » — une devinette de
+millésime que la règle ne voyait pas, parce qu'elle exigeait quatre chiffres sans
+préfixe. Élargie aux trois chiffres et aux préfixes courts, elle signalait alors à
+tort le matricule 007 de James Bond, les 501 points des fléchettes et les 151
+Pokémon d'origine.
+
+La bonne borne n'est pas le nombre de chiffres mais **l'énoncé** : seul « en quelle
+année » réclame un millésime. `isBareYearCard` prend désormais la question en
+paramètre. Les trois faux positifs sont verrouillés par des tests.
+
+C'est le quatrième piège de rédaction de détecteur rencontré dans ce chantier, après
+`\b` inopérant sur les accents, « la peintre » qui contient « a peint », et le
+« qui » relatif pris pour un interrogatif. Tous sont couverts par des tests : la
+leçon générale est qu'un détecteur non testé sur ses faux positifs finit par mesurer
+autre chose que ce qu'il prétend.
