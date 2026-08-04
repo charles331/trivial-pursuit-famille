@@ -17,6 +17,15 @@ export const CUSTOM_PACK_TARGET_SHARE = 1 / 3;
 /** Plafond dur : les thèmes ne dépassent jamais une carte sur deux. */
 export const CUSTOM_PACK_MAX_SHARE = 1 / 2;
 
+/**
+ * Part visée pour les formats variés (vrai/faux, questions ouvertes) au niveau
+ * adulte : environ une carte sur cinq. Sans ce coup de pouce, une trentaine de
+ * cartes noyées parmi 3 200 QCM ne sortaient quasiment jamais en partie.
+ */
+export const VARIABLE_FORMAT_TARGET_SHARE = 0.2;
+/** Plafond dur : les formats variés ne dépassent jamais une carte sur trois. */
+export const VARIABLE_FORMAT_MAX_SHARE = 1 / 3;
+
 type Random = () => number;
 
 /**
@@ -86,6 +95,24 @@ export function customPackTurnIsDue(
 }
 
 /**
+ * Le tour en cours doit-il servir une carte à format varié ? Même logique que
+ * pour les thèmes, avec une part plus basse : `served` compte les cartes déjà
+ * posées, `fromVariable` celles qui étaient en vrai/faux ou ouvertes.
+ */
+export function variableFormatTurnIsDue(
+  served: number,
+  fromVariable: number,
+  random: Random = Math.random,
+): boolean {
+  if ((fromVariable + 1) / (served + 1) > VARIABLE_FORMAT_MAX_SHARE) return false;
+
+  const deficit = (served + 1) * VARIABLE_FORMAT_TARGET_SHARE - fromVariable;
+  if (deficit >= 2) return true;
+  if (deficit <= 0) return false;
+  return random() < VARIABLE_FORMAT_TARGET_SHARE;
+}
+
+/**
  * Choisit une carte pour la case et le joueur courants.
  *
  * `random` est injectable pour rendre le tirage reproductible dans les tests.
@@ -133,6 +160,32 @@ export function pickQuestionForPlayer(
       );
       if (candidates.length > 0) {
         return serve(pickOne(candidates), targetCategory);
+      }
+    }
+  }
+
+  // 1.5 Formats variés (adulte). On garantit une part régulière de vrai/faux et
+  //     de questions ouvertes : trente cartes noyées parmi 3 200 QCM ne
+  //     sortaient sinon quasiment jamais. Elles priment sur la banque QCM quand
+  //     c'est leur tour, à condition de coller à la case, d'être servables (les
+  //     ouvertes hors mode lecteur sont écartées) et hors thème actif.
+  if (playerDifficulty === 'adulte') {
+    const isVariable = (question: Question): boolean => (question.format ?? 'mcq') !== 'mcq';
+    const servedVariable = state.questionsPool.filter(
+      (question) => isVariable(question) && usedIds.has(question.id),
+    ).length;
+    if (variableFormatTurnIsDue(state.usedQuestionIds.length, servedVariable, random)) {
+      const candidates = state.questionsPool.filter(
+        (question) => isVariable(question)
+          && question.difficulty === 'adulte'
+          && normalizeCategoryId(question.categoryId) === targetCategory
+          && servableFormat(question)
+          && (activeThemes.size === 0 || !belongsToActiveTheme(question, activeThemes)),
+      );
+      const fresh = candidates.filter((question) => !usedIds.has(question.id));
+      const chosen = fresh.length > 0 ? fresh : candidates;
+      if (chosen.length > 0) {
+        return serve(pickOne(chosen), targetCategory);
       }
     }
   }

@@ -7,6 +7,7 @@ import {
   customPackTurnIsDue,
   pickQuestionForPlayer,
   shuffleQuestionOptions,
+  variableFormatTurnIsDue,
 } from '../src/server/questionSelection';
 import { CategoryId, DifficultyLevel, GameState, Question } from '../src/types';
 import { createGameState, testQuestion } from './fixtures';
@@ -364,4 +365,36 @@ test('le mélange préserve l\'ordre Vrai/Faux et n\'altère pas une carte ouver
   const shuffledOpen = shuffleQuestionOptions(openCard, () => 0.99);
   assert.deepEqual(shuffledOpen.options, []);
   assert.equal(shuffledOpen.correctAnswerIndex, 0);
+});
+
+test('la cadence des formats variés reste sous le plafond puis force une sortie', () => {
+  // Jamais dès la première carte (plafond), mais le déficit force une sortie
+  // avant d'avoir accumulé trop de retard sur la part cible.
+  assert.equal(variableFormatTurnIsDue(0, 0, () => 0), false);
+  assert.equal(variableFormatTurnIsDue(9, 0, () => 0.99), true); // déficit ≥ 2
+  // Plafond : au-delà d'une carte sur trois, on refuse.
+  assert.equal(variableFormatTurnIsDue(3, 2, () => 0), false);
+});
+
+test('une carte à format varié finit par sortir pour un joueur adulte', () => {
+  const boolCard: Question = {
+    ...testQuestion, id: 'bool-1', format: 'boolean',
+    question: 'Le Soleil est une étoile.', options: ['Vrai', 'Faux'],
+    correctAnswerIndex: 0, categoryId: 'histoire', difficulty: 'adulte',
+  };
+  const pool: Question[] = [
+    ...Array.from({ length: 20 }, (_, i) => ({
+      ...testQuestion, id: `mcq-${i}`, categoryId: 'histoire' as const, difficulty: 'adulte' as const,
+    })),
+    boolCard,
+  ];
+  const state = createGameState({
+    questionsPool: pool,
+    // 9 cartes déjà servies : le déficit rend le format varié « dû ».
+    usedQuestionIds: Array.from({ length: 9 }, (_, i) => `used-${i}`),
+  });
+
+  const served = pickQuestionForPlayer(state, 'histoire', 'adulte', () => 0);
+  assert.equal(served.id, 'bool-1');
+  assert.deepEqual(served.options, ['Vrai', 'Faux']);
 });
