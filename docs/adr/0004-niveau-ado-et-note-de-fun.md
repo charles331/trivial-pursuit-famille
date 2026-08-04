@@ -1,0 +1,117 @@
+# ADR 0004 — Niveau ado : chemin de raisonnement et note de fun
+
+- Statut : accepté
+- Date : 2026-08-04
+- Portée : banque de questions, niveau ado ; outillage de mesure
+
+## Contexte
+
+Une enfant de dix ans jouant au niveau ado a trouvé les cartes « très complexes ».
+Trois exemples relevés en partie :
+
+- « Quelle infirmière britannique, surnommée la dame à la lampe… ? » entre Clara
+  Barton, Edith Cavell, Marie Curie et Florence Nightingale ;
+- « En quelle année est sorti le tout premier film Star Wars ? » entre 1971, 1977,
+  1983 et 1985 ;
+- « Comment s'appelle l'ancien forçat, héros des Misérables ? » entre Javert,
+  Marius, Thénardier et Jean Valjean.
+
+Le défaut commun n'est pas la difficulté du sujet : c'est qu'**aucun raisonnement
+ne départage les propositions**. On sait, ou on tire au sort à une chance sur
+quatre.
+
+La cause est structurelle. L'ADR 0001 avait doté le niveau adulte d'une douzaine de
+règles exécutables ; le niveau ado n'en avait qu'une — ne pas recopier la banque
+enfant. Sur les 1 080 cartes ado : 133 cartes à quatre noms propres contre 40 au
+niveau enfant, et 62 marqueurs anglo-saxons contre 24. Les trois catégories jamais
+relues à la main (art, histoire, cinéma) concentraient le défaut, l'art culminant à
+45 cartes sur 135. Les trois captures venaient précisément de ces trois catégories.
+
+Un constat plus large : la marche entre `enfant` (Disney, Tintin) et `ado` (Pétain,
+Vasco de Gama, la guerre de Crimée) était un mur.
+
+## Décision
+
+### 1. Le niveau ado vise dix à douze ans
+
+Choix du propriétaire du projet, contre l'alternative « rester collège 13-17 ans »
+et contre la création d'un quatrième niveau. Le niveau ado devient une vraie marche
+intermédiaire : culture récente et francophone, faits situés, distracteurs
+départageables.
+
+### 2. Interroger l'œuvre, pas sa signature
+
+Les sujets exigeants restent — Hugo, Carmen, Tchaïkovski. C'est **l'angle** qui
+change, pour qu'un chemin de raisonnement existe. Le nom passe dans l'énoncé, où le
+joueur l'apprend tout de même :
+
+| Avant | Après |
+| --- | --- |
+| Comment s'appelle l'ancien forçat des Misérables ? | Pour quel vol Jean Valjean est-il envoyé au bagne ? → un morceau de pain |
+| Quelle infirmière britannique… ? | Que réclama Florence Nightingale pour faire chuter la mortalité ? → l'hygiène |
+| En quelle année est sorti le premier Star Wars ? | Quelle arme lumineuse les Jedi manient-ils ? → le sabre laser |
+| Qui a composé Carmen ? | Dans quel pays se déroule Carmen ? → l'Espagne |
+
+112 cartes ont été reprises selon ce principe, en conservant l'identifiant de la
+carte remplacée (`adoReplacements.ts`), si bien que les volumes et l'invariant de
+135 cartes ado par catégorie sont inchangés.
+
+### 3. Deux règles exécutables de plus
+
+- **Aucune devinette de millésime** au niveau ado, sans tolérance
+  (`isBareYearCard`). Deux années voisines ne se déduisent jamais. Une réponse
+  chiffrée qui se raisonne — « combien d'os compte le squelette ? » — reste
+  permise : le contrôle est distinct de `isBareNumberCard`.
+- **Au plus quatre cartes d'attribution par catégorie**
+  (`isAttributionLotteryCard`). L'attribution nue — « qui a fait cette œuvre ? » —
+  est la seule forme qui n'offre *aucune* prise. Les quatre cartes restantes sont
+  réservées aux signatures que la maison rend familières, et de préférence belges :
+  Magritte, Morris, Franquin, Brel, Simenon.
+
+Le plafond ne vise délibérément **pas** toutes les cartes à quatre noms propres.
+« Quel dieu grec règne sur les mers, armé de son trident ? » et « Quel personnage
+de Nintendo est un plombier moustachu en salopette ? » décrivent leur réponse : la
+description *est* le chemin de raisonnement. Les convertir appauvrirait le jeu.
+`isPersonNameLotteryCard` continue de signaler cette forme plus large, mais sert
+seulement à la mesure, pas à l'interdiction.
+
+### 4. Une note de fun, comparateur et non seuil
+
+`scripts/score-fun.ts` (`npm run score:fun`) note chaque carte en pourcentage sur
+sept critères pondérés, chacun issu d'un reproche formulé en partie :
+
+| Critère | Poids | Reproche d'origine |
+| --- | --- | --- |
+| Chemin de raisonnement | 30 | « impossible et vraiment pas fun », « trop évidente » |
+| Explication qui apprend | 20 | le « Le saviez-vous ? » réclamé sur tous les formats |
+| Ancrage culturel proche | 15 | « il faut une série belge ou française » |
+| Proximité temporelle | 15 | « ou alors plus proche dans le temps » |
+| Carte qui se raconte | 10 | « vraiment pas fun » |
+| Lisible à voix haute | 5 | confort du lecteur en mode lecteur |
+| Variété de format | 5 | ajout des vrai/faux et des questions ouvertes |
+
+La note est un **comparateur** : « 77 % » ne signifie rien dans l'abstrait, « la
+catégorie popculture est sept points sous la gastronomie » signifie quelque chose.
+Elle n'est donc pas bloquante en CI.
+
+Elle est validée (`npm run score:fun -- --validate`) contre les cartes réellement
+rejetées en partie et leurs remplaçantes : 53 → 81 %, 43 → 86 %, 60 → 86 %. Sans
+cette validation, la note ne mesurerait rien. C'est d'ailleurs elle qui a révélé
+deux faux négatifs des détecteurs, corrigés et verrouillés par des tests.
+
+## Conséquences
+
+- La note moyenne du corpus est de 76,8 %, identique aux trois niveaux : la qualité
+  de fun dépend de la catégorie, pas du niveau. Le critère le plus faible est le
+  plus lourd — chemin de raisonnement, 67,9 %.
+- Classement des catégories : gastronomie 80,4 %, sports 79,9 %, sciences 77,3 %,
+  cinéma 77,0 %, art 76,6 %, géographie 76,1 %, histoire 73,8 %, popculture 73,4 %.
+  Les deux dernières sont le prochain chantier ; le niveau adulte de popculture est
+  le bloc le plus faible du corpus (72,3 %).
+- Trois pièges de rédaction de détecteurs sont désormais couverts par des tests :
+  `\b` est inopérant après une lettre accentuée (« composé ») ; sans borne à droite,
+  « la peintre » contient « a peint » ; le « qui » relatif n'est pas le « qui »
+  interrogatif.
+- Une CI (`.github/workflows/check.yml`) lance `npm run check` sur chaque poussée,
+  et un `CLAUDE.md` énonce la règle de conduite : quand l'audit échoue, on corrige
+  la carte, jamais la règle.

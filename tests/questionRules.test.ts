@@ -3,6 +3,7 @@ import test from 'node:test';
 import {
   echoesCorrectAnswer,
   editorialRejectionReason,
+  isAttributionLotteryCard,
   isBareYearCard,
   isPersonNameLotteryCard,
   quotesAnswerProperName,
@@ -295,6 +296,69 @@ test('a card that asks about the work rather than the name is not a lottery', ()
     isPersonNameLotteryCard(
       'Dans quelle maison de Poudlard Harry Potter est-il réparti ?',
       ['Gryffondor', 'Serpentard', 'Poufsouffle', 'Serdaigle'],
+    ),
+    false,
+  );
+});
+
+test('a bare attribution question is the purest lottery', () => {
+  assert.equal(
+    isAttributionLotteryCard(
+      'Qui a composé l’opéra La Flûte enchantée ?',
+      ['Mozart', 'Beethoven', 'Verdi', 'Wagner'],
+    ),
+    true,
+  );
+});
+
+test('an accented participle still matches', () => {
+  // « \b » est ASCII : après le « é » de « composé » ou « réalisé », JavaScript ne
+  // voit aucune frontière de mot, et la règle ne matchait plus aucun participe
+  // accentué. Ce test verrouille la borne de remplacement.
+  assert.equal(
+    isAttributionLotteryCard('Qui a réalisé Avatar et Titanic ?',
+      ['James Cameron', 'Peter Jackson', 'Steven Spielberg', 'Christopher Nolan']),
+    true,
+  );
+  assert.equal(
+    isAttributionLotteryCard('Qui a créé la saga Star Wars ?',
+      ['George Lucas', 'Ridley Scott', 'James Cameron', 'Steven Spielberg']),
+    true,
+  );
+});
+
+test('“la peintre Frida Kahlo” is not an attribution question', () => {
+  // Sans borne à droite, « la peintre » contenait « a peint ».
+  assert.equal(
+    isAttributionLotteryCard(
+      'De quel pays était originaire la peintre Frida Kahlo, célèbre pour ses autoportraits ?',
+      ['Le Mexique', 'L’Espagne', 'L’Argentine', 'Le Brésil'],
+    ),
+    false,
+  );
+});
+
+test('a described answer is spared: the description is the reasoning path', () => {
+  // Ces cartes gardent quatre noms propres, mais l'énoncé décrit sa réponse : on
+  // peut raisonner. Les convertir appauvrirait le jeu.
+  assert.equal(
+    isAttributionLotteryCard('Quel dieu grec règne sur les mers, armé de son trident ?',
+      ['Poséidon', 'Arès', 'Héphaïstos', 'Dionysos']),
+    false,
+  );
+  assert.equal(
+    isAttributionLotteryCard('Quel personnage de Nintendo est un plombier moustachu en salopette ?',
+      ['Mario', 'Kirby', 'Donkey Kong', 'Yoshi']),
+    false,
+  );
+});
+
+test('a relative “qui a” is not an interrogative one', () => {
+  // « la danse qui a donné son nom au Boléro » ne réclame pas un nom de personne.
+  assert.equal(
+    isPersonNameLotteryCard(
+      'De quel pays vient la danse qui a donné son nom au Boléro de Ravel ?',
+      ['L’Espagne', 'L’Italie', 'La Russie', 'Le Brésil'],
     ),
     false,
   );

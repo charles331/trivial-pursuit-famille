@@ -13,7 +13,8 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "analyze:difficulty": "node --import tsx scripts/analyze-difficulty.ts",
     "assets:brand": "node --import tsx scripts/render-brand-assets.ts",
-    "check": "npm run lint && npm test && npm run audit:questions && npm run build"
+    "check": "npm run lint && npm test && npm run audit:questions && npm run build",
+    "score:fun": "node --import tsx scripts/score-fun.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

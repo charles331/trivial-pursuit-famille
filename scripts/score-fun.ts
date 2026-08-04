@@ -324,5 +324,10 @@ function report(): void {
   }
 }
 
-if (process.argv.includes('--validate')) runValidation();
-else report();
+// Le rapport ne s'exécute qu'en ligne de commande : `funScore` doit rester
+// importable par un autre script sans tout imprimer au passage.
+const invokedDirectly = process.argv[1]?.includes('score-fun');
+if (invokedDirectly) {
+  if (process.argv.includes('--validate')) runValidation();
+  else report();
+}

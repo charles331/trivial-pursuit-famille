@@ -374,8 +374,14 @@ const PERSON_ROLE_WORDS = 'écrivain|peintre|roi|reine|président|premier minist
   + '|sculpteur|architecte|auteur|romancier|poète|dessinateur|inventeur|philosophe'
   + '|héros|héroïne|personnage|détective|forçat|résistant|pharaon|chevalier|dieu|déesse';
 
+/**
+ * Le « qui » interrogatif ouvre l'énoncé ou suit une ponctuation. Le « qui »
+ * relatif, lui, suit un nom : « la danse **qui a** donné son nom au Boléro » ne
+ * demande pas un nom de personne, et se départage très bien.
+ */
 const PERSON_PROMPT = new RegExp(
-  `(qui\\s+(a|est|était|fut|invent|peign|dirig|compos|écriv|réalis)|quel(le)?s?\\s+(${PERSON_ROLE_WORDS}))`,
+  `((?:^|[?!.,;:]\\s*|^\\s*)qui\\s+(a|est|était|fut|invent|peign|dirig|compos|écriv|réalis)`
+  + `|quel(le)?s?\\s+(${PERSON_ROLE_WORDS}))`,
   'i',
 );
 
@@ -422,6 +428,43 @@ export function isPersonNameLotteryCard(question: string, options: string[]): bo
   const asksForPerson = PERSON_PROMPT.test(question)
     || (NAMING_PROMPT.test(question) && PERSON_ROLE.test(question));
   if (!asksForPerson) return false;
+  return options.every(looksLikePersonName);
+}
+
+/** Verbes d'attribution : celui qui a fait l'œuvre. */
+// Deux pièges de rédaction, tous deux rencontrés :
+//  - sans borne à droite, « la peintre Frida Kahlo » contient « a peint » ;
+//  - `\b` ne convient pas comme borne, car il est ASCII : après le « é » de
+//    « composé », JavaScript ne voit aucune frontière et la règle ne matchait
+//    plus aucun participe accentué. On exige donc simplement que le participe
+//    ne soit pas suivi d'une autre lettre.
+const NOT_A_LETTER = '(?![a-zà-ÿ])';
+const ATTRIBUTION_VERB = new RegExp(
+  '\\b(a|ont)\\s+(composé|peint|écrit|réalisé|dessiné|conçu|créé|sculpté|bâti|construit'
+  + `|inventé|découvert|fondé|tourné|publié|signé)${NOT_A_LETTER}`
+  + '|\\best\\s+l(?:e|a|’|\')?\\s*'
+  + `(auteur|autrice|créateur|créatrice|inventeur|réalisateur|compositeur)${NOT_A_LETTER}`,
+  'i',
+);
+
+/**
+ * Carte d'attribution jouée entre quatre noms : « Qui a composé La Flûte
+ * enchantée ? » entre Beethoven, Verdi, Wagner et Mozart.
+ *
+ * C'est la forme la plus pure du défaut, et la seule qui n'offre *aucune* prise :
+ * l'énoncé ne dit rien de la personne, seulement ce qu'elle a produit. On sait
+ * qui a composé, ou l'on tire au sort entre quatre contemporains.
+ *
+ * Volontairement plus étroit que `isPersonNameLotteryCard`, qui signale une forme
+ * suspecte mais attrape aussi de très bonnes cartes : « Quel dieu grec règne sur
+ * les mers, armé de son trident ? » et « Quel personnage de Nintendo est un
+ * plombier moustachu en salopette ? » décrivent leur réponse, et cette
+ * description *est* le chemin de raisonnement. Les réécrire appauvrirait le jeu.
+ * C'est l'attribution nue qu'il faut convertir, en interrogeant l'œuvre.
+ */
+export function isAttributionLotteryCard(question: string, options: string[]): boolean {
+  if (options.length !== 4) return false;
+  if (!ATTRIBUTION_VERB.test(question)) return false;
   return options.every(looksLikePersonName);
 }
 

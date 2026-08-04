@@ -1,0 +1,28 @@
+# Le contrat éditorial de la banque de questions et la suite de tests ne valent que
+# s'ils tournent sans qu'on y pense. `npm run check` enchaîne lint, tests, audit des
+# questions et build : cette CI le lance sur chaque poussée et chaque pull request,
+# pour qu'une carte fautive ou un détecteur affaibli ne puisse pas arriver sur main
+# sans que personne ne le voie.
+name: check
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      # Non bloquant : la note de fun est un comparateur, pas un seuil. On
+      # l'imprime dans le journal de la CI pour voir l'effet de chaque lot de
+      # cartes sur le classement des catégories.
+      - run: npm run score:fun
+        continue-on-error: true

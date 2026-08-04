@@ -170,6 +170,46 @@ const REPLACEMENTS: Replacement[] = [
   ['spo_166', 'Dans quel sport le Français Victor Wembanyama s’est-il imposé aux États-Unis ?', 'Le basket-ball', 'Le football américain', 'Le hockey sur glace', 'Le baseball', 'Sa très grande taille en fait l’un des joueurs les plus surveillés de la NBA.'],
   ['spo_198', 'Pourquoi les Jeux olympiques de Tokyo, prévus en 2020, ont-ils été reportés d’un an ?', 'À cause de la pandémie de Covid-19', 'À cause d’un tremblement de terre', 'À cause d’un boycott', 'À cause de travaux inachevés', 'C’était le premier report de Jeux olympiques en temps de paix.'],
   ['pop_172', 'Qu’est-ce qui rendait le jeu Pokémon GO différent des jeux vidéo classiques ?', 'Il fallait se déplacer dehors pour jouer', 'Il se jouait uniquement à deux', 'Il n’avait aucune image', 'Il exigeait une console spéciale', 'Sorti en 2016, il utilise la réalité augmentée et la position du téléphone.'],
+
+  // --- Cartes d'attribution : « qui a fait cette œuvre ? » -------------------
+  // Forme la plus pure du défaut, et la seule qui n'offre aucune prise : l'énoncé
+  // ne dit rien de la personne, seulement ce qu'elle a produit. On sait qui a
+  // composé, ou l'on tire au sort entre quatre contemporains.
+  //
+  // Quatre cartes d'attribution restent permises par catégorie, réservées aux
+  // signatures que la maison rend familières — et de préférence belges : Magritte,
+  // Morris, Franquin, Brel, Simenon, Uderzo. Les vingt-et-une suivantes basculent
+  // vers l'œuvre elle-même.
+
+  // Art
+  ['art_136', 'Que représente le premier plan de La Nuit étoilée, sous le ciel tourbillonnant de Van Gogh ?', 'Un village avec un clocher', 'Une plage déserte', 'Une gare', 'Un port de pêche', 'Van Gogh l’a peinte depuis sa chambre d’hôpital, à Saint-Rémy-de-Provence.'],
+  ['art_139', 'Qu’ont de particulier les couleurs de Guernica, la grande toile de Picasso ?', 'Il n’y a que du noir, du blanc et du gris', 'Il n’y a que du rouge', 'Les couleurs sont très vives', 'La toile est dorée à la feuille', 'Picasso l’a peinte après le bombardement d’une ville basque, en 1937.'],
+  ['art_144', 'Dans quelle position Michel-Ange a-t-il dû travailler pour peindre le plafond de la chapelle Sixtine ?', 'Couché sur un échafaudage, les bras en l’air', 'Assis sur un tabouret', 'Debout sur le sol', 'Suspendu par des cordes', 'Le chantier lui prit quatre ans et lui abîma durablement le cou.'],
+  ['art_145', 'Quelle arme le David de Michel-Ange tient-il, prêt à affronter Goliath ?', 'Une fronde', 'Une épée', 'Une lance', 'Un arc', 'La statue mesure plus de cinq mètres et se visite à Florence.'],
+  ['art_150', 'Qu’a de très inhabituel le chantier de la Sagrada Família, à Barcelone ?', 'Il n’est toujours pas terminé après plus d’un siècle', 'Il a été bâti en un an', 'Il est entièrement souterrain', 'Il a été déplacé pierre par pierre', 'Commencé en 1882, il est financé par les visites.'],
+  ['art_159', 'Dans quel pays se déroulent les aventures des Trois Mousquetaires ?', 'En France', 'En Angleterre', 'En Espagne', 'En Italie', 'Alexandre Dumas situe l’intrigue sous le règne de Louis XIII.'],
+  ['art_161', 'Dans quelle rue de Londres Sherlock Holmes a-t-il son appartement ?', 'Baker Street', 'Oxford Street', 'Abbey Road', 'Downing Street', 'Un musée s’y visite aujourd’hui, au numéro 221B.'],
+  ['art_163', 'Pourquoi Roméo et Juliette ne peuvent-ils pas s’aimer librement ?', 'Leurs deux familles se haïssent', 'Ils vivent dans deux pays différents', 'Juliette est déjà mariée', 'Roméo est banni depuis l’enfance', 'Shakespeare situe la pièce à Vérone, en Italie.'],
+  ['art_165', 'En combien de tomes Le Seigneur des anneaux a-t-il été publié ?', 'Trois', 'Un', 'Cinq', 'Sept', 'Tolkien l’avait pourtant écrit comme un seul livre, découpé par son éditeur.'],
+  ['art_169', 'Qu’est-ce qu’un opéra, comme La Flûte enchantée ?', 'Une pièce entièrement chantée, accompagnée d’un orchestre', 'Un concert de piano seul', 'Un ballet sans musique', 'Une pièce de théâtre parlée', 'Mozart y mêle le chant, l’orchestre et de vraies machines de scène.'],
+
+  // Popculture
+  ['pop_144', 'Que cherchent les héros de Dragon Ball en parcourant le monde ?', 'Sept boules de cristal', 'Sept épées sacrées', 'Sept parchemins', 'Sept pierres de lune', 'Réunies, elles invoquent un dragon qui exauce un vœu.'],
+  ['pop_155', 'Que deviennent les parents de Chihiro au début du Voyage de Chihiro ?', 'Ils sont transformés en cochons', 'Ils sont enlevés par un dragon', 'Ils rajeunissent', 'Ils deviennent invisibles', 'Le film du studio Ghibli a reçu l’Oscar du meilleur film d’animation.'],
+  ['pop_162', 'Que cherche Luffy, le héros de One Piece, en parcourant les mers ?', 'Le trésor du roi des pirates', 'Une île volante', 'Un dragon endormi', 'Une carte du monde perdue', 'Le manga d’Eiichiro Oda dépasse la centaine de tomes.'],
+  ['pop_165', 'Quel est le principe du mode le plus joué de Fortnite ?', 'Cent joueurs s’affrontent jusqu’au dernier survivant', 'Deux équipes se passent un ballon', 'On bâtit une ville en coopération', 'On résout des énigmes à deux', 'Ses concerts virtuels ont réuni des dizaines de millions de joueurs.'],
+  ['pop_167', 'De quoi le monde de Minecraft est-il entièrement fait ?', 'De blocs cubiques', 'De sphères', 'De pixels plats', 'De triangles', 'C’est le jeu vidéo le plus vendu de toute l’histoire.'],
+  ['pop_186', 'Dans Clash of Clans, à quoi le joueur passe-t-il son temps entre deux attaques ?', 'À bâtir et défendre son village', 'À collectionner des cartes', 'À courir dans un labyrinthe', 'À élever des animaux', 'Le studio finlandais Supercell édite aussi Brawl Stars.'],
+  ['pop_ado_editorial_026', 'Que fait un auteur-compositeur lorsqu’il écrit pour un autre artiste ?', 'Il compose une chanson qu’un autre interprétera', 'Il chante à la place de l’autre', 'Il dessine la pochette du disque', 'Il organise la tournée', 'Jean-Jacques Goldman a ainsi écrit un album entier pour Céline Dion.'],
+
+  // Cinéma
+  ['cin_148', 'De quelle voie de la gare de King’s Cross le train de Poudlard part-il ?', 'La voie 9 ¾', 'La voie 13', 'La voie 7', 'La voie 21', 'Un morceau du décor se visite aujourd’hui à Londres.'],
+  ['cin_194', 'Comment les dinosaures sont-ils recréés dans Jurassic Park ?', 'À partir d’ADN conservé dans de l’ambre', 'Par des robots télécommandés', 'En clonant des lézards actuels', 'En les ramenant du passé', 'Le film de 1993 a mêlé animatroniques et images de synthèse.'],
+  ['cin_212', 'De quelle couleur est la peau des Na’vi, les habitants de Pandora dans Avatar ?', 'Bleue', 'Verte', 'Dorée', 'Grise', 'James Cameron a attendu des années que la technologie permette de les filmer.'],
+
+  // Histoire : cette carte posait le même fait que la banque d'art (le plafond
+  // de la chapelle Sixtine). Remplacée par un repère belge.
+  ['his_188', 'Que célèbre la fête nationale belge, le 21 juillet ?', 'Le serment du premier roi des Belges', 'La fin de la Seconde Guerre mondiale', 'La signature d’un traité européen', 'L’indépendance du Congo', 'Léopold Ier prêta serment sur la Constitution le 21 juillet 1831.'],
 ];
 
 const BY_ID = new Map(REPLACEMENTS.map((replacement) => [replacement[0], replacement]));
