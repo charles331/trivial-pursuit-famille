@@ -86,6 +86,11 @@ export function resolveAnswer(
 }
 
 export function advanceTurn(state: GameState): void {
+  // On capture le résumé de la carte avant de l'effacer : il reste affiché sur le
+  // plateau jusqu'à ce que la carte suivante soit tirée, pour que la table ait le
+  // temps de lire le « Le saviez-vous ? » même si un autre joueur a déjà cliqué.
+  state.lastQuestionRecap = buildQuestionRecap(state);
+
   const earnedWedge = state.lastAnswerResult?.earnedWedge;
   if (!state.lastAnswerResult?.isCorrect || earnedWedge) {
     state.activePlayerIndex = (state.activePlayerIndex + 1) % state.players.length;
@@ -132,6 +137,7 @@ export function resetGameForNewRound(state: GameState): void {
   state.surpriseSpinThisTurn = false;
   state.activeQuestionBonus = null;
   state.firstPlayerDraw = null;
+  state.lastQuestionRecap = null;
   state.isPaused = false;
   state.pausedAt = null;
 
@@ -191,6 +197,31 @@ export function removePlayerFromGame(state: GameState, playerId: string): boolea
   }
 
   return true;
+}
+
+/** Résumé de la carte en cours, tel qu'il survivra au changement de tour. */
+function buildQuestionRecap(state: GameState): GameState['lastQuestionRecap'] {
+  const question = state.currentQuestion;
+  if (!question) return null;
+
+  // Lecture prudente : un résumé purement informatif ne doit jamais faire tomber
+  // un tour. Une carte tronquée — options absentes, index hors bornes — donne un
+  // rappel vide plutôt qu'une exception au changement de joueur.
+  const answer = (question.format ?? 'mcq') === 'open'
+    ? question.answer ?? ''
+    : question.options?.[question.correctAnswerIndex] ?? '';
+  const answeringPlayer = state.players.find(
+    (player) => player.id === state.lastAnswerResult?.playerId,
+  ) ?? state.players[state.activePlayerIndex];
+
+  return {
+    categoryId: question.categoryId,
+    question: question.question,
+    answer,
+    explanation: question.explanation,
+    playerName: answeringPlayer?.name ?? '',
+    isCorrect: state.lastAnswerResult?.isCorrect ?? false,
+  };
 }
 
 export function togglePauseState(state: GameState, now: number): void {
