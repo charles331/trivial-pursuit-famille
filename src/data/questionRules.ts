@@ -350,6 +350,137 @@ export function isBareNumberCard(options: string[]): boolean {
   return options.every(isBareNumberOption);
 }
 
+/**
+ * Carte jouée entre quatre millésimes : « En quelle année… ? » suivi de 1905,
+ * 1912, 1918, 1914.
+ *
+ * Plus étroit que `isBareNumberCard`, qui accepte toute réponse chiffrée — « 206
+ * os », « quatre cavités » — et qui a sa place. Ici, aucun raisonnement ne
+ * départage deux années voisines : on retient la date, ou on tire au sort. Mieux
+ * vaut interroger la substance de l'événement en citant l'année dans l'énoncé.
+ */
+/** Un énoncé qui réclame explicitement une date : « en quelle année… ? ». */
+const YEAR_PROMPT = /en quelle année|quelle année|en quel siècle|quel siècle|à quelle date/i;
+
+export function isBareYearCard(question: string, options: string[]): boolean {
+  if (options.length !== 4) return false;
+  // C'est l'énoncé, et non le nombre de chiffres, qui dit s'il s'agit d'un
+  // millésime. Se fier aux seuls chiffres signalait à tort le matricule 007 de
+  // James Bond, les 501 points des fléchettes et les 151 Pokémon d'origine.
+  if (!YEAR_PROMPT.test(question)) return false;
+  // Deux échappatoires, toutes deux couvertes par un test : un préfixe court
+  // déguise le millésime (« En 476 »), et l'Antiquité s'écrit sur trois chiffres
+  // — « 395 » contre « 476 » se devine tout autant que « 1977 » contre « 1983 ».
+  return options.every(
+    (option) => /^\s*(?:en\s+|vers\s+|l[’']an\s+)?[0-9]{3,4}\s*$/i.test(option),
+  );
+}
+
+
+/**
+ * Un énoncé qui réclame le nom d'une personne : « qui a peint… », « quel
+ * navigateur… », « quelle infirmière… ».
+ */
+const PERSON_ROLE_WORDS = 'écrivain|peintre|roi|reine|président|premier ministre|médecin'
+  + '|navigateur|explorateur|savant|scientifique|compositeur|acteur|actrice|réalisateur'
+  + '|chanteur|chanteuse|infirmière|militant|maréchal|amiral|empereur|impératrice'
+  + '|sculpteur|architecte|auteur|romancier|poète|dessinateur|inventeur|philosophe'
+  + '|héros|héroïne|personnage|détective|forçat|résistant|pharaon|chevalier|dieu|déesse';
+
+/**
+ * Le « qui » interrogatif ouvre l'énoncé ou suit une ponctuation. Le « qui »
+ * relatif, lui, suit un nom : « la danse **qui a** donné son nom au Boléro » ne
+ * demande pas un nom de personne, et se départage très bien.
+ */
+const PERSON_PROMPT = new RegExp(
+  `((?:^|[?!.,;:]\\s*|^\\s*)qui\\s+(a|est|était|fut|invent|peign|dirig|compos|écriv|réalis)`
+  + `|quel(le)?s?\\s+(${PERSON_ROLE_WORDS}))`,
+  'i',
+);
+
+/**
+ * « Comment s'appelle… ? » ne réclame un nom de personne que si l'énoncé en
+ * désigne une : « comment s'appelle le sous-marin du capitaine Nemo ? » ou « le
+ * château du capitaine Haddock ? » interrogent un objet et un lieu, pas un
+ * personnage, et se départagent autrement.
+ */
+const NAMING_PROMPT = /comment\s+s(?:’|')?(?:appelle|appelait|appellent)|comment\s+se\s+nomm/i;
+const PERSON_ROLE = new RegExp(`\\b(${PERSON_ROLE_WORDS})\\b`, 'i');
+
+/**
+ * Une option qui ressemble à un nom de personne.
+ *
+ * Le patronyme seul compte autant que le nom complet : « Bizet » face à
+ * « Gounod », « Offenbach » et « Massenet » est exactement la même loterie que
+ * « Florence Nightingale » face à « Clara Barton ». C'est le trou par lequel
+ * passait « Comment s'appelle l'ancien forçat des Misérables ? », entre Javert,
+ * Marius et Thénardier.
+ */
+function looksLikePersonName(option: string): boolean {
+  const trimmed = option.trim().replace(/^(Le|La|L’|L'|Les)\s+/i, '');
+  if (!/^[A-ZÀ-Ý]/.test(trimmed)) return false;
+  if (/\d/.test(trimmed)) return false;
+  const tokens = trimmed.split(/\s+/);
+  if (tokens.length > 4) return false; // une phrase descriptive, pas un nom
+  return tokens.every((token) => /^([A-ZÀ-Ý][\wà-ÿ.’'-]*|de|von|van|del|di|le|la|du|d’|d')$/.test(token));
+}
+
+/**
+ * Carte jouée à la loterie de noms propres : l'énoncé réclame un nom de personne
+ * et les quatre options sont des noms de personnes.
+ *
+ * C'est le défaut qui rendait le niveau ado injouable pour un enfant de dix ans :
+ * « Quelle infirmière britannique… ? » entre Barton, Cavell, Curie et
+ * Nightingale ne laisse aucun chemin de raisonnement — on sait, ou on tire au
+ * sort. La carte n'est pas fautive parce que son sujet est exigeant, mais parce
+ * qu'aucune déduction n'est possible : mieux vaut interroger l'œuvre ou le fait
+ * que le nom, en citant celui-ci dans l'énoncé.
+ */
+export function isPersonNameLotteryCard(question: string, options: string[]): boolean {
+  if (options.length !== 4) return false;
+  const asksForPerson = PERSON_PROMPT.test(question)
+    || (NAMING_PROMPT.test(question) && PERSON_ROLE.test(question));
+  if (!asksForPerson) return false;
+  return options.every(looksLikePersonName);
+}
+
+/** Verbes d'attribution : celui qui a fait l'œuvre. */
+// Deux pièges de rédaction, tous deux rencontrés :
+//  - sans borne à droite, « la peintre Frida Kahlo » contient « a peint » ;
+//  - `\b` ne convient pas comme borne, car il est ASCII : après le « é » de
+//    « composé », JavaScript ne voit aucune frontière et la règle ne matchait
+//    plus aucun participe accentué. On exige donc simplement que le participe
+//    ne soit pas suivi d'une autre lettre.
+const NOT_A_LETTER = '(?![a-zà-ÿ])';
+const ATTRIBUTION_VERB = new RegExp(
+  '\\b(a|ont)\\s+(composé|peint|écrit|réalisé|dessiné|conçu|créé|sculpté|bâti|construit'
+  + `|inventé|découvert|fondé|tourné|publié|signé)${NOT_A_LETTER}`
+  + '|\\best\\s+l(?:e|a|’|\')?\\s*'
+  + `(auteur|autrice|créateur|créatrice|inventeur|réalisateur|compositeur)${NOT_A_LETTER}`,
+  'i',
+);
+
+/**
+ * Carte d'attribution jouée entre quatre noms : « Qui a composé La Flûte
+ * enchantée ? » entre Beethoven, Verdi, Wagner et Mozart.
+ *
+ * C'est la forme la plus pure du défaut, et la seule qui n'offre *aucune* prise :
+ * l'énoncé ne dit rien de la personne, seulement ce qu'elle a produit. On sait
+ * qui a composé, ou l'on tire au sort entre quatre contemporains.
+ *
+ * Volontairement plus étroit que `isPersonNameLotteryCard`, qui signale une forme
+ * suspecte mais attrape aussi de très bonnes cartes : « Quel dieu grec règne sur
+ * les mers, armé de son trident ? » et « Quel personnage de Nintendo est un
+ * plombier moustachu en salopette ? » décrivent leur réponse, et cette
+ * description *est* le chemin de raisonnement. Les réécrire appauvrirait le jeu.
+ * C'est l'attribution nue qu'il faut convertir, en interrogeant l'œuvre.
+ */
+export function isAttributionLotteryCard(question: string, options: string[]): boolean {
+  if (options.length !== 4) return false;
+  if (!ATTRIBUTION_VERB.test(question)) return false;
+  return options.every(looksLikePersonName);
+}
+
 export interface QuestionCandidate {
   question: string;
   options: string[];

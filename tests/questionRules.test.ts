@@ -3,6 +3,9 @@ import test from 'node:test';
 import {
   echoesCorrectAnswer,
   editorialRejectionReason,
+  isAttributionLotteryCard,
+  isBareYearCard,
+  isPersonNameLotteryCard,
   quotesAnswerProperName,
 } from '../src/data/questionRules';
 
@@ -248,5 +251,120 @@ test('an open card may not carry options', () => {
       explanation: 'À ne pas confondre avec l’agoraphobie, la peur des espaces ouverts.',
     }),
     'une carte ouverte n’a aucune proposition',
+  );
+});
+
+// --- Contrat éditorial du niveau ado ----------------------------------------
+// Les deux défauts qui rendaient le niveau ado injouable pour un enfant de dix
+// ans : la carte sans aucun chemin de raisonnement.
+
+test('four neighbouring years are recognised as a coin toss', () => {
+  assert.equal(isBareYearCard('En quelle année la guerre a-t-elle éclaté ?', ['1914', '1905', '1912', '1918']), true);
+  assert.equal(isBareYearCard('En quelle année est sorti le premier Star Wars ?', ['1977', '1983', '1971', '1985']), true);
+  // Un préfixe et trois chiffres ne déguisent pas la devinette.
+  assert.equal(isBareYearCard('En quelle année l’Empire romain d’Occident s’est-il effondré ?', ['En 395', 'En 800', 'En 1453', 'En 476']), true);
+});
+
+test('a numeric answer that is not a year stays allowed', () => {
+  // « Combien d'os compte le squelette ? » garde toute sa place : l'ordre de
+  // grandeur se raisonne, contrairement à deux millésimes voisins.
+  assert.equal(isBareYearCard('Combien d’os compte le squelette ?', ['206', '150', '312', '98']), false);
+  assert.equal(isBareYearCard('Combien de cavités compte le cœur ?', ['Quatre', 'Deux', 'Trois', 'Six']), false);
+  // C'est l'énoncé qui décide : ces nombres ne sont pas des millésimes.
+  assert.equal(isBareYearCard('Quel est le matricule de James Bond ?', ['001', '700', '070', '007']), false);
+  assert.equal(isBareYearCard('Aux fléchettes, à combien de points commence une partie ?', ['501', '1000', '300', '100']), false);
+});
+
+test('four person names behind a “who” prompt are a name lottery', () => {
+  assert.equal(
+    isPersonNameLotteryCard(
+      'Quelle infirmière britannique a fondé les soins infirmiers modernes ?',
+      ['Florence Nightingale', 'Clara Barton', 'Edith Cavell', 'Marie Curie'],
+    ),
+    true,
+  );
+});
+
+test('a card that asks about the work rather than the name is not a lottery', () => {
+  // La reprise du niveau ado repose entièrement sur ce basculement : le nom
+  // passe dans l'énoncé, la question porte sur ce que l'on peut déduire.
+  assert.equal(
+    isPersonNameLotteryCard(
+      'Pour quel vol Jean Valjean est-il envoyé au bagne, au début des Misérables ?',
+      ['Un morceau de pain', 'Un cheval', 'Une bourse d’or', 'Une paire de chandeliers'],
+    ),
+    false,
+  );
+  // Un énoncé qui ne réclame pas de personne échappe à la règle, même si ses
+  // options sont des noms propres : « Dans quelle maison de Poudlard… ? ».
+  assert.equal(
+    isPersonNameLotteryCard(
+      'Dans quelle maison de Poudlard Harry Potter est-il réparti ?',
+      ['Gryffondor', 'Serpentard', 'Poufsouffle', 'Serdaigle'],
+    ),
+    false,
+  );
+});
+
+test('a bare attribution question is the purest lottery', () => {
+  assert.equal(
+    isAttributionLotteryCard(
+      'Qui a composé l’opéra La Flûte enchantée ?',
+      ['Mozart', 'Beethoven', 'Verdi', 'Wagner'],
+    ),
+    true,
+  );
+});
+
+test('an accented participle still matches', () => {
+  // « \b » est ASCII : après le « é » de « composé » ou « réalisé », JavaScript ne
+  // voit aucune frontière de mot, et la règle ne matchait plus aucun participe
+  // accentué. Ce test verrouille la borne de remplacement.
+  assert.equal(
+    isAttributionLotteryCard('Qui a réalisé Avatar et Titanic ?',
+      ['James Cameron', 'Peter Jackson', 'Steven Spielberg', 'Christopher Nolan']),
+    true,
+  );
+  assert.equal(
+    isAttributionLotteryCard('Qui a créé la saga Star Wars ?',
+      ['George Lucas', 'Ridley Scott', 'James Cameron', 'Steven Spielberg']),
+    true,
+  );
+});
+
+test('“la peintre Frida Kahlo” is not an attribution question', () => {
+  // Sans borne à droite, « la peintre » contenait « a peint ».
+  assert.equal(
+    isAttributionLotteryCard(
+      'De quel pays était originaire la peintre Frida Kahlo, célèbre pour ses autoportraits ?',
+      ['Le Mexique', 'L’Espagne', 'L’Argentine', 'Le Brésil'],
+    ),
+    false,
+  );
+});
+
+test('a described answer is spared: the description is the reasoning path', () => {
+  // Ces cartes gardent quatre noms propres, mais l'énoncé décrit sa réponse : on
+  // peut raisonner. Les convertir appauvrirait le jeu.
+  assert.equal(
+    isAttributionLotteryCard('Quel dieu grec règne sur les mers, armé de son trident ?',
+      ['Poséidon', 'Arès', 'Héphaïstos', 'Dionysos']),
+    false,
+  );
+  assert.equal(
+    isAttributionLotteryCard('Quel personnage de Nintendo est un plombier moustachu en salopette ?',
+      ['Mario', 'Kirby', 'Donkey Kong', 'Yoshi']),
+    false,
+  );
+});
+
+test('a relative “qui a” is not an interrogative one', () => {
+  // « la danse qui a donné son nom au Boléro » ne réclame pas un nom de personne.
+  assert.equal(
+    isPersonNameLotteryCard(
+      'De quel pays vient la danse qui a donné son nom au Boléro de Ravel ?',
+      ['L’Espagne', 'L’Italie', 'La Russie', 'Le Brésil'],
+    ),
+    false,
   );
 });

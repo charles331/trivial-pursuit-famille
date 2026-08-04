@@ -11,6 +11,8 @@ import {
   hasGrammarHintAroundBlank,
   isArtificialFillIn,
   isBareNumberCard,
+  isBareYearCard,
+  isAttributionLotteryCard,
   leaksCorrectAnswer,
   merelyRestatesQuestion,
   normalize,
@@ -33,7 +35,22 @@ const CATEGORIES: CategoryId[] = [
 ];
 const DIFFICULTIES: DifficultyLevel[] = ['enfant', 'ado', 'adulte'];
 const ADULT_EDITORIAL_TARGET_PER_CATEGORY = 400;
-
+/**
+ * Budget de cartes d'attribution au niveau ado, par catégorie.
+ *
+ * L'attribution nue — « Qui a composé La Flûte enchantée ? » entre Beethoven,
+ * Verdi, Wagner et Mozart — est la seule forme qui n'offre aucune prise : l'énoncé
+ * ne dit rien de la personne, seulement ce qu'elle a produit. Quatre cartes par
+ * catégorie restent permises, réservées aux signatures que la maison rend
+ * familières, et de préférence belges : Magritte, Morris, Franquin, Brel, Simenon.
+ *
+ * Le plafond ne vise volontairement pas toutes les cartes à quatre noms propres :
+ * « Quel dieu grec règne sur les mers, armé de son trident ? » et « Quel
+ * personnage de Nintendo est un plombier moustachu ? » décrivent leur réponse, et
+ * cette description est le chemin de raisonnement. Les convertir appauvrirait le
+ * jeu — c'est mesuré par la note de fun (`npm run score:fun`), pas interdit ici.
+ */
+const MAX_ADO_ATTRIBUTION_PER_CATEGORY = 4;
 const errors: string[] = [];
 const editorialIssueCounts = new Map<string, number>();
 function editorialError(issue: string, id: string): void {
@@ -232,6 +249,36 @@ for (const categoryId of CATEGORIES) {
   }
 }
 
+// --- Contrat éditorial du niveau ado ---------------------------------------
+// Le niveau ado n'avait qu'une seule règle — ne pas recopier la banque enfant —
+// là où le niveau adulte en compte une douzaine. Les deux contrôles ci-dessous
+// verrouillent le défaut qui rendait ce niveau injouable pour un enfant de dix
+// ans : la carte sans chemin de raisonnement, où l'on sait ou l'on tire au sort.
+for (const question of QUESTIONS_DATABASE) {
+  if (question.difficulty !== 'ado') continue;
+  // Aucune tolérance sur les millésimes : deux années voisines ne se déduisent
+  // jamais. L'année a sa place dans l'énoncé, pas dans les quatre options.
+  if (isBareYearCard(question.question, question.options)) {
+    editorialError(`Carte ado jouée entre quatre millésimes`, question.id);
+  }
+}
+
+for (const categoryId of CATEGORIES) {
+  const rows = QUESTIONS_DATABASE.filter(
+    (question) => question.categoryId === categoryId && question.difficulty === 'ado',
+  );
+  const attribution = rows.filter(
+    (question) => isAttributionLotteryCard(question.question, question.options),
+  ).length;
+  if (attribution > MAX_ADO_ATTRIBUTION_PER_CATEGORY) {
+    errors.push(
+      `${categoryId} compte ${attribution} cartes ado d'attribution jouées entre`
+        + ` quatre noms (maximum ${MAX_ADO_ATTRIBUTION_PER_CATEGORY})`,
+    );
+  }
+}
+
+
 // L'invariant « 400 cartes adultes relues, réponses équilibrées A/B/C/D » ne
 // vaut que pour les QCM : les formats vrai/faux et ouverts forment un pool
 // séparé, hors quota, résumé sous le tableau.
@@ -317,5 +364,10 @@ if (errors.length > 0) {
   console.log(`Moules : aucun énoncé adulte réutilisé plus de ${MAX_SKELETON_REUSE} fois par catégorie.`);
   console.log('Énoncés : aucun ne cite le nom propre qui désigne sa bonne réponse.');
   console.log('Niveaux : aucune carte enfant recopiée au niveau ado ou adulte.');
+  console.log(
+    'Qualité ado : aucune devinette de millésime, et au plus'
+      + ` ${MAX_ADO_ATTRIBUTION_PER_CATEGORY} cartes d'attribution par catégorie.`,
+  );
+
   console.log(`Volume adulte : exactement ${ADULT_EDITORIAL_TARGET_PER_CATEGORY} cartes QCM relues par catégorie (les formats variés forment un pool séparé).`);
 }

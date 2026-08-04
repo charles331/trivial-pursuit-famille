@@ -96,6 +96,9 @@ import {
 import { applyFamilyAdultReplacements } from './questionBank/familyAdultReplacements';
 import { applyFamilyAdultSecondPass } from './questionBank/familyAdultSecondPass';
 import { applyFamilyAdultFunPass } from './questionBank/familyAdultFunPass';
+import { applyAdoReplacements } from './questionBank/adoReplacements';
+import { applyPopcultureFunPass } from './questionBank/popcultureFunPass';
+import { applyHistoireFunPass } from './questionBank/histoireFunPass';
 
 const CURATED_QUESTIONS: Question[] = [
   ...HISTOIRE_QUESTIONS,
@@ -186,9 +189,15 @@ const seenIds = new Set<string>();
 // to the teen bank removed a whole step from the difficulty ladder: a teenager
 // received the child questions verbatim. Every level now reaches its target
 // only through banks written for that level.
-const COMPLETED_QUESTIONS = applyFamilyAdultFunPass(
-  applyFamilyAdultSecondPass(
-    applyFamilyAdultReplacements(CURATED_QUESTIONS),
+const COMPLETED_QUESTIONS = applyHistoireFunPass(
+  applyPopcultureFunPass(
+  applyAdoReplacements(
+  applyFamilyAdultFunPass(
+    applyFamilyAdultSecondPass(
+          applyFamilyAdultReplacements(CURATED_QUESTIONS),
+        ),
+      ),
+    ),
   ),
 );
 
