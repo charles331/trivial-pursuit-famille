@@ -4,6 +4,7 @@ import { CATEGORIES } from '../data/categories';
 import { PlayerWedgeBadge } from './PlayerWedgeBadge';
 import { LiveSpotlight } from './LiveSpotlight';
 import { resolveReaderId } from '../server/turnRoles';
+import { SURPRISE_WHEEL } from '../server/bonuses';
 import { soundManager } from '../utils/sound';
 import { resolveQuestionTimerSeconds } from '../utils/questionTimer';
 import { Timer, CheckCircle2, XCircle, Sparkles, HelpCircle, ArrowRight, Eye, EyeOff, BookOpen, Gift } from 'lucide-react';
@@ -31,6 +32,7 @@ interface QuestionModalProps {
   onNextTurn: () => void;
   bonusesEnabled?: boolean;
   bonusAwardedThisTurn?: BonusType | null;
+  surpriseSpinThisTurn?: boolean;
   activeQuestionBonus?: ActiveQuestionBonus | null;
 }
 
@@ -50,6 +52,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   onNextTurn,
   bonusesEnabled = false,
   bonusAwardedThisTurn = null,
+  surpriseSpinThisTurn = false,
   activeQuestionBonus = null,
 }) => {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
@@ -67,6 +70,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   const [wheelAngle, setWheelAngle] = useState(0);
   const [wheelSpinning, setWheelSpinning] = useState(false);
   const [wheelSpun, setWheelSpun] = useState(false);
+  const [wheelDismissed, setWheelDismissed] = useState(false);
   // L'inventaire des bonus vit dans un popup ouvert par un bouton en bas de
   // carte, au lieu d'occuper en permanence l'espace de la question.
   const [bonusPickerOpen, setBonusPickerOpen] = useState(false);
@@ -222,6 +226,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
     setWheelAngle(0);
     setWheelSpinning(false);
     setWheelSpun(false);
+    setWheelDismissed(false);
     setBonusPickerOpen(false);
   }, [question.id]);
 
@@ -255,13 +260,15 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   // vaut pour tous les formats.
   const hasUsableBonus = (isMcqFormat && fiftyFiftyCount > 0) || jokerCount > 0;
 
-  // La roue tourne cinq tours puis s'arrête sur le bonus déjà décidé côté
-  // serveur. Six quartiers alternent 50/50 et Joker ; on vise un quartier au
-  // hasard du bon type pour que la roue paraisse libre.
+  // La roue tourne cinq tours puis s'arrête sur le quartier déjà décidé côté
+  // serveur (bonus ou case vide). On vise au hasard l'un des quartiers du bon
+  // type pour que la roue paraisse libre.
   const spinBonusWheel = () => {
     if (wheelSpinning || wheelSpun) return;
-    const segments = bonusAwardedThisTurn === 'camembert_joker' ? [1, 3, 5] : [0, 2, 4];
-    const target = segments[Math.floor(Math.random() * segments.length)];
+    const matching = SURPRISE_WHEEL
+      .map((slot, index) => (slot === bonusAwardedThisTurn ? index : -1))
+      .filter(index => index >= 0);
+    const target = matching[Math.floor(Math.random() * matching.length)] ?? 0;
     const landing = 360 * 5 - (target * 60 + 30);
     setWheelSpinning(true);
     setWheelAngle(landing);
@@ -269,9 +276,17 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
     window.setTimeout(() => {
       setWheelSpinning(false);
       setWheelSpun(true);
-      soundManager.playCorrect();
+      if (bonusAwardedThisTurn) soundManager.playCorrect(); else soundManager.playWrong();
     }, 3600);
   };
+
+  const wheelBackground = `conic-gradient(${SURPRISE_WHEEL
+    .map((slot, i) => {
+      const color = slot === 'fifty_fifty' ? '#ec4899' : slot === 'camembert_joker' ? '#f59e0b' : '#e2e8f0';
+      return `${color} ${i * 60}deg ${(i + 1) * 60}deg`;
+    })
+    .join(', ')})`;
+  const showWheelPopup = bonusesEnabled && surpriseSpinThisTurn && isIActivePlayer && !wheelDismissed;
   const hiddenOptionIndexes = activeQuestionBonus?.type === 'fifty_fifty'
     ? activeQuestionBonus.hiddenOptionIndexes
     : [];
@@ -380,59 +395,6 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
             question scrolls from its very first line instead of being clipped. */}
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-3 py-3 sm:px-5 sm:py-4">
          <div className="my-auto space-y-3">
-
-          {/* Boîte mystère : le joueur actif lance la roue pour révéler son
-              bonus. Les autres voient seulement le résultat annoncé. */}
-          {bonusAwardedThisTurn && isIActivePlayer && (
-            <div className="flex flex-col items-center gap-2 rounded-2xl border border-pink-300 bg-pink-50/80 p-3 dark:border-pink-800 dark:bg-pink-950/40">
-              <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-pink-800 dark:text-pink-300">
-                <Gift className="h-3.5 w-3.5" /> Boîte surprise
-              </div>
-              <div className="relative h-36 w-36">
-                {/* Aiguille fixe, pointant vers le haut de la roue. */}
-                <div className="absolute left-1/2 top-[-2px] z-10 h-0 w-0 -translate-x-1/2 border-x-8 border-t-[14px] border-x-transparent border-t-slate-900 dark:border-t-white" />
-                <div
-                  className="h-full w-full rounded-full border-4 border-white shadow-lg dark:border-slate-700"
-                  style={{
-                    background: 'conic-gradient(#ec4899 0deg 60deg, #f59e0b 60deg 120deg, #ec4899 120deg 180deg, #f59e0b 180deg 240deg, #ec4899 240deg 300deg, #f59e0b 300deg 360deg)',
-                    transform: `rotate(${wheelAngle}deg)`,
-                    transition: wheelSpinning ? 'transform 3.5s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
-                  }}
-                >
-                  {[0, 1, 2, 3, 4, 5].map((i) => (
-                    <span
-                      key={i}
-                      className="absolute left-1/2 top-1/2 text-lg"
-                      style={{ transform: `translate(-50%, -50%) rotate(${i * 60 + 30}deg) translateY(-46px) rotate(-${i * 60 + 30}deg)` }}
-                    >
-                      {i % 2 === 0 ? '🎯' : '🧀'}
-                    </span>
-                  ))}
-                </div>
-                <div className="absolute left-1/2 top-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-slate-200 bg-white shadow dark:border-slate-600 dark:bg-slate-800" />
-              </div>
-              {wheelSpun ? (
-                <p className="text-center text-sm font-black text-pink-900 dark:text-pink-100">
-                  🎉 Vous gagnez {bonusAwardedThisTurn === 'camembert_joker' ? 'un Joker camembert' : 'un 50/50'} !
-                </p>
-              ) : (
-                <button
-                  type="button"
-                  disabled={wheelSpinning}
-                  onClick={spinBonusWheel}
-                  className="tap-target rounded-xl bg-pink-500 px-5 py-2 text-sm font-black text-white shadow-sm hover:bg-pink-400 disabled:opacity-60"
-                >
-                  {wheelSpinning ? 'La roue tourne…' : 'Lancer la roue 🎡'}
-                </button>
-              )}
-            </div>
-          )}
-          {bonusAwardedThisTurn && !isIActivePlayer && (
-            <div className="flex items-center gap-2 rounded-xl border border-pink-300 bg-pink-50 p-2.5 text-xs font-black text-pink-900 dark:border-pink-800 dark:bg-pink-950/40 dark:text-pink-200">
-              <Gift className="h-4 w-4 shrink-0" />
-              Boîte surprise : {activePlayer.name} tente sa chance à la roue !
-            </div>
-          )}
 
           {isCardMasked ? (
             <div className="flex items-center gap-3 rounded-2xl border-2 border-dashed border-purple-400 bg-purple-50/80 p-3 dark:border-purple-800 dark:bg-purple-950/40">
@@ -772,6 +734,68 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                 </p>
               </>
             )}
+          </div>
+        )}
+
+        {/* Popup de la boîte surprise : le joueur actif lance la roue, qui
+            s'arrête sur un bonus ou sur une case vide. Elle s'ouvre d'elle-même
+            en arrivant sur une case Surprise et se ferme sur « Continuer ». */}
+        {showWheelPopup && (
+          <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 p-4">
+            <div className="flex w-full max-w-xs flex-col items-center gap-3 rounded-3xl bg-white p-5 shadow-2xl dark:bg-slate-900">
+              <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-pink-700 dark:text-pink-300">
+                <Gift className="h-3.5 w-3.5" /> Boîte surprise
+              </div>
+              <div className="relative h-44 w-44">
+                <div className="absolute left-1/2 top-[-2px] z-10 h-0 w-0 -translate-x-1/2 border-x-8 border-t-[14px] border-x-transparent border-t-slate-900 dark:border-t-white" />
+                <div
+                  className="h-full w-full rounded-full border-4 border-white shadow-lg dark:border-slate-700"
+                  style={{
+                    background: wheelBackground,
+                    transform: `rotate(${wheelAngle}deg)`,
+                    transition: wheelSpinning ? 'transform 3.5s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
+                  }}
+                >
+                  {SURPRISE_WHEEL.map((slot, i) => (
+                    <span
+                      key={i}
+                      className="absolute left-1/2 top-1/2 text-xl"
+                      style={{ transform: `translate(-50%, -50%) rotate(${i * 60 + 30}deg) translateY(-58px) rotate(-${i * 60 + 30}deg)` }}
+                    >
+                      {slot === 'fifty_fifty' ? '🎯' : slot === 'camembert_joker' ? '🧀' : ''}
+                    </span>
+                  ))}
+                </div>
+                <div className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-slate-200 bg-white shadow dark:border-slate-600 dark:bg-slate-800" />
+              </div>
+              {wheelSpun ? (
+                <>
+                  <p className="text-center text-base font-black text-slate-900 dark:text-white">
+                    {bonusAwardedThisTurn === 'camembert_joker'
+                      ? '🎉 Joker camembert gagné !'
+                      : bonusAwardedThisTurn === 'fifty_fifty'
+                        ? '🎉 50/50 gagné !'
+                        : '😅 Case vide — pas de bonus cette fois.'}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => { soundManager.playClick(); setWheelDismissed(true); }}
+                    className="tap-target w-full rounded-xl bg-slate-900 py-2.5 text-sm font-black text-white dark:bg-amber-500 dark:text-slate-950"
+                  >
+                    Continuer
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  disabled={wheelSpinning}
+                  onClick={spinBonusWheel}
+                  className="tap-target w-full rounded-xl bg-pink-500 py-2.5 text-sm font-black text-white hover:bg-pink-400 disabled:opacity-60"
+                >
+                  {wheelSpinning ? 'La roue tourne…' : 'Lancer la roue 🎡'}
+                </button>
+              )}
+            </div>
           </div>
         )}
 

@@ -777,6 +777,7 @@ io.on('connection', (socket: Socket) => {
     room.gameState.questionsPool = shuffled([...customQuestions, ...QUESTIONS_DATABASE]);
     room.gameState.usedQuestionIds = [];
     room.gameState.bonusAwardedThisTurn = null;
+    room.gameState.surpriseSpinThisTurn = false;
     room.gameState.activeQuestionBonus = null;
 
     // Le premier joueur n'est plus l'organisateur d'office : tout le monde
@@ -913,6 +914,7 @@ io.on('connection', (socket: Socket) => {
     room.gameState.phase = 'moving';
     room.gameState.lastTurnEventMessage = null;
     room.gameState.bonusAwardedThisTurn = null;
+    room.gameState.surpriseSpinThisTurn = false;
     room.gameState.activeQuestionBonus = null;
 
     const activePlayer = room.gameState.players[room.gameState.activePlayerIndex];
@@ -964,12 +966,13 @@ io.on('connection', (socket: Socket) => {
       return;
     }
 
-    const surpriseBonus = tile.type === 'surprise' ? awardSurpriseBonus(room.gameState) : null;
-    if (surpriseBonus) {
-      const label = surpriseBonus === 'camembert_joker'
-        ? 'un Joker camembert (une bonne réponse rapporte un camembert !)'
-        : 'un 50/50';
-      room.gameState.lastTurnEventMessage = `🎁 Boîte surprise : ${activePlayer.name} gagne ${label}`;
+    if (tile.type === 'surprise') {
+      awardSurpriseBonus(room.gameState);
+      // Le résultat (bonus ou case vide) est révélé par la roue côté client ; le
+      // journal reste volontairement muet pour ne pas divulgâcher le tirage.
+      if (room.gameState.surpriseSpinThisTurn) {
+        room.gameState.lastTurnEventMessage = `🎡 Boîte surprise : ${activePlayer.name} fait tourner la roue !`;
+      }
     }
 
     // Pick question according to tile category or player's difficulty

@@ -3,12 +3,23 @@ import { BonusType, GameState, Player } from '../types';
 export const FIFTY_FIFTY_BONUS = 'fifty_fifty' as const;
 export const CAMEMBERT_JOKER_BONUS = 'camembert_joker' as const;
 
-/**
- * Bonus que la case Surprise peut offrir. La case tire au hasard dans cette
- * liste : elle redevient une vraie boîte mystère plutôt qu'un distributeur de
- * 50/50.
- */
+/** Bonus qu'un joueur peut détenir et utiliser. */
 export const BONUS_ROSTER: BonusType[] = [FIFTY_FIFTY_BONUS, CAMEMBERT_JOKER_BONUS];
+
+/**
+ * Les six quartiers de la roue surprise, dans l'ordre. On ne gagne pas à tous
+ * les coups : deux quartiers sont vides (`null`). Cette disposition est la
+ * source de vérité partagée par le serveur (qui tire le résultat) et par le
+ * client (qui dessine la roue et l'arrête sur le bon quartier).
+ */
+export const SURPRISE_WHEEL: (BonusType | null)[] = [
+  FIFTY_FIFTY_BONUS,
+  null,
+  FIFTY_FIFTY_BONUS,
+  CAMEMBERT_JOKER_BONUS,
+  FIFTY_FIFTY_BONUS,
+  null,
+];
 
 export function bonusCount(player: Player, type: BonusType): number {
   const count = player.bonuses?.[type];
@@ -21,8 +32,11 @@ export function fiftyFiftyCount(player: Player): number {
 }
 
 /**
- * Une case Surprise crédite un bonus tiré au hasard, sans l'utiliser
- * automatiquement. Renvoie le type offert, ou `null` si rien n'a été donné.
+ * Une case Surprise fait tourner la roue. Elle tombe au hasard sur l'un des six
+ * quartiers : un bonus est alors crédité, ou rien du tout si le quartier est
+ * vide. Renvoie le résultat (le bonus, ou `null` pour une case vide) ; renvoie
+ * aussi `null` quand le mode bonus est désactivé — on distingue les deux via
+ * `state.surpriseSpinThisTurn`, positionné uniquement lorsqu'une roue tourne.
  */
 export function awardSurpriseBonus(
   state: GameState,
@@ -32,13 +46,16 @@ export function awardSurpriseBonus(
   const player = state.players[state.activePlayerIndex];
   if (!player) return null;
 
-  const type = BONUS_ROSTER[Math.floor(random() * BONUS_ROSTER.length)] ?? FIFTY_FIFTY_BONUS;
-  player.bonuses = {
-    ...player.bonuses,
-    [type]: bonusCount(player, type) + 1,
-  };
-  state.bonusAwardedThisTurn = type;
-  return type;
+  const outcome = SURPRISE_WHEEL[Math.floor(random() * SURPRISE_WHEEL.length)] ?? null;
+  if (outcome) {
+    player.bonuses = {
+      ...player.bonuses,
+      [outcome]: bonusCount(player, outcome) + 1,
+    };
+  }
+  state.bonusAwardedThisTurn = outcome;
+  state.surpriseSpinThisTurn = true;
+  return outcome;
 }
 
 /**

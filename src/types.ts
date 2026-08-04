@@ -200,7 +200,14 @@ export interface GameState {
   customPacks?: { name: string; questions: Question[] }[];
   lastTurnEventMessage?: string | null;
   /** Bonus gagné en arrivant sur la case de ce tour, affiché avec la question. */
+  /** Résultat de la roue surprise : le bonus gagné, ou `null` si case vide. */
   bonusAwardedThisTurn?: BonusType | null;
+  /**
+   * Vrai quand le joueur a atterri sur une case Surprise ce tour-ci : la roue
+   * doit alors tourner, même si elle finit sur une case vide (le résultat est
+   * dans `bonusAwardedThisTurn`, `null` valant « rien gagné »).
+   */
+  surpriseSpinThisTurn?: boolean;
   /** Effet déjà appliqué à la question en cours. */
   activeQuestionBonus?: ActiveQuestionBonus | null;
   /** Partie mise en pause par l'organisateur : le salon est gardé plus longtemps. */

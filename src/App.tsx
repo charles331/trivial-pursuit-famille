@@ -444,6 +444,7 @@ export default function App() {
             onNextTurn={handleNextTurn}
             bonusesEnabled={gameState.settings.enableBonuses === true}
             bonusAwardedThisTurn={gameState.bonusAwardedThisTurn}
+            surpriseSpinThisTurn={gameState.surpriseSpinThisTurn}
             activeQuestionBonus={gameState.activeQuestionBonus}
           />
         </React.Suspense>
@@ -468,6 +469,7 @@ export default function App() {
             onNextTurn={handleNextTurn}
             bonusesEnabled={gameState.settings.enableBonuses === true}
             bonusAwardedThisTurn={gameState.bonusAwardedThisTurn}
+            surpriseSpinThisTurn={gameState.surpriseSpinThisTurn}
             activeQuestionBonus={gameState.activeQuestionBonus}
           />
         </React.Suspense>

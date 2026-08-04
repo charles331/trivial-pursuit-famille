@@ -94,6 +94,7 @@ export function advanceTurn(state: GameState): void {
   state.currentQuestion = null;
   state.lastAnswerResult = null;
   state.bonusAwardedThisTurn = null;
+  state.surpriseSpinThisTurn = false;
   state.activeQuestionBonus = null;
 }
 

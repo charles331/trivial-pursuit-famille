@@ -9,10 +9,11 @@ import {
 } from '../src/server/bonuses';
 import { createGameState } from './fixtures';
 
-// Roster = [fifty_fifty, camembert_joker] : un tirage à 0 donne le premier, un
-// tirage proche de 1 le second.
-const rollFiftyFifty = () => 0;
-const rollJoker = () => 0.99;
+// Roue = [fifty_fifty, vide, fifty_fifty, camembert_joker, fifty_fifty, vide].
+// Un tirage vise un quartier via floor(r * 6).
+const rollFiftyFifty = () => 0;    // quartier 0
+const rollJoker = () => 0.55;      // quartier 3
+const rollEmpty = () => 0.2;       // quartier 1 (vide)
 
 test('bonus mode is opt-in and surprise tiles do nothing while disabled', () => {
   const state = createGameState();
@@ -20,6 +21,7 @@ test('bonus mode is opt-in and surprise tiles do nothing while disabled', () => 
   assert.equal(awardSurpriseBonus(state), null);
   assert.equal(fiftyFiftyCount(state.players[0]), 0);
   assert.equal(state.bonusAwardedThisTurn, undefined);
+  assert.notEqual(state.surpriseSpinThisTurn, true);
 });
 
 test('a surprise box grants the drawn bonus to the active player', () => {
@@ -31,7 +33,19 @@ test('a surprise box grants the drawn bonus to the active player', () => {
   assert.equal(fiftyFiftyCount(state.players[0]), 1);
   assert.equal(bonusCount(state.players[0], 'camembert_joker'), 1);
   assert.equal(state.bonusAwardedThisTurn, 'camembert_joker');
+  assert.equal(state.surpriseSpinThisTurn, true);
   assert.equal(fiftyFiftyCount(state.players[1]), 0);
+});
+
+test('an empty wheel slot spins but grants nothing', () => {
+  const state = createGameState();
+  state.settings.enableBonuses = true;
+
+  assert.equal(awardSurpriseBonus(state, rollEmpty), null);
+  assert.equal(state.surpriseSpinThisTurn, true); // la roue a bien tourné
+  assert.equal(state.bonusAwardedThisTurn, null);  // mais rien de gagné
+  assert.equal(fiftyFiftyCount(state.players[0]), 0);
+  assert.equal(bonusCount(state.players[0], 'camembert_joker'), 0);
 });
 
 test('the camembert joker arms itself for the current question, whatever the format', () => {
