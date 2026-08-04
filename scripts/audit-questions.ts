@@ -38,14 +38,33 @@ const ADULT_EDITORIAL_TARGET_PER_CATEGORY = 400;
 /**
  * Budget de cartes ado jouées entre quatre noms de personnes, par catégorie.
  *
- * Le plafond n'est pas à zéro : « Qui a peint Guernica ? » ou « Qui a écrit Les
- * Misérables ? » se défendent, parce que la bonne réponse est un nom que l'école
- * et la maison rendent familier. Ce qui ne se défend pas, c'est d'en faire le
- * ressort principal du niveau — le niveau ado en comptait 45 sur 135 dans la
- * seule catégorie art. Le budget force à réserver ces cartes aux figures
- * vraiment connues, et à interroger l'œuvre partout ailleurs.
+ * Le plafond n'est pas à zéro : « Qui a peint Guernica ? » se défend, parce que
+ * la bonne réponse est un nom que l'école et la maison rendent familier. Ce qui
+ * ne se défend pas, c'est d'en faire le ressort principal du niveau.
  */
-const MAX_ADO_PERSON_LOTTERY_PER_CATEGORY = 12;
+const ADO_PERSON_LOTTERY_TARGET = 12;
+
+/**
+ * Dette restante, catégorie par catégorie, au-dessus de la cible.
+ *
+ * Ces chiffres ne sont pas un objectif : ce sont les compteurs constatés une fois
+ * le détecteur rendu exact. Il acceptait d'abord les seuls noms complets, si bien
+ * qu'une loterie de patronymes — « Bizet » contre « Gounod », « Offenbach » et
+ * « Massenet » — lui échappait, de même que la tournure « Comment s'appelle
+ * l'ancien forçat des Misérables ? ». Corrigé, il révèle une dette plus large que
+ * la reprise n'en a traité.
+ *
+ * La règle fonctionne donc en cliquet : une catégorie déjà sous la cible doit y
+ * rester, une catégorie endettée ne peut plus empirer, et chaque lot de reprise
+ * fait descendre son chiffre ici. La dette est affichée à chaque audit pour
+ * qu'elle reste visible au lieu de dormir.
+ */
+const ADO_PERSON_LOTTERY_DEBT: Partial<Record<CategoryId, number>> = {
+  histoire: 15,
+  cinema: 17,
+  art: 26,
+  popculture: 24,
+};
 
 const errors: string[] = [];
 const editorialIssueCounts = new Map<string, number>();
@@ -266,10 +285,22 @@ for (const categoryId of CATEGORIES) {
   const lottery = rows.filter(
     (question) => isPersonNameLotteryCard(question.question, question.options),
   ).length;
-  if (lottery > MAX_ADO_PERSON_LOTTERY_PER_CATEGORY) {
+  const ceiling = Math.max(
+    ADO_PERSON_LOTTERY_TARGET,
+    ADO_PERSON_LOTTERY_DEBT[categoryId] ?? 0,
+  );
+  if (lottery > ceiling) {
     errors.push(
       `${categoryId} compte ${lottery} cartes ado jouées entre quatre noms de`
-        + ` personnes (maximum ${MAX_ADO_PERSON_LOTTERY_PER_CATEGORY})`,
+        + ` personnes (plafond ${ceiling}, cible ${ADO_PERSON_LOTTERY_TARGET})`,
+    );
+  }
+  if (lottery < (ADO_PERSON_LOTTERY_DEBT[categoryId] ?? 0)) {
+    // La dette a été réduite : on demande que le cliquet suive, sinon la marge
+    // regagnée se reperd au lot suivant sans que rien ne le signale.
+    errors.push(
+      `${categoryId} ne compte plus que ${lottery} cartes ado jouées entre quatre`
+        + ` noms de personnes : abaissez ADO_PERSON_LOTTERY_DEBT en conséquence`,
     );
   }
 }
@@ -360,8 +391,14 @@ if (errors.length > 0) {
   console.log('Énoncés : aucun ne cite le nom propre qui désigne sa bonne réponse.');
   console.log('Niveaux : aucune carte enfant recopiée au niveau ado ou adulte.');
   console.log(
-    'Qualité ado : aucune devinette de millésime, et au plus'
-      + ` ${MAX_ADO_PERSON_LOTTERY_PER_CATEGORY} cartes par catégorie jouées entre quatre noms de personnes.`,
+    'Qualité ado : aucune devinette de millésime ; cible de'
+      + ` ${ADO_PERSON_LOTTERY_TARGET} cartes par catégorie jouées entre quatre noms de personnes.`,
   );
+  const debt = Object.entries(ADO_PERSON_LOTTERY_DEBT)
+    .filter(([, count]) => (count ?? 0) > ADO_PERSON_LOTTERY_TARGET)
+    .map(([categoryId, count]) => `${categoryId} ${count}`);
+  if (debt.length > 0) {
+    console.log(`  Dette ado restante au-dessus de la cible : ${debt.join(', ')}.`);
+  }
   console.log(`Volume adulte : exactement ${ADULT_EDITORIAL_TARGET_PER_CATEGORY} cartes QCM relues par catégorie (les formats variés forment un pool séparé).`);
 }

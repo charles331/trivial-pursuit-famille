@@ -368,20 +368,42 @@ export function isBareYearCard(options: string[]): boolean {
  * Un énoncé qui réclame le nom d'une personne : « qui a peint… », « quel
  * navigateur… », « quelle infirmière… ».
  */
-const PERSON_PROMPT = new RegExp(
-  '(qui\\s+(a|est|était|fut|invent|peign|dirig|compos|écriv|réalis)'
-  + '|quel(le)?s?\\s+(écrivain|peintre|roi|reine|président|premier ministre|médecin'
+const PERSON_ROLE_WORDS = 'écrivain|peintre|roi|reine|président|premier ministre|médecin'
   + '|navigateur|explorateur|savant|scientifique|compositeur|acteur|actrice|réalisateur'
   + '|chanteur|chanteuse|infirmière|militant|maréchal|amiral|empereur|impératrice'
-  + '|sculpteur|architecte|auteur|romancier|poète|dessinateur|inventeur|philosophe))',
+  + '|sculpteur|architecte|auteur|romancier|poète|dessinateur|inventeur|philosophe'
+  + '|héros|héroïne|personnage|détective|forçat|résistant|pharaon|chevalier|dieu|déesse';
+
+const PERSON_PROMPT = new RegExp(
+  `(qui\\s+(a|est|était|fut|invent|peign|dirig|compos|écriv|réalis)|quel(le)?s?\\s+(${PERSON_ROLE_WORDS}))`,
   'i',
 );
 
-/** Une option qui ressemble à un nom de personne : « Florence Nightingale ». */
+/**
+ * « Comment s'appelle… ? » ne réclame un nom de personne que si l'énoncé en
+ * désigne une : « comment s'appelle le sous-marin du capitaine Nemo ? » ou « le
+ * château du capitaine Haddock ? » interrogent un objet et un lieu, pas un
+ * personnage, et se départagent autrement.
+ */
+const NAMING_PROMPT = /comment\s+s(?:’|')?(?:appelle|appelait|appellent)|comment\s+se\s+nomm/i;
+const PERSON_ROLE = new RegExp(`\\b(${PERSON_ROLE_WORDS})\\b`, 'i');
+
+/**
+ * Une option qui ressemble à un nom de personne.
+ *
+ * Le patronyme seul compte autant que le nom complet : « Bizet » face à
+ * « Gounod », « Offenbach » et « Massenet » est exactement la même loterie que
+ * « Florence Nightingale » face à « Clara Barton ». C'est le trou par lequel
+ * passait « Comment s'appelle l'ancien forçat des Misérables ? », entre Javert,
+ * Marius et Thénardier.
+ */
 function looksLikePersonName(option: string): boolean {
-  const trimmed = option.trim().replace(/^(Le|La|L’|Les)\s+/i, '');
-  return /^[A-ZÀ-Ý][\wà-ÿ.’-]*(\s+(de|von|van|del|di|le|la|du|d’)?\s*[A-ZÀ-Ý][\wà-ÿ.’-]*)+$/
-    .test(trimmed);
+  const trimmed = option.trim().replace(/^(Le|La|L’|L'|Les)\s+/i, '');
+  if (!/^[A-ZÀ-Ý]/.test(trimmed)) return false;
+  if (/\d/.test(trimmed)) return false;
+  const tokens = trimmed.split(/\s+/);
+  if (tokens.length > 4) return false; // une phrase descriptive, pas un nom
+  return tokens.every((token) => /^([A-ZÀ-Ý][\wà-ÿ.’'-]*|de|von|van|del|di|le|la|du|d’|d')$/.test(token));
 }
 
 /**
@@ -397,7 +419,9 @@ function looksLikePersonName(option: string): boolean {
  */
 export function isPersonNameLotteryCard(question: string, options: string[]): boolean {
   if (options.length !== 4) return false;
-  if (!PERSON_PROMPT.test(question)) return false;
+  const asksForPerson = PERSON_PROMPT.test(question)
+    || (NAMING_PROMPT.test(question) && PERSON_ROLE.test(question));
+  if (!asksForPerson) return false;
   return options.every(looksLikePersonName);
 }
 
