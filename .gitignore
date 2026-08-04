@@ -7,3 +7,6 @@ coverage/
 .env*
 !.env.example
 .data/
+
+# Scripts de diagnostic jetables (analyses ponctuelles de la banque de questions).
+scripts/tmp/
