@@ -469,9 +469,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                   </span>
                 ) : (
                   <span className="text-[11px] font-bold">
-                    {isBooleanFormat
-                      ? 'Réponse cachée. Maintenez pour la voir et afficher les choix.'
-                      : 'Réponse cachée. Maintenez le bouton pour la voir.'}
+                    Réponse cachée. Maintenez le bouton pour voir la bonne réponse.
                   </span>
                 )}
               </p>
@@ -578,13 +576,12 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
             </div>
           )}
 
-          {/* Option Choices Grid — QCM et Vrai/Faux. Masquée pour les cartes
-              ouvertes (aucune proposition) et, sur une carte Vrai/Faux en mode
-              lecteur, tant que le lecteur n'a pas révélé une première fois la
-              bonne réponse. Une fois la carte répondue, elle réapparaît pour
-              afficher le résultat. */}
-          {!isOpenFormat
-            && (isAnswered || !isBooleanFormat || !canHoldToReveal || hasRevealedOnce) && (
+          {/* Option Choices Grid — QCM et Vrai/Faux. Les deux choix « Vrai » et
+              « Faux » sont toujours visibles : ils ne dévoilent rien (toute
+              carte V/F les propose) et le lecteur voit ainsi d'emblée le type de
+              carte. Seule la BONNE réponse reste cachée derrière le maintien de
+              « Révéler ». Masquée uniquement pour les cartes ouvertes. */}
+          {!isOpenFormat && (
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {question.options.map((opt, idx) => {
               const isEliminated = hiddenOptionIndexes.includes(idx) && !isAnswered;
