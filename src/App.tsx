@@ -289,6 +289,12 @@ export default function App() {
     }
   };
 
+  const handleSurpriseWheelDone = () => {
+    if (socket && gameState) {
+      socket.emit('start-question-timer', { roomCode: gameState.roomCode });
+    }
+  };
+
   const handleTogglePause = () => {
     if (socket && gameState) {
       socket.emit('toggle-pause', { roomCode: gameState.roomCode });
@@ -401,6 +407,7 @@ export default function App() {
         onLeaveGame={handleLeaveGame}
         onTogglePause={handleTogglePause}
         isHost={isHostPlayer}
+        currentUserId={currentUserId}
       />
 
       {/* Main Game Stage */}
@@ -442,6 +449,7 @@ export default function App() {
             onSubmitAnswer={handleSubmitAnswer}
             onUseBonus={handleUseBonus}
             onNextTurn={handleNextTurn}
+            onSurpriseWheelDone={handleSurpriseWheelDone}
             bonusesEnabled={gameState.settings.enableBonuses === true}
             bonusAwardedThisTurn={gameState.bonusAwardedThisTurn}
             surpriseSpinThisTurn={gameState.surpriseSpinThisTurn}
@@ -467,6 +475,7 @@ export default function App() {
             onSubmitAnswer={handleSubmitAnswer}
             onUseBonus={handleUseBonus}
             onNextTurn={handleNextTurn}
+            onSurpriseWheelDone={handleSurpriseWheelDone}
             bonusesEnabled={gameState.settings.enableBonuses === true}
             bonusAwardedThisTurn={gameState.bonusAwardedThisTurn}
             surpriseSpinThisTurn={gameState.surpriseSpinThisTurn}

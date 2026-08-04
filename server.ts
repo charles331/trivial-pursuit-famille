@@ -985,8 +985,29 @@ io.on('connection', (socket: Socket) => {
 
     room.gameState.currentQuestion = question;
     room.gameState.phase = 'question';
-    room.gameState.questionStartTime = Date.now();
+    // Sur une case Surprise, le minuteur ne démarre pas tout de suite : la roue
+    // doit d'abord tourner. On laisse `questionStartTime` en attente (null) et
+    // c'est le joueur actif qui lance le décompte en fermant la roue, via
+    // « start-question-timer ». Sinon le temps défilait pour toute la table
+    // pendant l'animation de la roue.
+    room.gameState.questionStartTime = room.gameState.surpriseSpinThisTurn ? null : Date.now();
 
+    emitGameState(room);
+    saveRooms(rooms);
+  });
+
+  // Fin de la roue surprise : le joueur actif démarre le minuteur pour toute la
+  // table, une fois la roue arrêtée et le bonus révélé. Idempotent et réservé au
+  // joueur actif (les spectateurs ne voient pas la roue et n'émettent rien).
+  socket.on('start-question-timer', (data: { roomCode: string }) => {
+    const room = getRoom(data.roomCode);
+    if (!room || isPaused(room)) return;
+    if (room.gameState.phase !== 'question') return;
+    if (!isPlayerAllowedToAct(room, socket.id)) return;
+    if (!room.gameState.surpriseSpinThisTurn) return;
+    if (room.gameState.questionStartTime != null) return; // déjà lancé
+
+    room.gameState.questionStartTime = Date.now();
     emitGameState(room);
     saveRooms(rooms);
   });
