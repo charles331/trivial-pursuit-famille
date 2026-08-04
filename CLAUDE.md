@@ -100,6 +100,15 @@ Points de vigilance connus :
   `GameState` doit y être filtrée.
 - Les rôles du tour (qui répond, qui lit la carte) se résolvent dans
   `src/server/turnRoles.ts`, en sautant les joueurs déconnectés.
+- **L'identifiant d'un joueur *est* son identifiant de socket.** Une coupure de
+  réseau lui en donne un nouveau, donc tout ce qui est indexé dessus doit se
+  déplacer d'un bloc : `room.sockets`, `room.reconnectTokens`, `room.hostSocketId`,
+  les lancers de `firstPlayerDraw`. C'est le rôle de `bindSeatToSocket` dans
+  `server.ts` ; les trois chemins de retour (jeton de session, reprise par prénom
+  dans `join-room`, fusion par l'organisateur) passent tous par là. Un seul registre
+  oublié laisse un joueur visible à l'écran mais que le serveur n'autorise plus à
+  agir. Le jeton de session vit dans le `localStorage` : il ne survit pas au
+  changement de navigateur, d'où la reprise par prénom (`src/server/seats.ts`).
 
 ## Conventions
 

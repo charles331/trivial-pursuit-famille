@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { GameState } from '../types';
 import { soundManager } from '../utils/sound';
 import { AVATARS } from '../data/avatars';
+import { normalizeSeatName } from '../server/seats';
 import { Volume2, VolumeX, Copy, Check, Users, HelpCircle, LogOut, Share2, Pause, Play } from 'lucide-react';
 
 interface InGameHeaderProps {
@@ -15,6 +16,8 @@ interface InGameHeaderProps {
   currentUserId?: string;
   /** L'organisateur peut retirer un joueur, même en pleine partie. */
   onRemovePlayer?: (playerId: string) => void;
+  /** L'organisateur réunit un doublon avec le siège qu'il aurait dû retrouver. */
+  onMergePlayer?: (sourcePlayerId: string, targetPlayerId: string) => void;
 }
 
 export const InGameHeader: React.FC<InGameHeaderProps> = ({
@@ -24,6 +27,7 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({
   isHost = false,
   currentUserId,
   onRemovePlayer,
+  onMergePlayer,
 }) => {
   const isPaused = gameState.isPaused === true;
   // Bonus conservés, affichés en permanence pour qu'un joueur sache toujours
@@ -44,6 +48,18 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({
   // Retirer quelqu'un se confirme : le geste est irréversible et, si c'était son
   // tour, il rend la main au joueur suivant.
   const [playerToRemove, setPlayerToRemove] = useState<{ id: string; name: string } | null>(null);
+  // Le siège déconnecté que l'organisateur veut rendre à quelqu'un. Le geste part
+  // du siège, parce que c'est lui qu'on voit figé dans la liste avec ses
+  // camemberts ; on choisit ensuite l'appareil qui le reprend.
+  const [seatToHandBack, setSeatToHandBack] = useState<{ id: string; name: string; wedges: number } | null>(null);
+  // Le même prénom d'abord : c'est presque toujours la bonne réponse, et l'erreur
+  // ici coûterait les camemberts de quelqu'un.
+  const returningPlayers = gameState.players
+    .filter(player => player.isConnected && !player.id.startsWith('local_'))
+    .sort((left, right) => (
+      Number(normalizeSeatName(right.name) === normalizeSeatName(seatToHandBack?.name ?? ''))
+      - Number(normalizeSeatName(left.name) === normalizeSeatName(seatToHandBack?.name ?? ''))
+    ));
 
   const handleToggleMute = () => {
     const muted = soundManager.toggleMute();
@@ -266,17 +282,34 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({
                         </div>
                       </div>
 
-                      {/* L'organisateur ne peut pas se retirer lui-même ici :
-                          son départ ferme le salon, ce qui passe par « Quitter ». */}
-                      {isHost && onRemovePlayer && !p.isHost && gameState.phase !== 'game_over' && (
-                        <button
-                          onClick={() => setPlayerToRemove({ id: p.id, name: p.name })}
-                          className="shrink-0 rounded-lg border border-red-500/40 bg-red-950/60 px-2 py-1 text-[10px] font-bold text-red-200 hover:bg-red-900"
-                          title={`Retirer ${p.name} de la partie`}
-                        >
-                          Retirer
-                        </button>
-                      )}
+                      <div className="flex shrink-0 flex-col items-end gap-1">
+                        {/* Un siège déconnecté qui garde des camemberts appartient à
+                            quelqu'un qui, faute de reconnexion, est peut-être revenu
+                            en double : on propose de lui rendre sa place. */}
+                        {isHost && onMergePlayer && !p.isConnected && !p.id.startsWith('local_')
+                          && gameState.phase !== 'game_over'
+                          && returningPlayers.length > 0 && (
+                          <button
+                            onClick={() => setSeatToHandBack({ id: p.id, name: p.name, wedges: p.wedges.length })}
+                            className="rounded-lg border border-amber-500/40 bg-amber-950/60 px-2 py-1 text-[10px] font-bold text-amber-200 hover:bg-amber-900"
+                            title={`Rendre cette place — et ses camemberts — à ${p.name}, revenue sous un autre nom`}
+                          >
+                            Rendre sa place
+                          </button>
+                        )}
+
+                        {/* L'organisateur ne peut pas se retirer lui-même ici :
+                            son départ ferme le salon, ce qui passe par « Quitter ». */}
+                        {isHost && onRemovePlayer && !p.isHost && gameState.phase !== 'game_over' && (
+                          <button
+                            onClick={() => setPlayerToRemove({ id: p.id, name: p.name })}
+                            className="rounded-lg border border-red-500/40 bg-red-950/60 px-2 py-1 text-[10px] font-bold text-red-200 hover:bg-red-900"
+                            title={`Retirer ${p.name} de la partie`}
+                          >
+                            Retirer
+                          </button>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
@@ -303,6 +336,68 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({
                 className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl font-bold text-xs"
               >
                 Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* À qui rendre un siège déconnecté, quand son occupant est revenu en double */}
+      {seatToHandBack && (
+        <div className="fixed inset-0 z-[60] bg-black/75 backdrop-blur-sm flex items-start justify-center overflow-y-auto p-4 animate-fadeIn">
+          <div className="my-auto w-full max-w-md space-y-4 rounded-3xl border border-amber-500/40 bg-slate-900 p-6 text-white shadow-2xl">
+            <h3 className="text-lg font-black">
+              Rendre la place de {seatToHandBack.name} à qui ?
+            </h3>
+            <p className="text-sm leading-relaxed text-slate-300">
+              Si {seatToHandBack.name} a perdu le réseau et est revenue sous un autre
+              nom, choisissez ici son nouvel appareil : il reprend cette place avec
+              ses {seatToHandBack.wedges === 1 ? 'son camembert' : `${seatToHandBack.wedges} camemberts`},
+              son pion et son score. La place où elle vient d’arriver, repartie de
+              zéro, disparaît de la table.
+            </p>
+            <div className="space-y-2">
+              {returningPlayers.map(candidate => {
+                const avatar = AVATARS.find(a => a.id === candidate.avatarId) || AVATARS[0];
+                return (
+                  <button
+                    key={candidate.id}
+                    onClick={() => {
+                      soundManager.playClick();
+                      onMergePlayer?.(candidate.id, seatToHandBack.id);
+                      setSeatToHandBack(null);
+                    }}
+                    className="flex w-full items-center gap-3 rounded-2xl border border-slate-700 bg-slate-800/60 p-3 text-left hover:border-amber-500 hover:bg-slate-800"
+                  >
+                    <div
+                      className="flex h-8 w-8 items-center justify-center rounded-full text-sm text-white"
+                      style={{ backgroundColor: candidate.color }}
+                    >
+                      {avatar.emoji}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5 text-xs font-bold">
+                        {candidate.name} {candidate.isHost && '👑'}
+                        {normalizeSeatName(candidate.name) === normalizeSeatName(seatToHandBack.name) && (
+                          <span className="rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-black text-amber-200">
+                            même prénom
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[10px] text-slate-400">
+                        Difficulté : {candidate.difficulty} | Camemberts : {candidate.wedges.length}/{gameState.settings.wedgesToWin}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex items-center justify-end pt-1">
+              <button
+                onClick={() => setSeatToHandBack(null)}
+                className="rounded-xl bg-slate-800 px-4 py-2.5 text-xs font-bold text-slate-200 hover:bg-slate-700"
+              >
+                Annuler
               </button>
             </div>
           </div>

@@ -254,3 +254,61 @@ test('a new round keeps the table and its settings', () => {
   assert.equal(state.settings.wedgesToWin, 1);
   assert.equal(state.questionsPool.length > 0, true);
 });
+
+// --- Rappel de la carte précédente ------------------------------------------
+// « Je n'ai pas le temps de lire le saviez-vous : si quelqu'un clique pour passer
+// à la question suivante, ça m'efface la page. » À trois joueurs, celui qui n'a ni
+// répondu ni lu la carte ne décide pas du moment où l'on passe.
+
+test('passing the turn keeps a recap of the card just played', () => {
+  const state = createGameState();
+  resolveAnswer(state, testSettings, testBoard, 1);
+  advanceTurn(state);
+
+  // La carte elle-même a bien disparu de l'état de jeu…
+  assert.equal(state.currentQuestion, null);
+  // …mais son résumé survit, pour que la table finisse de le lire.
+  assert.equal(state.lastQuestionRecap?.question, 'Quelle est la bonne réponse ?');
+  assert.equal(state.lastQuestionRecap?.answer, 'B');
+  assert.equal(state.lastQuestionRecap?.explanation, 'Parce que B est la réponse attendue.');
+  assert.equal(state.lastQuestionRecap?.isCorrect, true);
+  assert.equal(state.lastQuestionRecap?.categoryId, 'histoire');
+});
+
+test('the recap names whoever was answering, not whoever plays next', () => {
+  const state = createGameState({
+    players: [createPlayer('papa', true), createPlayer('olivia')],
+    activePlayerIndex: 0,
+  });
+  resolveAnswer(state, testSettings, testBoard, 0); // mauvaise réponse
+  advanceTurn(state);
+
+  assert.equal(state.activePlayerIndex, 1); // la main est passée
+  assert.equal(state.lastQuestionRecap?.playerName, 'papa');
+  assert.equal(state.lastQuestionRecap?.isCorrect, false);
+});
+
+test('an open card recaps its expected answer', () => {
+  const state = createGameState();
+  state.currentQuestion = {
+    id: 'o1', categoryId: 'sciences', difficulty: 'adulte', format: 'open',
+    question: 'Comment nomme-t-on la peur des hauteurs ?',
+    options: [], correctAnswerIndex: 0, answer: 'L’acrophobie',
+    explanation: 'À ne pas confondre avec l’agoraphobie.',
+  };
+  resolveAnswer(state, testSettings, testBoard, 0);
+  advanceTurn(state);
+
+  // Une carte ouverte n'a pas d'options : c'est `answer` qui porte la solution.
+  assert.equal(state.lastQuestionRecap?.answer, 'L’acrophobie');
+});
+
+test('a new round clears the recap', () => {
+  const state = createGameState();
+  resolveAnswer(state, testSettings, testBoard, 1);
+  advanceTurn(state);
+  assert.ok(state.lastQuestionRecap);
+
+  resetGameForNewRound(state);
+  assert.equal(state.lastQuestionRecap, null);
+});

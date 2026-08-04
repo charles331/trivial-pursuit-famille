@@ -14,6 +14,7 @@ import { Lobby } from './components/Lobby';
 import { InGameHeader } from './components/InGameHeader';
 import { LiveChat } from './components/LiveChat';
 import { LiveCameraStatusBar } from './components/LiveSpotlight';
+import { LastQuestionRecap } from './components/LastQuestionRecap';
 import { isCardReadAloud } from './server/turnRoles';
 import { questionRevealDelayMs, usePrefersReducedMotion } from './utils/motion';
 
@@ -304,6 +305,13 @@ export default function App() {
     }
   };
 
+  /** Réunit un doublon né d'une reconnexion ratée avec son siège d'origine. */
+  const handleMergePlayer = (sourcePlayerId: string, targetPlayerId: string) => {
+    if (socket && gameState) {
+      socket.emit('merge-player', { roomCode: gameState.roomCode, sourcePlayerId, targetPlayerId });
+    }
+  };
+
   const handleSurpriseWheelDone = () => {
     if (socket && gameState) {
       socket.emit('start-question-timer', { roomCode: gameState.roomCode });
@@ -424,12 +432,20 @@ export default function App() {
         isHost={isHostPlayer}
         currentUserId={currentUserId}
         onRemovePlayer={handleRemovePlayer}
+        onMergePlayer={handleMergePlayer}
       />
 
       {/* Main Game Stage */}
       {/* Bottom padding keeps the floating emoji bar from covering the board legend */}
       <main className="flex-1 w-full max-w-5xl mx-auto p-2 sm:p-4 pb-20 sm:pb-24 flex flex-col justify-center">
         <LiveCameraStatusBar />
+        {/* Le rappel de la carte précédente vit ici, au-dessus du plateau : il
+            survit au « Passer au joueur suivant » et ne disparaît qu'au tirage de
+            la carte suivante. C'est le seul moment où la table peut finir de lire
+            le « Le saviez-vous ? » sans bloquer celui qui veut avancer. */}
+        {!isBoardCovered && gameState.lastQuestionRecap && (
+          <LastQuestionRecap recap={gameState.lastQuestionRecap} />
+        )}
         {!isBoardCovered && (
           <React.Suspense
             fallback={

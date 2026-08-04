@@ -23,6 +23,7 @@ import {
   transferFirstPlayerRoll,
 } from './src/server/firstPlayerDraw.js';
 import { createGameStateView } from './src/server/gameStateView.js';
+import { describeRecoveredSeat, findAbandonedSeat, mergeSeatInto } from './src/server/seats.js';
 import { isCardReadAloud, resolveOnAirIds, resolveReaderId } from './src/server/turnRoles.js';
 import {
   KnownFactIndex,
@@ -346,6 +347,36 @@ function closeRoom(code: string, reason: string): boolean {
   return true;
 }
 
+/**
+ * Rattache un siège existant à un nouvel appareil.
+ *
+ * Trois chemins mènent ici — la reconnexion par jeton, la reprise d'un siège
+ * abandonné au prénom, la fusion d'un doublon par l'organisateur — et ils doivent
+ * faire exactement la même chose : l'identifiant du joueur *est* son identifiant
+ * de socket, donc tous les registres indexés dessus (sockets, jetons, siège de
+ * l'organisateur, lancer d'ouverture) se déplacent en même temps. Un seul oubli
+ * laisse un joueur présent à l'écran mais que le serveur n'autorise plus à agir.
+ */
+function bindSeatToSocket(room: Room, seat: Player, previousSeatId: string, socket: Socket, sessionToken: string): void {
+  seat.id = socket.id;
+  seat.isConnected = true;
+  transferFirstPlayerRoll(room.gameState, previousSeatId, socket.id);
+
+  room.sockets.delete(previousSeatId);
+  room.sockets.set(socket.id, seat);
+  room.reconnectTokens.delete(previousSeatId);
+  room.reconnectTokens.set(socket.id, sessionToken);
+  room.emptySince = null;
+
+  if (room.hostSocketId === previousSeatId) {
+    room.hostSocketId = socket.id;
+    room.hostDisconnectedAt = null;
+    seat.isHost = true;
+  }
+
+  socket.join(room.code);
+}
+
 function removeSocketFromRoom(room: Room, socketId: string): void {
   room.sockets.delete(socketId);
   room.reconnectTokens.delete(socketId);
@@ -522,27 +553,9 @@ io.on('connection', (socket: Socket) => {
       return socket.emit('reconnect-failed', { message: 'Joueur non trouvé dans ce salon.' });
     }
 
-    // Transfer socket mapping to new socket ID
-    const oldSocketId = player.id;
-    player.id = socket.id;
-    player.isConnected = true;
     // Le lancer du tirage suit le joueur : il n'a pas à relancer après un
     // simple rafraîchissement de page.
-    transferFirstPlayerRoll(room.gameState, oldSocketId, socket.id);
-
-    room.sockets.delete(oldSocketId);
-    room.sockets.set(socket.id, player);
-    room.reconnectTokens.delete(oldSocketId);
-    room.reconnectTokens.set(socket.id, expectedSessionToken);
-    room.emptySince = null;
-
-    if (room.hostSocketId === oldSocketId) {
-      room.hostSocketId = socket.id;
-      room.hostDisconnectedAt = null;
-      player.isHost = true;
-    }
-
-    socket.join(code);
+    bindSeatToSocket(room, player, player.id, socket, expectedSessionToken);
 
     socket.emit('room-joined', {
       roomCode: code,
@@ -562,6 +575,35 @@ io.on('connection', (socket: Socket) => {
 
     if (!room) {
       return socket.emit('error-msg', 'Salon introuvable. Vérifiez le code de la salle privée.');
+    }
+
+    // Quelqu'un qui revient avec son prénom reprend son siège au lieu d'en créer
+    // un second. C'est le filet du jeton de session, qui ne survit pas au
+    // changement de navigateur : sans lui, une coupure de réseau se soldait par un
+    // doublon — un « Christelle » déconnecté avec quatre camemberts, un autre à
+    // zéro — que rien ne permettait de réunir.
+    const abandonedSeat = findAbandonedSeat(room.gameState, data.player.name || '');
+    if (abandonedSeat) {
+      const recoveredToken = randomBytes(32).toString('base64url');
+      const previousSeatId = abandonedSeat.id;
+      bindSeatToSocket(room, abandonedSeat, previousSeatId, socket, recoveredToken);
+      // Elle peut avoir changé d'avis sur son avatar en revenant ; ses camemberts,
+      // son pion et son niveau, eux, appartiennent à la partie en cours.
+      if (data.player.avatarId) abandonedSeat.avatarId = data.player.avatarId;
+      settleFirstPlayerDraw(room.gameState);
+
+      socket.emit('room-joined', {
+        roomCode: code,
+        player: abandonedSeat,
+        gameState: gameStateFor(room, socket.id),
+        generationToken: abandonedSeat.isHost ? room.generationToken : undefined,
+        sessionToken: recoveredToken,
+      });
+      room.gameState.lastTurnEventMessage = describeRecoveredSeat(abandonedSeat.name, abandonedSeat.wedges.length);
+      emitGameState(room);
+      saveRooms(rooms);
+      console.log(`[Room] ${abandonedSeat.name} a retrouvé son siège dans ${code}`);
+      return;
     }
 
     if (room.gameState.players.length >= MAX_PLAYERS_PER_ROOM) {
@@ -672,6 +714,60 @@ io.on('connection', (socket: Socket) => {
     emitGameState(room);
     saveRooms(rooms);
     console.log(`[Room] ${removedName} retiré du salon ${room.code} par l'organisateur`);
+  });
+
+  /**
+   * L'organisateur réunit un doublon avec le siège qu'il aurait dû retrouver.
+   *
+   * La reprise automatique par prénom couvre le cas courant, mais pas celui où la
+   * personne est revenue sous un autre nom, ni les parties déjà abîmées. Il fallait
+   * une réparation manuelle : jusqu'ici, un doublon était définitif et les
+   * camemberts du siège d'origine étaient perdus pour la partie.
+   *
+   * C'est le siège d'origine qui l'emporte — il porte la partie déjà jouée — et
+   * l'appareil du doublon qui en reprend les commandes.
+   */
+  socket.on('merge-player', (data: { roomCode: string; sourcePlayerId: string; targetPlayerId: string }) => {
+    const room = getRoom(data.roomCode);
+    if (!room || room.hostSocketId !== socket.id) return;
+
+    const seat = room.gameState.players.find(player => player.id === data.targetPlayerId);
+    const duplicate = room.gameState.players.find(player => player.id === data.sourcePlayerId);
+    if (!seat || !duplicate) return;
+    if (duplicate.id.startsWith('local_') || seat.id.startsWith('local_')) return;
+
+    const duplicateName = duplicate.name;
+    const merged = mergeSeatInto(room.gameState, data.sourcePlayerId, data.targetPlayerId);
+    if (!merged) return;
+
+    // Le doublon a disparu de la table, mais son appareil reste en ligne : c'est
+    // désormais lui qui tient le siège d'origine, donc ses registres suivent.
+    const token = room.reconnectTokens.get(data.sourcePlayerId) ?? randomBytes(32).toString('base64url');
+    room.sockets.delete(merged.previousSeatId);
+    room.sockets.set(data.sourcePlayerId, merged.seat);
+    room.reconnectTokens.delete(merged.previousSeatId);
+    room.reconnectTokens.set(data.sourcePlayerId, token);
+    if (room.hostSocketId === merged.previousSeatId) {
+      room.hostSocketId = data.sourcePlayerId;
+      room.hostDisconnectedAt = null;
+      merged.seat.isHost = true;
+    }
+    settleFirstPlayerDraw(room.gameState);
+
+    // L'appareil fusionné doit apprendre son nouvel identifiant de joueur, sinon
+    // il continue de se croire le doublon et le serveur refuse ses actions.
+    io.to(data.sourcePlayerId).emit('room-joined', {
+      roomCode: room.code,
+      player: merged.seat,
+      gameState: createGameStateView(room.gameState, data.sourcePlayerId, room.hostSocketId),
+      generationToken: merged.seat.isHost ? room.generationToken : undefined,
+      sessionToken: token,
+    });
+
+    room.gameState.lastTurnEventMessage = describeRecoveredSeat(merged.seat.name, merged.seat.wedges.length);
+    emitGameState(room);
+    saveRooms(rooms);
+    console.log(`[Room] Fusion dans ${room.code} : ${duplicateName} rendu à son siège d'origine`);
   });
 
   socket.on('remove-local-player', (data: { roomCode: string; playerId: string }) => {
@@ -1043,6 +1139,10 @@ io.on('connection', (socket: Socket) => {
     const question = pickQuestionForPlayer(room.gameState, categoryId as CategoryId, activePlayer.difficulty);
 
     room.gameState.currentQuestion = question;
+    // Le rappel de la carte précédente s'effface ici, et pas au changement de
+    // tour : c'est précisément l'intervalle pendant lequel la table doit pouvoir
+    // finir de lire le « Le saviez-vous ? ».
+    room.gameState.lastQuestionRecap = null;
     room.gameState.phase = 'question';
     // Sur une case Surprise, le minuteur ne démarre pas tout de suite : la roue
     // doit d'abord tourner. On laisse `questionStartTime` en attente (null) et

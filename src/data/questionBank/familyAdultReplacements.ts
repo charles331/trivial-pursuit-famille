@@ -132,6 +132,34 @@ const REPLACEMENTS: Replacement[] = [
   ['sport_adulte_curated_06_037', 'Quel coureur belge a remporté le championnat du monde sur route en 2022 ?', 'Remco Evenepoel', 'Wout van Aert', 'Philippe Gilbert', 'Greg Van Avermaet', 'Remco Evenepoel s’imposa en solitaire à Wollongong en Australie.'],
   ['sport_adulte_curated_06_044', 'Quel sport pratique l’équipe nationale belge surnommée les Red Lions ?', 'Le hockey sur gazon', 'Le rugby', 'Le handball', 'Le volley-ball', 'Les Red Lions ont été champions olympiques à Tokyo.'],
   ['sport_adulte_curated_06_046', 'Quel gardien belge joua au Bayern Munich dans les années 1980 ?', 'Jean-Marie Pfaff', 'Michel Preud’homme', 'Thibaut Courtois', 'Geert De Vlieger', 'Jean-Marie Pfaff remporta notamment trois championnats d’Allemagne avec le Bayern.'],
+  // --- Cartes signalées « trop compliquées » lors d'une partie d'août 2026 ----
+  // Quatre reproches distincts, et un enseignement : une seule de ces cartes était
+  // détectée par la note de fun. Les autres avaient une forme irréprochable et un
+  // sujet dont personne à table n'avait jamais entendu parler.
+  ['art_adulte_editorial_04_015', 'Comment appelle-t-on la bulle qui contient les paroles d’un personnage de bande dessinée ?', 'Le phylactère', 'La vignette', 'La planche', 'Le cartouche', 'Le mot vient des bandelettes portant des inscriptions dans l’art religieux médiéval.'],
+  ['cin_adulte_editorial_final_027', 'Combien de Palmes d’or les frères Dardenne, cinéastes belges, ont-ils remportées ?', 'Deux', 'Une', 'Quatre', 'Aucune', 'Rosetta en 1999 et L’Enfant en 2005, tous deux tournés autour de Seraing et Liège.'],
+  ['sci_adulte_editorial_final_034', 'Laquelle des quatre interactions fondamentales est responsable de la radioactivité ?', 'L’interaction faible', 'L’interaction forte', 'L’électromagnétisme', 'La gravitation', 'Elle seule change la nature d’une particule : un neutron devient proton en émettant un électron.'],
+  ['art_adulte_editorial_07_023', 'Dans quelle série François Schuiten et Benoît Peeters imaginent-ils des villes impossibles ?', 'Les Cités obscures', 'Blake et Mortimer', 'Thorgal', 'Le Chat', 'Schuiten a aussi dessiné des stations du métro bruxellois et le pavillon belge de l’Expo 2000.'],
+  // Signalée en partie comme « trop vieille et on ne la connaît pas ». Quatre
+  // traités ibériques de la même époque — Alcáçovas 1479, Tordesillas 1494,
+  // Saragosse 1529 — sont indépartageables pour qui n'a pas la date en tête. Le
+  // fait, lui, est magnifique : il explique pourquoi le Brésil parle portugais.
+  // On garde donc le traité, nommé dans l'énoncé, et on interroge sa conséquence.
+  ['his_adulte_editorial_04_028', 'Quelle conséquence durable eut le traité de Tordesillas, qui partagea le Nouveau Monde ?', 'Le Brésil devint portugais, le reste du continent espagnol', 'Les Pays-Bas obtinrent les Antilles', 'La France renonça au Canada', 'L’Angleterre reçut l’Amérique du Nord', 'La ligne passait à 370 lieues des îles du Cap-Vert, laissant la pointe est du Brésil au Portugal.'],
+  // --- Cartes signalées trop pointues, seconde salve --------------------------
+  // Deux cartes relevées en partie, plus les quatre pires du même bloc de cinéma
+  // d'auteur. Le défaut commun est la notoriété du sujet : la forme était bonne,
+  // mais personne à table n'avait entendu parler de la réalisatrice, du lieu ni du
+  // compositeur. On garde le domaine et on ancre le sujet.
+  ['geo_adulte_editorial_03_017', 'Quelle est la plus grande ville de Côte d’Ivoire, cœur économique de l’Afrique de l’Ouest ?', 'Abidjan', 'Dakar', 'Bamako', 'Accra', 'Yamoussoukro est la capitale politique, mais Abidjan concentre l’économie et près de six millions d’habitants.'],
+  ['cin_adulte_editorial_final_022', 'Quel film culte belge en noir et blanc suit un tueur en série filmé par une équipe de télévision ?', 'C’est arrivé près de chez vous', 'Le Huitième Jour', 'Toto le héros', 'Le Tout Nouveau Testament', 'Tourné avec très peu de moyens en 1992, il a révélé Benoît Poelvoorde.'],
+
+  // Attributions nues de musiques de film : quatre compositeurs de la même époque
+  // ne se départagent pas. On interroge la musique elle-même.
+  ['cin_adulte_editorial_final_001', 'Quel instrument porte à lui seul la musique stridente de la scène de la douche dans « Psychose » ?', 'Le violon', 'La trompette', 'L’orgue', 'La batterie', 'Bernard Herrmann n’a écrit toute la partition que pour des cordes, sans aucun cuivre.'],
+  ['cin_adulte_editorial_final_002', 'Quel animal donne son nom au film et au dessin animé dont la musique de Henry Mancini est culte ?', 'La panthère', 'Le lion', 'Le renard', 'Le lynx', 'Le générique animé a eu tellement de succès qu’il a engendré sa propre série.'],
+  ['cin_adulte_editorial_final_003', 'Quelle particularité rare a le film « Les Parapluies de Cherbourg », de Jacques Demy ?', 'Tous les dialogues sont chantés', 'Il est entièrement muet', 'Il a été tourné en une seule prise', 'Il n’a aucun décor', 'Michel Legrand a composé une partition continue, du premier au dernier plan.'],
+  ['cin_adulte_editorial_final_006', 'Dans quelle ville pluvieuse et surpeuplée se déroule le film « Blade Runner » ?', 'Los Angeles', 'New York', 'Tokyo', 'Chicago', 'Le film situe l’action en 2019, une date depuis longtemps dépassée.'],
 ];
 
 const BY_ID = new Map(REPLACEMENTS.map((replacement) => [replacement[0], replacement]));
