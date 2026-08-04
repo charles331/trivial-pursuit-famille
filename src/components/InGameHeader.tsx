@@ -11,6 +11,8 @@ interface InGameHeaderProps {
   onTogglePause?: () => void;
   /** Seul l'organisateur peut mettre la partie en pause. */
   isHost?: boolean;
+  /** Identifiant du joueur sur cet appareil, pour afficher ses bonus. */
+  currentUserId?: string;
 }
 
 export const InGameHeader: React.FC<InGameHeaderProps> = ({
@@ -18,8 +20,19 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({
   onLeaveGame,
   onTogglePause,
   isHost = false,
+  currentUserId,
 }) => {
   const isPaused = gameState.isPaused === true;
+  // Bonus conservés, affichés en permanence pour qu'un joueur sache toujours
+  // qu'il en détient un (et puisse le sortir le moment venu). En pass & play,
+  // l'appareil est partagé : on montre les bonus du joueur dont c'est le tour.
+  const bonusesEnabled = gameState.settings.enableBonuses === true;
+  const bonusHolder = gameState.settings.isLocalMode
+    ? gameState.players[gameState.activePlayerIndex]
+    : gameState.players.find(player => player.id === currentUserId);
+  const myFiftyFifty = bonusHolder?.bonuses?.fifty_fifty ?? 0;
+  const myJoker = bonusHolder?.bonuses?.camembert_joker ?? 0;
+  const showBonusChip = bonusesEnabled && (myFiftyFifty > 0 || myJoker > 0);
   const [isMuted, setIsMuted] = useState(soundManager.getMuted());
   const [copied, setCopied] = useState(false);
   const [showPlayersDrawer, setShowPlayersDrawer] = useState(false);
@@ -90,6 +103,18 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({
 
         {/* Right Actions Toolbar */}
         <div className="flex items-center gap-1.5">
+          {/* Bonus détenus : rappel permanent, pour ne plus « oublier » un bonus
+              gagné à la roue surprise. Cliquable seulement pendant sa question. */}
+          {showBonusChip && (
+            <div
+              className="flex items-center gap-1 rounded-xl border border-pink-500/40 bg-pink-500/10 px-2 py-1.5 text-xs font-black text-pink-200"
+              title="Vos bonus. Utilisez-les avec le bouton « Utiliser un bonus » pendant votre question."
+            >
+              {myFiftyFifty > 0 && <span>🎯 {myFiftyFifty}</span>}
+              {myJoker > 0 && <span>🧀 {myJoker}</span>}
+            </div>
+          )}
+
           {/* Mute Button */}
           <button
             onClick={handleToggleMute}

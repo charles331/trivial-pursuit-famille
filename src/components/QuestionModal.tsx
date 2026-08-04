@@ -30,6 +30,8 @@ interface QuestionModalProps {
   onSubmitAnswer: (optionIndex: number) => void;
   onUseBonus: (bonusType: BonusType) => void;
   onNextTurn: () => void;
+  /** Le joueur actif signale la fin de la roue surprise pour lancer le minuteur. */
+  onSurpriseWheelDone?: () => void;
   bonusesEnabled?: boolean;
   bonusAwardedThisTurn?: BonusType | null;
   surpriseSpinThisTurn?: boolean;
@@ -50,6 +52,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   onSubmitAnswer,
   onUseBonus,
   onNextTurn,
+  onSurpriseWheelDone,
   bonusesEnabled = false,
   bonusAwardedThisTurn = null,
   surpriseSpinThisTurn = false,
@@ -112,6 +115,11 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   // Enforce card masking: active player's question is ALWAYS hidden in Reader Mode until answered (NO reveal button)
   const isCardMasked = Boolean(isReaderMode && isIActivePlayer && !lastAnswerResult);
   const isAnswered = lastAnswerResult !== null;
+  // Case Surprise : tant que la roue n'est pas terminée, le serveur laisse
+  // `questionStartTime` à null. Le minuteur reste alors gelé sur toute la table
+  // — le décompte ne doit pas courir pendant que la roue tourne.
+  const surpriseTimerPending = surpriseSpinThisTurn === true
+    && (questionStartTime === null || questionStartTime === undefined);
   const canAnswer = isMyTurn || isIReader;
   // The server strips the solution from everyone but the reader, so this is
   // absent for spectators even though the type says otherwise.
@@ -161,7 +169,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
 
   // Countdown timer effect
   useEffect(() => {
-    if (effectiveTimerSeconds <= 0 || lastAnswerResult || (isReaderMode && isLocalMode && !localReaderReady)) return;
+    if (effectiveTimerSeconds <= 0 || lastAnswerResult || (isReaderMode && isLocalMode && !localReaderReady) || surpriseTimerPending) return;
 
     const interval = setInterval(() => {
       let remaining = effectiveTimerSeconds;
@@ -195,7 +203,8 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
     lastAnswerResult,
     isReaderMode,
     isLocalMode,
-    localReaderReady
+    localReaderReady,
+    surpriseTimerPending
   ]);
 
   const handleOptionClick = (idx: number) => {
@@ -781,7 +790,12 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                   </p>
                   <button
                     type="button"
-                    onClick={() => { soundManager.playClick(); setWheelDismissed(true); }}
+                    onClick={() => {
+                      soundManager.playClick();
+                      setWheelDismissed(true);
+                      // La roue est finie : on lance le minuteur pour toute la table.
+                      onSurpriseWheelDone?.();
+                    }}
                     className="tap-target w-full rounded-xl bg-slate-900 py-2.5 text-sm font-black text-white dark:bg-amber-500 dark:text-slate-950"
                   >
                     Continuer
