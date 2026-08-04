@@ -13,6 +13,8 @@ interface InGameHeaderProps {
   isHost?: boolean;
   /** Identifiant du joueur sur cet appareil, pour afficher ses bonus. */
   currentUserId?: string;
+  /** L'organisateur peut retirer un joueur, même en pleine partie. */
+  onRemovePlayer?: (playerId: string) => void;
 }
 
 export const InGameHeader: React.FC<InGameHeaderProps> = ({
@@ -21,6 +23,7 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({
   onTogglePause,
   isHost = false,
   currentUserId,
+  onRemovePlayer,
 }) => {
   const isPaused = gameState.isPaused === true;
   // Bonus conservés, affichés en permanence pour qu'un joueur sache toujours
@@ -38,6 +41,9 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({
   const [showPlayersDrawer, setShowPlayersDrawer] = useState(false);
   const [showRules, setShowRules] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  // Retirer quelqu'un se confirme : le geste est irréversible et, si c'était son
+  // tour, il rend la main au joueur suivant.
+  const [playerToRemove, setPlayerToRemove] = useState<{ id: string; name: string } | null>(null);
 
   const handleToggleMute = () => {
     const muted = soundManager.toggleMute();
@@ -188,7 +194,9 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({
             </div>
 
             <p className="text-sm text-slate-300 leading-relaxed">
-              Voulez-vous quitter cette partie sur cet appareil ? La partie restera disponible pour les autres joueurs connectés.
+              {isHost
+                ? 'Vous êtes l’organisateur : quitter ferme le salon et met fin à la partie pour tout le monde. Pour ne retirer qu’un joueur, utilisez le bouton « Retirer » dans la liste des joueurs.'
+                : 'Voulez-vous quitter cette partie sur cet appareil ? La partie restera disponible pour les autres joueurs connectés.'}
             </p>
 
             <div className="flex items-center justify-end gap-3 pt-2">
@@ -253,21 +261,82 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({
                           <div className="font-bold text-xs">{p.name} {p.isHost && '👑'}</div>
                           <div className="text-[10px] text-slate-400">
                             Difficulté : {p.difficulty} | Camemberts : {p.wedges.length}/{gameState.settings.wedgesToWin}
+                            {!p.isConnected && ' · déconnecté'}
                           </div>
                         </div>
                       </div>
+
+                      {/* L'organisateur ne peut pas se retirer lui-même ici :
+                          son départ ferme le salon, ce qui passe par « Quitter ». */}
+                      {isHost && onRemovePlayer && !p.isHost && gameState.phase !== 'game_over' && (
+                        <button
+                          onClick={() => setPlayerToRemove({ id: p.id, name: p.name })}
+                          className="shrink-0 rounded-lg border border-red-500/40 bg-red-950/60 px-2 py-1 text-[10px] font-bold text-red-200 hover:bg-red-900"
+                          title={`Retirer ${p.name} de la partie`}
+                        >
+                          Retirer
+                        </button>
+                      )}
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            <button
-              onClick={() => setShowPlayersDrawer(false)}
-              className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl font-bold text-xs"
-            >
-              Fermer
-            </button>
+            <div className="space-y-2">
+              {/* Rejoindre en cours de partie fonctionne : le nouveau venu démarre
+                  au centre du plateau et entre dans le tour de table. Encore
+                  faut-il qu'on sache que c'est possible. */}
+              <button
+                onClick={handleCopyInviteLink}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 py-2.5 text-xs font-bold text-amber-200 hover:bg-amber-500/20"
+              >
+                {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
+                Inviter quelqu’un maintenant
+              </button>
+              <p className="px-1 text-[10px] leading-snug text-slate-400">
+                Un joueur peut rejoindre la partie en cours avec ce lien : il démarre
+                au centre du plateau, sans camembert, et joue au tour suivant.
+              </p>
+              <button
+                onClick={() => setShowPlayersDrawer(false)}
+                className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl font-bold text-xs"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation du retrait d'un joueur par l'organisateur */}
+      {playerToRemove && (
+        <div className="fixed inset-0 z-[60] bg-black/75 backdrop-blur-sm flex items-start justify-center overflow-y-auto p-4 animate-fadeIn">
+          <div className="my-auto w-full max-w-md space-y-5 rounded-3xl border border-red-500/40 bg-slate-900 p-6 text-white shadow-2xl">
+            <h3 className="text-lg font-black">Retirer {playerToRemove.name} ?</h3>
+            <p className="text-sm leading-relaxed text-slate-300">
+              Son pion et ses camemberts disparaissent du plateau, et le tour de table
+              se referme sur les joueurs restants. Si c’est actuellement son tour, la
+              main passe au joueur suivant.
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-1">
+              <button
+                onClick={() => setPlayerToRemove(null)}
+                className="rounded-xl bg-slate-800 px-4 py-2.5 text-xs font-bold text-slate-200 hover:bg-slate-700"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => {
+                  soundManager.playClick();
+                  onRemovePlayer?.(playerToRemove.id);
+                  setPlayerToRemove(null);
+                }}
+                className="rounded-xl bg-red-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-red-500"
+              >
+                Retirer de la partie
+              </button>
+            </div>
           </div>
         </div>
       )}

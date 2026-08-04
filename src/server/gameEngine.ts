@@ -105,6 +105,54 @@ export function advanceTurn(state: GameState): void {
   state.activeQuestionBonus = null;
 }
 
+/**
+ * Retire un joueur de la partie en cours et rend la main proprement.
+ *
+ * Le retrait est plus délicat qu'une simple suppression du tableau, parce que le
+ * partant peut être celui dont c'est le tour. Sa carte est alors à l'écran et
+ * c'est lui, et lui seul, que le serveur autorise à répondre : si l'on se
+ * contentait de l'effacer, la table resterait devant une question que plus
+ * personne ne peut trancher, sans bouton pour avancer. On repart donc d'un tour
+ * neuf, exactement comme `advanceTurn`, mais sans incrémenter : après la
+ * suppression, le même index désigne déjà le joueur suivant.
+ *
+ * Renvoie `false` si le joueur est introuvable.
+ */
+export function removePlayerFromGame(state: GameState, playerId: string): boolean {
+  const index = state.players.findIndex((player) => player.id === playerId);
+  if (index < 0) return false;
+
+  const wasActive = index === state.activePlayerIndex;
+  state.players.splice(index, 1);
+
+  if (state.players.length === 0) {
+    state.activePlayerIndex = 0;
+    return true;
+  }
+
+  if (index < state.activePlayerIndex) {
+    // Un départ devant le joueur actif décale toute la table d'un cran.
+    state.activePlayerIndex -= 1;
+  } else if (state.activePlayerIndex >= state.players.length) {
+    state.activePlayerIndex = 0;
+  }
+
+  if (wasActive && state.phase !== 'lobby' && state.phase !== 'game_over') {
+    state.phase = 'rolling';
+    state.diceValue = null;
+    state.possibleMoves = [];
+    state.selectedTileId = null;
+    state.currentQuestion = null;
+    state.questionStartTime = null;
+    state.lastAnswerResult = null;
+    state.bonusAwardedThisTurn = null;
+    state.surpriseSpinThisTurn = false;
+    state.activeQuestionBonus = null;
+  }
+
+  return true;
+}
+
 export function togglePauseState(state: GameState, now: number): void {
   if (state.isPaused) {
     const pausedFor = now - (state.pausedAt ?? now);

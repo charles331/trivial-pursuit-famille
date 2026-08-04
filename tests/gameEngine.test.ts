@@ -3,10 +3,11 @@ import test from 'node:test';
 import {
   advanceTurn,
   calculateMoves,
+  removePlayerFromGame,
   resolveAnswer,
   togglePauseState,
 } from '../src/server/gameEngine';
-import { createGameState, testBoard, testSettings } from './fixtures';
+import { createGameState, createPlayer, testBoard, testSettings } from './fixtures';
 
 test('movement follows the board without immediate backtracking', () => {
   assert.deepEqual(calculateMoves(0, 2, testBoard), [2]);
@@ -137,4 +138,71 @@ test('pause and resume preserve the remaining question time', () => {
   assert.equal(state.isPaused, false);
   assert.equal(state.pausedAt, null);
   assert.equal(state.questionStartTime, 5000);
+});
+
+// --- Retrait d'un joueur en cours de partie ---------------------------------
+// Un enfant qui va se coucher laissait jusqu'ici un pion inerte qui prenait son
+// tour à chaque passage : rien ne permettait de le retirer d'une partie lancée.
+
+test('removing a player closes the table around the survivors', () => {
+  const state = createGameState({
+    players: [createPlayer('papa', true), createPlayer('olivia'), createPlayer('mamie')],
+    activePlayerIndex: 0,
+  });
+
+  assert.equal(removePlayerFromGame(state, 'olivia'), true);
+  assert.deepEqual(state.players.map((player) => player.id), ['papa', 'mamie']);
+  // Le départ est derrière le joueur actif : son index ne bouge pas.
+  assert.equal(state.activePlayerIndex, 0);
+  assert.equal(removePlayerFromGame(state, 'inconnu'), false);
+});
+
+test('a departure ahead of the active player shifts the whole table', () => {
+  const state = createGameState({
+    players: [createPlayer('papa', true), createPlayer('olivia'), createPlayer('mamie')],
+    activePlayerIndex: 2,
+  });
+
+  removePlayerFromGame(state, 'papa');
+  // Mamie était en troisième position, elle est désormais en deuxième : c'est
+  // toujours son tour, et pas celui d'Olivia.
+  assert.equal(state.players[state.activePlayerIndex].id, 'mamie');
+});
+
+test('removing the player whose turn it is hands the game back instead of locking it', () => {
+  // Le cas qui bloquait la partie : sa carte est à l'écran et lui seul est
+  // autorisé à répondre. L'effacer sans rien faire laissait la table devant une
+  // question que personne ne pouvait plus trancher.
+  const state = createGameState({
+    players: [createPlayer('papa', true), createPlayer('olivia'), createPlayer('mamie')],
+    activePlayerIndex: 1,
+    phase: 'question',
+    surpriseSpinThisTurn: true,
+    bonusAwardedThisTurn: 'fifty_fifty',
+  });
+
+  removePlayerFromGame(state, 'olivia');
+
+  assert.equal(state.phase, 'rolling');
+  assert.equal(state.currentQuestion, null);
+  assert.equal(state.lastAnswerResult, null);
+  assert.equal(state.questionStartTime, null);
+  assert.equal(state.surpriseSpinThisTurn, false);
+  assert.equal(state.bonusAwardedThisTurn, null);
+  assert.equal(state.activeQuestionBonus, null);
+  // Après la suppression, le même index désigne déjà le joueur suivant.
+  assert.equal(state.players[state.activePlayerIndex].id, 'mamie');
+});
+
+test('removing the last player in the list wraps the turn back to the first', () => {
+  const state = createGameState({
+    players: [createPlayer('papa', true), createPlayer('olivia')],
+    activePlayerIndex: 1,
+    phase: 'question',
+  });
+
+  removePlayerFromGame(state, 'olivia');
+  assert.equal(state.players.length, 1);
+  assert.equal(state.activePlayerIndex, 0);
+  assert.equal(state.phase, 'rolling');
 });

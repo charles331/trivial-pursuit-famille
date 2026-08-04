@@ -289,6 +289,12 @@ export default function App() {
     }
   };
 
+  const handleRemovePlayer = (playerId: string) => {
+    if (socket && gameState) {
+      socket.emit('remove-player', { roomCode: gameState.roomCode, playerId });
+    }
+  };
+
   const handleSurpriseWheelDone = () => {
     if (socket && gameState) {
       socket.emit('start-question-timer', { roomCode: gameState.roomCode });
@@ -408,6 +414,7 @@ export default function App() {
         onTogglePause={handleTogglePause}
         isHost={isHostPlayer}
         currentUserId={currentUserId}
+        onRemovePlayer={handleRemovePlayer}
       />
 
       {/* Main Game Stage */}

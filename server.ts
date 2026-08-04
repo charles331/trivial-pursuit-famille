@@ -12,7 +12,7 @@ import {
   normalize as normalizeText,
 } from './src/data/questionRules.js';
 import { checkStore, loadRooms, startRoomPersistence, saveRooms, ROOM_STORE_PATH } from './roomStore.js';
-import { advanceTurn, calculateMoves, resolveAnswer, togglePauseState } from './src/server/gameEngine.js';
+import { advanceTurn, calculateMoves, removePlayerFromGame, resolveAnswer, togglePauseState } from './src/server/gameEngine.js';
 import {
   beginFirstPlayerDraw,
   pendingRollers,
@@ -634,6 +634,44 @@ io.on('connection', (socket: Socket) => {
 
     room.gameState.players.push(newPlayer);
     emitGameState(room);
+  });
+
+  /**
+   * L'organisateur retire un joueur, y compris en pleine partie.
+   *
+   * Il n'existait aucun moyen de le faire : seul le départ volontaire
+   * (`leave-room`) sortait quelqu'un d'une partie lancée, et `remove-local-player`
+   * est bloqué hors du lobby. Une famille où un enfant va se coucher restait donc
+   * avec un pion inerte qui prenait son tour à chaque passage.
+   *
+   * L'organisateur ne peut pas se retirer lui-même par ce chemin : partir ferme le
+   * salon pour tout le monde, ce qui est une autre décision et passe par
+   * « Quitter ».
+   */
+  socket.on('remove-player', (data: { roomCode: string; playerId: string }) => {
+    const room = getRoom(data.roomCode);
+    if (!room || room.hostSocketId !== socket.id) return;
+    if (!data.playerId || data.playerId === room.hostSocketId) return;
+
+    const player = room.gameState.players.find(candidate => candidate.id === data.playerId);
+    if (!player) return;
+    const removedName = player.name;
+
+    if (!removePlayerFromGame(room.gameState, data.playerId)) return;
+
+    // Le siège d'un joueur en ligne libère aussi son socket et son jeton : sans
+    // cela il se reconnecterait dans un salon qui ne l'attend plus.
+    if (!data.playerId.startsWith('local_')) {
+      room.sockets.delete(data.playerId);
+      room.reconnectTokens.delete(data.playerId);
+      io.to(data.playerId).emit('room-left');
+      io.sockets.sockets.get(data.playerId)?.leave(room.code);
+    }
+
+    room.gameState.lastTurnEventMessage = `${removedName} a quitté la partie.`;
+    emitGameState(room);
+    saveRooms(rooms);
+    console.log(`[Room] ${removedName} retiré du salon ${room.code} par l'organisateur`);
   });
 
   socket.on('remove-local-player', (data: { roomCode: string; playerId: string }) => {
