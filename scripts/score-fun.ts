@@ -101,7 +101,14 @@ const CRITERIA: Criterion[] = [
       const bareProperNouns = card.options.every(
         (option) => /^(Le|La|L’|Les|Un|Une)?\s*[A-ZÀ-Ý]/.test(option.trim()) && !/\d/.test(option),
       );
-      return bareProperNouns ? 0.5 : 0.7;
+      if (!bareProperNouns) return 0.7;
+      // Au niveau enfant, ce reproche ne tient pas : « Comment s'appelle le
+      // bonhomme de neige dans La Reine des Neiges ? » entre Olaf, Sven, Kristoff
+      // et Hans n'est pas une loterie pour qui a vu le film vingt fois. Le niveau
+      // enfant repose délibérément sur la reconnaissance de personnages aimés, et
+      // c'est ce qui le rend joyeux. Pénaliser ces cartes enverrait la prochaine
+      // passe éditoriale les « corriger », et appauvrirait le jeu.
+      return card.difficulty === 'enfant' ? 0.8 : 0.5;
     },
   },
   {

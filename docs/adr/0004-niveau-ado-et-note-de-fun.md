@@ -115,3 +115,50 @@ deux faux négatifs des détecteurs, corrigés et verrouillés par des tests.
 - Une CI (`.github/workflows/check.yml`) lance `npm run check` sur chaque poussée,
   et un `CLAUDE.md` énonce la règle de conduite : quand l'audit échoue, on corrige
   la carte, jamais la règle.
+
+## Suite — passe sur « Pop Culture & Musique » (août 2026)
+
+La note de fun désignait cette catégorie comme la plus faible du corpus (73,1 %),
+son niveau adulte formant le bloc le plus bas tous niveaux confondus (72,3 %). Le
+diagnostic bloc par bloc a isolé un coupable net : les 28 cartes de
+`musiqueClassiqueAdultEditorial.ts`, à **60,5 %**, dix points sous tout le reste,
+dont 17 attributions nues entre compositeurs de la même époque.
+
+Ce fichier contenait pourtant déjà son propre remède. Ses bonnes cartes (69 à 91 %)
+donnent le compositeur dans l'énoncé et interrogent **l'œuvre**, avec un indice
+qui permet de raisonner : « Quel opéra de Rossini met en scène Figaro et le comte
+Almaviva ? ». Ses mauvaises faisaient l'inverse. Les 19 cartes fautives ont donc
+été inversées selon le patron du fichier lui-même.
+
+La musique classique **reste** dans cette catégorie : elle s'intitule « Pop Culture
+& Musique », et ces cartes y avaient été déplacées exprès depuis « Art &
+Littérature », qui ne promettait ni opéra ni symphonie.
+
+Onze attributions supplémentaires ont été reprises (`popcultureFunPass.ts`),
+choisies parce qu'elles cumulaient les deux reproches les plus fréquents en partie :
+aucun chemin de raisonnement, et un ancrage anglo-saxon que personne à table ne
+partage. Les attributions belges et françaises ont été **conservées** : Brel,
+Brassens, Aznavour, Arno, Hergé, Simenon, Franquin, Roba, Angèle, Stromae,
+Gainsbourg sont précisément ce que la table veut voir.
+
+Résultat : popculture adulte 72,3 → 74,2 %, et la catégorie n'est plus la dernière.
+
+### Le barème ne s'applique pas au niveau enfant comme aux autres
+
+Le niveau enfant de popculture ressortait à 73,5 %, presque aussi bas que l'adulte.
+Examen fait, ses cartes sont massivement de la forme « Comment s'appelle le bonhomme
+de neige dans La Reine des Neiges ? » entre Olaf, Sven, Kristoff et Hans. Le critère
+de chemin de raisonnement les condamnait comme des loteries de noms propres.
+
+C'est le barème qui avait tort. Pour un enfant qui a vu le film vingt fois, Olaf est
+immédiat : le niveau enfant repose délibérément sur la **reconnaissance de
+personnages aimés**, et c'est ce qui le rend joyeux. Les réécrire aurait appauvri le
+jeu — et une note laissée en l'état aurait envoyé la prochaine passe éditoriale le
+faire.
+
+Le critère est donc devenu sensible au niveau : quatre noms propres nus coûtent bien
+moins cher au niveau enfant. Conséquence à retenir en lisant les tableaux : **les
+notes du niveau enfant d'avant et d'après ce changement ne sont pas comparables.**
+Celles des niveaux ado et adulte le restent, et la validation du barème continue de
+séparer les cartes rejetées en partie de leurs remplaçantes (53/43/60 % contre
+81/86/86 %).
