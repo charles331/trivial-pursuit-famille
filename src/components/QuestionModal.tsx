@@ -286,7 +286,12 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
       return `${color} ${i * 60}deg ${(i + 1) * 60}deg`;
     })
     .join(', ')})`;
-  const showWheelPopup = bonusesEnabled && surpriseSpinThisTurn && isIActivePlayer && !wheelDismissed;
+  // La roue est un rituel d'avant-question : jamais après la réponse. Sans le
+  // garde `!isAnswered`, elle réapparaissait en phase « evaluating », car cette
+  // phase remonte un nouveau modal (état local réinitialisé) alors que
+  // `surpriseSpinThisTurn` reste vrai jusqu'au tour suivant.
+  const showWheelPopup = bonusesEnabled && surpriseSpinThisTurn && isIActivePlayer
+    && !wheelDismissed && !isAnswered;
   const hiddenOptionIndexes = activeQuestionBonus?.type === 'fifty_fifty'
     ? activeQuestionBonus.hiddenOptionIndexes
     : [];
