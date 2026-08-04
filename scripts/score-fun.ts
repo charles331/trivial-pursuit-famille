@@ -47,6 +47,25 @@ const ANGLO = /britannique|américain|anglais|anglaise|écossais|irlandais|austr
 const NARRATIVE = /pourquoi|comment|que fait|que se passe|quelle particularité|quel animal|surnom|quelle est la position|que tient|que manque|que découvre|que libère|que devient|combien|quel objet|quelle couleur|quelle forme|à quoi (?:sert|reconnaît)/i;
 const ADMINISTRATIVE = /traité|convention|directive|organisme|institution|accord|protocole|sommet|commission|décret|ordonnance|réforme|statut|charte/i;
 
+/**
+ * Ce qui distingue réellement chaque option des trois autres.
+ *
+ * Les mots présents dans les quatre options ne départagent rien : « Le traité
+ * de » revient partout, seul le nom propre porte la réponse. On les retire donc
+ * avant de juger si les options laissent quelque chose à raisonner.
+ */
+function discriminatingParts(options: string[]): string[] {
+  const wordsOf = (option: string): string[] => option.trim().split(/\s+/).filter(Boolean);
+  const normalizedWords = options.map((option) => new Set(wordsOf(normalize(option))));
+  const sharedByAll = [...(normalizedWords[0] ?? [])].filter(
+    (word) => normalizedWords.every((set) => set.has(word)),
+  );
+  const shared = new Set(sharedByAll);
+  return options.map((option) => wordsOf(option)
+    .filter((word) => !shared.has(normalize(word)))
+    .join(' '));
+}
+
 /** Millésime le plus ancien cité par la carte, tous champs confondus. */
 function oldestYear(card: Question): number | null {
   const text = `${card.question} ${card.options.join(' ')} ${card.explanation ?? ''}`;
@@ -99,9 +118,18 @@ const CRITERIA: Criterion[] = [
       if (isPersonNameLotteryCard(card.question, card.options)) return 0;
       if (isBareYearCard(card.question, card.options)) return 0;
       if (isBareNumberCard(card.options)) return 0.45;
-      // Des options rédigées (groupes de mots) laissent éliminer par le sens ;
-      // quatre mots isolés laissent surtout reconnaître ou deviner.
-      const wordy = card.options.filter((option) => option.trim().split(/\s+/).length >= 3).length;
+      // Ce qui compte n'est pas la longueur des options mais la longueur de ce
+      // qui les **distingue**. « Le traité d'Alcáçovas / de Saragosse / de
+      // Cateau-Cambrésis / de Tordesillas » comptait quatre options rédigées et
+      // récoltait la note pleine, alors que « Le traité de » est commun aux
+      // quatre : seul le nom propre départage, et c'est une loterie.
+      //
+      // Le même test épargne « L'échelle de Mohs / de Saffir-Simpson / de
+      // Beaufort / La magnitude de moment », où la quatrième option sort du
+      // moule : les options ne partagent alors pas toutes le même préfixe, et le
+      // joueur a bel et bien de quoi raisonner.
+      const discriminating = discriminatingParts(card.options);
+      const wordy = discriminating.filter((part) => part.split(/\s+/).filter(Boolean).length >= 3).length;
       if (wordy >= 3) return 1;
       if (wordy >= 1) return 0.85;
       // Quatre noms propres nus — quatre pays, quatre villes, quatre titres — se

@@ -140,6 +140,12 @@ const REPLACEMENTS: Replacement[] = [
   ['cin_adulte_editorial_final_027', 'Combien de Palmes d’or les frères Dardenne, cinéastes belges, ont-ils remportées ?', 'Deux', 'Une', 'Quatre', 'Aucune', 'Rosetta en 1999 et L’Enfant en 2005, tous deux tournés autour de Seraing et Liège.'],
   ['sci_adulte_editorial_final_034', 'Laquelle des quatre interactions fondamentales est responsable de la radioactivité ?', 'L’interaction faible', 'L’interaction forte', 'L’électromagnétisme', 'La gravitation', 'Elle seule change la nature d’une particule : un neutron devient proton en émettant un électron.'],
   ['art_adulte_editorial_07_023', 'Dans quelle série François Schuiten et Benoît Peeters imaginent-ils des villes impossibles ?', 'Les Cités obscures', 'Blake et Mortimer', 'Thorgal', 'Le Chat', 'Schuiten a aussi dessiné des stations du métro bruxellois et le pavillon belge de l’Expo 2000.'],
+  // Signalée en partie comme « trop vieille et on ne la connaît pas ». Quatre
+  // traités ibériques de la même époque — Alcáçovas 1479, Tordesillas 1494,
+  // Saragosse 1529 — sont indépartageables pour qui n'a pas la date en tête. Le
+  // fait, lui, est magnifique : il explique pourquoi le Brésil parle portugais.
+  // On garde donc le traité, nommé dans l'énoncé, et on interroge sa conséquence.
+  ['his_adulte_editorial_04_028', 'Quelle conséquence durable eut le traité de Tordesillas, qui partagea le Nouveau Monde ?', 'Le Brésil devint portugais, le reste du continent espagnol', 'Les Pays-Bas obtinrent les Antilles', 'La France renonça au Canada', 'L’Angleterre reçut l’Amérique du Nord', 'La ligne passait à 370 lieues des îles du Cap-Vert, laissant la pointe est du Brésil au Portugal.'],
 ];
 
 const BY_ID = new Map(REPLACEMENTS.map((replacement) => [replacement[0], replacement]));
