@@ -18,6 +18,7 @@ npm run check      # lint (tsc) + tests + audit des questions + build
 | `npm run lint` | `tsc --noEmit` |
 | `npm test` | tests Node (`tests/*.test.ts`) |
 | `npm run audit:questions` | contrat éditorial de la banque de questions |
+| `npm run audit:doublons` | cartes qui reposent le même fait (analyse, non bloquante) |
 | `npm run score:fun` | note de fun des cartes, en % (analyse, non bloquante) |
 | `npm run score:fun -- --validate` | vérifie que le barème sépare les cartes rejetées en partie de leurs remplaçantes |
 
@@ -73,6 +74,25 @@ comme « question impossible et vraiment pas fun ».
 - Niveaux : `enfant` ≈ jusqu'à 9 ans, `ado` **jouable vers 10-12 ans** (décision
   du propriétaire du projet), `adulte` exigeant. Aucun niveau ne se complète en
   recopiant un autre.
+
+### Le même fait posé deux fois
+
+Le dédoublonnage de l'audit repose sur « catégorie + bonne réponse ». Trois choses
+lui échappent, et elles se voient en partie : une carte Vrai/Faux répond toujours
+« Vrai » ou « Faux » et n'entre donc jamais en collision de cette façon ; une
+question reformulée d'un niveau à l'autre passe, car les niveaux ne se comparent
+que sur des textes identiques ; un fait posé dans les deux sens passe aussi
+(« pour quel événement l'Atomium ? » et « quelle ville pour l'Exposition de
+1958 ? »).
+
+**Avant d'écrire un lot, lancer `npm run audit:doublons`** — et vérifier chaque
+carte neuve contre le corpus. Sur quarante-huit cartes écrites à la main, onze
+reposaient un fait déjà présent.
+
+L'audit applique la règle aux formats variés seulement, où elle passe. Le corpus
+entier compte environ trois cents paires anciennes, dont une centaine au sein d'un
+même niveau : les reprendre est une décision éditoriale, à discuter avec la
+personne qui tient le projet.
 
 ### Modifier des cartes
 

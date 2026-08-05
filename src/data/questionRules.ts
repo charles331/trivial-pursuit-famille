@@ -322,6 +322,23 @@ export function comparableAnswer(answer: string): string {
 }
 
 /**
+ * L'énoncé tel qu'il faut le comparer pour reconnaître deux fois le même fait,
+ * quand les deux cartes n'ont pas la même forme.
+ *
+ * La réponse révélée y est jointe, parce qu'un QCM ne dit pas dans son énoncé ce
+ * qu'il demande : « En quelle année… le franc belge ? » ne se rapproche de
+ * l'affirmation « le franc belge a été remplacé en 2002 » qu'une fois « 2002 »
+ * ajouté. Un « Vrai » ou un « Faux », lui, est écarté : il n'apporte aucun mot au
+ * fait, et sa présence diluait assez le recouvrement pour faire passer le doublon
+ * juste sous le seuil.
+ */
+export function comparableFactText(question: string, answer: string): string {
+  const normalizedAnswer = normalize(answer);
+  if (normalizedAnswer === 'vrai' || normalizedAnswer === 'faux') return question;
+  return `${question} ${answer}`;
+}
+
+/**
  * Deux énoncés reformulent-ils le même fait ? À n'appeler que sur des cartes
  * qui partagent déjà catégorie et bonne réponse.
  */
