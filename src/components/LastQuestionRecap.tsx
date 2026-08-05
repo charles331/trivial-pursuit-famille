@@ -33,7 +33,7 @@ export const LastQuestionRecap: React.FC<LastQuestionRecapProps> = ({ recap }) =
       <button
         type="button"
         onClick={() => setCollapsed(false)}
-        className="mx-auto mb-2 flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1 text-[11px] font-bold text-slate-300 hover:text-white"
+        className="mx-auto mt-2 flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1 text-[11px] font-bold text-slate-300 hover:text-white"
       >
         <HelpCircle className="h-3.5 w-3.5 text-amber-400" /> Revoir la carte précédente
       </button>
@@ -41,7 +41,7 @@ export const LastQuestionRecap: React.FC<LastQuestionRecapProps> = ({ recap }) =
   }
 
   return (
-    <div className="mx-auto mb-2 w-full max-w-2xl rounded-2xl border border-slate-700 bg-slate-900/95 p-3 shadow-lg">
+    <div className="mx-auto mt-2 w-full max-w-2xl rounded-2xl border border-slate-700 bg-slate-900/95 p-3 shadow-lg">
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
           <span
