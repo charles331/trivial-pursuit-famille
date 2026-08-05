@@ -98,14 +98,26 @@ autant que la première : sans elle, « le bébé de la vache » et « le bébé
 grenouille » passaient pour un doublon, et une centaine de cartes saines auraient
 été réécrites pour rien.
 
-Onze paires signalées restent acceptées, listées et justifiées une par une dans
-`ACCEPTED_TWIN_FACTS` (l'audit) — deux organes que l'on a en double, une carotte et
-un abricot orange. **Ajouter une entrée à cette liste est une décision éditoriale**,
-à discuter avant de l'écrire.
+Huit paires signalées restent acceptées, listées et justifiées une par une dans
+`ACCEPTED_TWIN_FACTS` (l'audit) — deux pays du même continent, une carotte et un
+abricot orange. **Ajouter une entrée à cette liste est une décision éditoriale**, à
+discuter avant de l'écrire.
 
-Reste le report d'un niveau à l'autre : environ cent vingt-cinq paires, un fait posé
-à la fois en enfant et en adulte. Non bloquant, visible avec `audit:doublons`, à
-trancher avec la personne qui tient le projet.
+Le report d'un niveau à l'autre est réglé : les cent quatorze cartes qui reposaient,
+plus haut, un fait déjà posé plus bas sont réécrites (`crossLevelRewrites.ts`).
+C'est toujours la carte du **niveau supérieur** qui cède : une carte enfant qui
+demande la capitale de la France est à sa place, c'est la carte adulte qui la recopie
+qui ne l'est pas.
+
+Attention en revanche à ne pas confondre un doublon avec un **approfondissement**.
+Quand la carte du haut nomme le sujet de celle du bas pour demander autre chose,
+c'est l'escalier qu'on veut :
+
+    enfant : « Quelle planète est surnommée la planète rouge ? » → Mars
+    ado    : « Pourquoi Mars est-elle surnommée la planète rouge ? » → oxyde de fer
+
+`npm run audit:doublons` compte ces paires à part et ne doit plus rien remonter
+d'autre.
 
 ### Modifier des cartes
 

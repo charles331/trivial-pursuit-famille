@@ -5,6 +5,7 @@ import {
   editorialRejectionReason,
   isAttributionLotteryCard,
   isBareYearCard,
+  answersDesignateSameThing,
   comparableFactText,
   isPersonNameLotteryCard,
   paraphrasesSameFact,
@@ -493,4 +494,45 @@ test('deux affirmations vrai/faux ne se confondent pas par leur réponse', () =>
     ),
     false,
   );
+});
+
+test('deux quantités ne se rapprochent pas parce qu’un nombre traîne dans l’énoncé', () => {
+  // Le cas réel : « rugby à sept » contient bel et bien « sept », la réponse de la
+  // carte du handball. Sans cette garde, toutes les cartes qui comptent des joueurs
+  // devenaient des doublons les unes des autres.
+  assert.equal(
+    restatesSameFact(
+      card('Combien de joueurs une équipe de handball aligne-t-elle, gardien compris ?', 'Sept'),
+      card('Combien de joueurs compte une équipe de rugby à sept sur le terrain ?', '7'),
+    ),
+    false,
+  );
+  // Et deux réponses chiffrées différentes ne se confondent pas par leur unité.
+  assert.equal(
+    restatesSameFact(
+      card('Combien de temps dure une mi-temps au football ?', '45 minutes'),
+      card('Combien de temps dure un match de handball ?', 'Deux mi-temps de 30 minutes'),
+    ),
+    false,
+  );
+});
+
+test('un même nombre en réponse à deux questions différentes n’est pas un doublon', () => {
+  // « Trois régions » et « trois langues » : c'est l'énoncé qui porte le fait, pas
+  // la réponse. Le premier jet du détecteur les confondait.
+  assert.equal(
+    restatesSameFact(
+      card('Combien de régions la Belgique fédérale compte-t-elle ?', 'Trois'),
+      card('Combien de langues officielles la Belgique compte-t-elle ?', 'Trois'),
+    ),
+    false,
+  );
+});
+
+test('« Le détroit de Messine » et « Messine » désignent la même chose', () => {
+  // Deux fois le même énoncé, mot pour mot, que ni le dédoublonnage par la réponse
+  // ni celui par le couple énoncé-options ne voyaient.
+  assert.equal(answersDesignateSameThing('Le détroit de Messine', 'Messine'), true);
+  // Mais le tennis et le tennis de table restent deux sports.
+  assert.equal(answersDesignateSameThing('Le tennis', 'Le tennis de table'), false);
 });
