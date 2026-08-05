@@ -4,7 +4,7 @@ import { CardRewrite, applyCardRewrites } from './cardRewrites';
 /**
  * Cartes qui reposaient, à un niveau supérieur, un fait déjà posé plus bas.
  *
- * Cent quatorze cartes adultes ou ado demandaient exactement ce qu'une carte
+ * Cent seize cartes adultes ou ado demandaient exactement ce qu'une carte
  * enfant ou ado demandait déjà : la ville ensevelie par le Vésuve, le pays qui a
  * offert la statue de la Liberté, le surnom des Diables rouges. La famille qui
  * joue à deux niveaux entendait donc la même question deux fois dans la partie, et
@@ -24,8 +24,8 @@ import { CardRewrite, applyCardRewrites } from './cardRewrites';
  *     ado    : « Pourquoi Mars est-elle surnommée la planète rouge ? »
  *              → Son sol est riche en oxyde de fer
  *
- * Ces cinq paires-là sont laissées intactes ; `npm run audit:doublons` les compte
- * à part sous le nom d'approfondissements.
+ * Ces paires-là sont laissées intactes — il en reste trois ; `npm run audit:doublons`
+ * les compte à part sous le nom d'approfondissements.
  */
 const REWRITES: CardRewrite[] = [
   // --- Histoire -------------------------------------------------------------
