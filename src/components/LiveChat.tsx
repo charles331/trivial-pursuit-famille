@@ -9,7 +9,13 @@ interface LiveChatProps {
 
 export const LiveChat: React.FC<LiveChatProps> = ({ onSendEmoji, emojiEvent }) => {
   const [floatingEmojis, setFloatingEmojis] = useState<(EmojiReaction & { x: number })[]>([]);
+  // La palette des huit réactions faisait une barre de plus de trois cents pixels
+  // en bas de l'écran, en permanence, sur un téléphone où le plateau se joue déjà
+  // à l'étroit. Elle est désormais repliée derrière un seul bouton : on l'ouvre
+  // pour réagir, elle se referme aussitôt après.
+  const [isOpen, setIsOpen] = useState(false);
   const activeTimersRef = useRef<Set<NodeJS.Timeout>>(new Set());
+  const paletteRef = useRef<HTMLDivElement | null>(null);
 
   const EMOJI_LIST = ['👏', '🎉', '🎯', '🤔', '😂', '🔥', '🏆', '😱'];
 
@@ -56,6 +62,25 @@ export const LiveChat: React.FC<LiveChatProps> = ({ onSendEmoji, emojiEvent }) =
     };
   }, []);
 
+  // Ouverte, la palette recouvre le bas du plateau : elle se referme donc au
+  // premier geste ailleurs, comme le fait un menu, et à l'appui sur Échap.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const closeOnOutside = (event: PointerEvent) => {
+      if (!paletteRef.current?.contains(event.target as Node)) setIsOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsOpen(false);
+    };
+    document.addEventListener('pointerdown', closeOnOutside);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutside);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [isOpen]);
+
   return (
     <>
       {/* Floating Animated Emoji Overlay */}
@@ -74,21 +99,42 @@ export const LiveChat: React.FC<LiveChatProps> = ({ onSendEmoji, emojiEvent }) =
         ))}
       </div>
 
-      {/* Emoji Reactions Toolbar */}
-      <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 p-1.5 bg-slate-900 rounded-full shadow-lg border border-slate-700">
-        {EMOJI_LIST.map((emoji) => (
+      {/* Réactions : un bouton replié dans le coin, la palette à la demande */}
+      <div
+        ref={paletteRef}
+        className="fixed bottom-3 right-3 z-30 flex items-center justify-end gap-1.5 rounded-full border border-slate-700 bg-slate-900/95 p-1.5 shadow-lg backdrop-blur-sm"
+      >
+        {isOpen && EMOJI_LIST.map((emoji) => (
           <button
             key={emoji}
             type="button"
             onClick={() => {
               soundManager.playClick();
               onSendEmoji(emoji);
+              // Une réaction se choisit d'un geste : la palette se referme derrière
+              // elle plutôt que de rester ouverte sur le plateau.
+              setIsOpen(false);
             }}
-            className="w-9 h-9 flex items-center justify-center text-xl hover:scale-125 active:scale-90 transition-transform rounded-full hover:bg-slate-800"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-xl transition-transform hover:scale-125 hover:bg-slate-800 active:scale-90"
           >
             {emoji}
           </button>
         ))}
+        <button
+          type="button"
+          onClick={() => {
+            soundManager.playClick();
+            setIsOpen((open) => !open);
+          }}
+          aria-expanded={isOpen}
+          aria-label={isOpen ? 'Fermer les réactions' : 'Envoyer une réaction'}
+          title={isOpen ? 'Fermer les réactions' : 'Envoyer une réaction'}
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl transition-transform active:scale-90 ${
+            isOpen ? 'bg-slate-800 text-slate-300' : 'hover:scale-110 hover:bg-slate-800'
+          }`}
+        >
+          {isOpen ? '✕' : '😄'}
+        </button>
       </div>
     </>
   );

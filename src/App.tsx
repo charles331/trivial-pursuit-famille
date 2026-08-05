@@ -436,16 +436,10 @@ export default function App() {
       />
 
       {/* Main Game Stage */}
-      {/* Bottom padding keeps the floating emoji bar from covering the board legend */}
-      <main className="flex-1 w-full max-w-5xl mx-auto p-2 sm:p-4 pb-20 sm:pb-24 flex flex-col justify-center">
+      {/* Le bouton de réactions flotte en bas à droite : il ne faut plus réserver
+          que sa hauteur, et non celle de la palette entière comme avant. */}
+      <main className="flex-1 w-full max-w-5xl mx-auto p-2 sm:p-4 pb-14 sm:pb-16 flex flex-col justify-center">
         <LiveCameraStatusBar />
-        {/* Le rappel de la carte précédente vit ici, au-dessus du plateau : il
-            survit au « Passer au joueur suivant » et ne disparaît qu'au tirage de
-            la carte suivante. C'est le seul moment où la table peut finir de lire
-            le « Le saviez-vous ? » sans bloquer celui qui veut avancer. */}
-        {!isBoardCovered && gameState.lastQuestionRecap && (
-          <LastQuestionRecap recap={gameState.lastQuestionRecap} />
-        )}
         {!isBoardCovered && (
           <React.Suspense
             fallback={
@@ -461,6 +455,15 @@ export default function App() {
               onSelectTile={handleSelectTile}
             />
           </React.Suspense>
+        )}
+        {/* Le rappel de la carte précédente vit sous le plateau : il survit au
+            « Passer au joueur suivant » et ne disparaît qu'au tirage de la carte
+            suivante. C'est le seul moment où la table peut finir de lire le « Le
+            saviez-vous ? » sans bloquer celui qui veut avancer. Au-dessus du
+            plateau, il repoussait le dé et les pions vers le bas de l'écran à
+            chaque changement de tour. */}
+        {!isBoardCovered && gameState.lastQuestionRecap && (
+          <LastQuestionRecap recap={gameState.lastQuestionRecap} />
         )}
       </main>
 

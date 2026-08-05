@@ -580,6 +580,147 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
         </div>
       </header>
 
+      {/* ------------------------------------------------------------- act dock */}
+      {/* Au-dessus du plateau, et non en dessous : sur un téléphone, le dé et les
+          choix de destination se retrouvaient sous la ligne de flottaison, et il
+          fallait faire défiler pour jouer son tour. */}
+      <div className="z-10 flex min-h-[92px] w-full items-center justify-center rounded-3xl border border-slate-800 bg-slate-900/80 p-3 shadow-xl backdrop-blur-sm">
+        <AnimatePresence mode="wait" initial={false}>
+          {/* Roll the die */}
+          {dockMode === 'roll' && (
+            <motion.div
+              key="dock-roll"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6, transition: { duration: 0.14 } }}
+              transition={{ duration: 0.24, ease: EASE_OUT_SOFT }}
+              className="flex w-full flex-col items-center gap-1"
+            >
+              {gameState.lastTurnEventMessage && showingResultPause === null && (
+                <div className="mb-1 rounded-xl border border-amber-500/60 bg-amber-950/80 px-3 py-1.5 text-center text-xs font-black text-amber-300 shadow-lg">
+                  {gameState.lastTurnEventMessage}
+                </div>
+              )}
+
+              {isMyTurn ? (
+                <Dice3D
+                  value={showingResultPause || gameState.diceValue}
+                  isRolling={isRollingLocally}
+                  onRollRequest={handleRollClick}
+                  disabled={!isMyTurn || hasRequestedRoll}
+                  size={isCompact ? 62 : 82}
+                  compact={isCompact}
+                />
+              ) : (
+                <div className="flex items-center gap-3 px-2 py-4">
+                  <Hourglass className="h-5 w-5 text-amber-400" />
+                  <span className="text-sm font-bold text-slate-300">
+                    {activePlayer?.name} lance le dé…
+                  </span>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* Choose a destination */}
+          {dockMode === 'move' && (
+            <motion.div
+              key="dock-move"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6, transition: { duration: 0.14 } }}
+              transition={{ duration: 0.24, ease: EASE_OUT_SOFT }}
+              className="w-full space-y-2"
+            >
+              <p className="text-center text-xs font-black uppercase tracking-wide text-amber-400">
+                {isMyTurn ? 'Où déplacer votre pion ?' : `${activePlayer?.name} choisit sa destination`}
+                {possibleDestinationTiles.length > 2 && (
+                  <span className="ml-1.5 font-bold normal-case text-slate-400">
+                    {possibleDestinationTiles.length} choix · faites défiler
+                  </span>
+                )}
+              </p>
+
+              <div className="no-scrollbar stagger-children flex snap-x snap-mandatory gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-2 sm:overflow-visible">
+                {possibleDestinationTiles.map((tile, index) => {
+                  const color = tileColor(tile);
+                  const Icon = tileIconOf(tile);
+                  const isPreview = previewTargetId === tile.id;
+
+                  return (
+                    <button
+                      key={`destination_chip_${tile.id}`}
+                      type="button"
+                      disabled={!isMyTurn}
+                      onClick={() => handleChooseTile(tile.id)}
+                      onPointerEnter={event => {
+                        if (event.pointerType === 'mouse') setPreviewTileId(tile.id);
+                      }}
+                      onPointerLeave={event => {
+                        if (event.pointerType !== 'mouse') return;
+                        setPreviewTileId(current => (current === tile.id ? null : current));
+                      }}
+                      onFocus={() => setPreviewTileId(tile.id)}
+                      onBlur={() => setPreviewTileId(current => (current === tile.id ? null : current))}
+                      className={`tap-target flex min-w-[62%] shrink-0 snap-start items-center gap-2 rounded-2xl border-2 bg-slate-800/90 px-2.5 py-2.5 text-left transition-all active:scale-[0.98] disabled:opacity-50 sm:min-w-0 sm:gap-2.5 sm:px-3 ${
+                        isPreview ? 'bg-slate-700 shadow-lg ring-2 ring-amber-400/70' : ''
+                      }`}
+                      style={{ borderColor: color }}
+                      aria-label={`Destination ${index + 1} : ${destinationLabel(tile)}`}
+                    >
+                      <span
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black"
+                        style={{ backgroundColor: '#FDE047', color: '#0B1120' }}
+                      >
+                        {index + 1}
+                      </span>
+                      <span
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
+                        style={{ backgroundColor: color }}
+                      >
+                        <Icon size={17} color={readableInk(color)} strokeWidth={2.4} />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-xs font-bold text-white sm:text-sm">
+                          {tileShortLabel(tile)}
+                        </span>
+                        {(tile.type === 'camembert' || tile.isCamembert) && (
+                          <span className="block text-[10px] font-bold text-amber-300">🍰 Gagnez un camembert</span>
+                        )}
+                        {tile.type === 'reroll' && (
+                          <span className="block text-[10px] font-bold text-cyan-300">Rejouez aussitôt</span>
+                        )}
+                        {tile.type === 'hub' && (
+                          <span className="block text-[10px] font-bold text-amber-300">Question finale</span>
+                        )}
+                      </span>
+                      <MoveRight className="h-4 w-4 shrink-0 text-amber-400" />
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Question in progress */}
+          {dockMode === 'question' && (
+            <motion.div
+              key="dock-question"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6, transition: { duration: 0.14 } }}
+              transition={{ duration: 0.24, ease: EASE_OUT_SOFT }}
+              className="flex items-center justify-center gap-3 py-3"
+            >
+              <span className="flex h-2.5 w-2.5 rounded-full bg-amber-400" />
+              <span className="text-sm font-bold text-slate-300">
+                {activePlayer?.name} répond à la question…
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
       {/* ---------------------------------------------------------- board stage */}
       <div
         ref={boardBoxRef}
@@ -888,144 +1029,6 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
                   J’ai l’appareil, commencer !
                 </button>
               </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* ------------------------------------------------------------- act dock */}
-      <div className="z-10 flex min-h-[92px] w-full items-center justify-center rounded-3xl border border-slate-800 bg-slate-900/80 p-3 shadow-xl backdrop-blur-sm">
-        <AnimatePresence mode="wait" initial={false}>
-          {/* Roll the die */}
-          {dockMode === 'roll' && (
-            <motion.div
-              key="dock-roll"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6, transition: { duration: 0.14 } }}
-              transition={{ duration: 0.24, ease: EASE_OUT_SOFT }}
-              className="flex w-full flex-col items-center gap-1"
-            >
-              {gameState.lastTurnEventMessage && showingResultPause === null && (
-                <div className="mb-1 rounded-xl border border-amber-500/60 bg-amber-950/80 px-3 py-1.5 text-center text-xs font-black text-amber-300 shadow-lg">
-                  {gameState.lastTurnEventMessage}
-                </div>
-              )}
-
-              {isMyTurn ? (
-                <Dice3D
-                  value={showingResultPause || gameState.diceValue}
-                  isRolling={isRollingLocally}
-                  onRollRequest={handleRollClick}
-                  disabled={!isMyTurn || hasRequestedRoll}
-                  size={isCompact ? 62 : 82}
-                  compact={isCompact}
-                />
-              ) : (
-                <div className="flex items-center gap-3 px-2 py-4">
-                  <Hourglass className="h-5 w-5 text-amber-400" />
-                  <span className="text-sm font-bold text-slate-300">
-                    {activePlayer?.name} lance le dé…
-                  </span>
-                </div>
-              )}
-            </motion.div>
-          )}
-
-          {/* Choose a destination */}
-          {dockMode === 'move' && (
-            <motion.div
-              key="dock-move"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6, transition: { duration: 0.14 } }}
-              transition={{ duration: 0.24, ease: EASE_OUT_SOFT }}
-              className="w-full space-y-2"
-            >
-              <p className="text-center text-xs font-black uppercase tracking-wide text-amber-400">
-                {isMyTurn ? 'Où déplacer votre pion ?' : `${activePlayer?.name} choisit sa destination`}
-                {possibleDestinationTiles.length > 2 && (
-                  <span className="ml-1.5 font-bold normal-case text-slate-400">
-                    {possibleDestinationTiles.length} choix · faites défiler
-                  </span>
-                )}
-              </p>
-
-              <div className="no-scrollbar stagger-children flex snap-x snap-mandatory gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-2 sm:overflow-visible">
-                {possibleDestinationTiles.map((tile, index) => {
-                  const color = tileColor(tile);
-                  const Icon = tileIconOf(tile);
-                  const isPreview = previewTargetId === tile.id;
-
-                  return (
-                    <button
-                      key={`destination_chip_${tile.id}`}
-                      type="button"
-                      disabled={!isMyTurn}
-                      onClick={() => handleChooseTile(tile.id)}
-                      onPointerEnter={event => {
-                        if (event.pointerType === 'mouse') setPreviewTileId(tile.id);
-                      }}
-                      onPointerLeave={event => {
-                        if (event.pointerType !== 'mouse') return;
-                        setPreviewTileId(current => (current === tile.id ? null : current));
-                      }}
-                      onFocus={() => setPreviewTileId(tile.id)}
-                      onBlur={() => setPreviewTileId(current => (current === tile.id ? null : current))}
-                      className={`tap-target flex min-w-[62%] shrink-0 snap-start items-center gap-2 rounded-2xl border-2 bg-slate-800/90 px-2.5 py-2.5 text-left transition-all active:scale-[0.98] disabled:opacity-50 sm:min-w-0 sm:gap-2.5 sm:px-3 ${
-                        isPreview ? 'bg-slate-700 shadow-lg ring-2 ring-amber-400/70' : ''
-                      }`}
-                      style={{ borderColor: color }}
-                      aria-label={`Destination ${index + 1} : ${destinationLabel(tile)}`}
-                    >
-                      <span
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black"
-                        style={{ backgroundColor: '#FDE047', color: '#0B1120' }}
-                      >
-                        {index + 1}
-                      </span>
-                      <span
-                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
-                        style={{ backgroundColor: color }}
-                      >
-                        <Icon size={17} color={readableInk(color)} strokeWidth={2.4} />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-xs font-bold text-white sm:text-sm">
-                          {tileShortLabel(tile)}
-                        </span>
-                        {(tile.type === 'camembert' || tile.isCamembert) && (
-                          <span className="block text-[10px] font-bold text-amber-300">🍰 Gagnez un camembert</span>
-                        )}
-                        {tile.type === 'reroll' && (
-                          <span className="block text-[10px] font-bold text-cyan-300">Rejouez aussitôt</span>
-                        )}
-                        {tile.type === 'hub' && (
-                          <span className="block text-[10px] font-bold text-amber-300">Question finale</span>
-                        )}
-                      </span>
-                      <MoveRight className="h-4 w-4 shrink-0 text-amber-400" />
-                    </button>
-                  );
-                })}
-              </div>
-            </motion.div>
-          )}
-
-          {/* Question in progress */}
-          {dockMode === 'question' && (
-            <motion.div
-              key="dock-question"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6, transition: { duration: 0.14 } }}
-              transition={{ duration: 0.24, ease: EASE_OUT_SOFT }}
-              className="flex items-center justify-center gap-3 py-3"
-            >
-              <span className="flex h-2.5 w-2.5 rounded-full bg-amber-400" />
-              <span className="text-sm font-bold text-slate-300">
-                {activePlayer?.name} répond à la question…
-              </span>
             </motion.div>
           )}
         </AnimatePresence>
