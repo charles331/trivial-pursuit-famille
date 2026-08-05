@@ -18,6 +18,7 @@ npm run check      # lint (tsc) + tests + audit des questions + build
 | `npm run lint` | `tsc --noEmit` |
 | `npm test` | tests Node (`tests/*.test.ts`) |
 | `npm run audit:questions` | contrat éditorial de la banque de questions |
+| `npm run audit:doublons` | cartes qui reposent le même fait (analyse, non bloquante) |
 | `npm run score:fun` | note de fun des cartes, en % (analyse, non bloquante) |
 | `npm run score:fun -- --validate` | vérifie que le barème sépare les cartes rejetées en partie de leurs remplaçantes |
 
@@ -74,12 +75,51 @@ comme « question impossible et vraiment pas fun ».
   du propriétaire du projet), `adulte` exigeant. Aucun niveau ne se complète en
   recopiant un autre.
 
+### Le même fait posé deux fois
+
+Le dédoublonnage de l'audit repose sur « catégorie + bonne réponse ». Trois choses
+lui échappent, et elles se voient en partie : une carte Vrai/Faux répond toujours
+« Vrai » ou « Faux » et n'entre donc jamais en collision de cette façon ; une
+question reformulée d'un niveau à l'autre passe, car les niveaux ne se comparent
+que sur des textes identiques ; un fait posé dans les deux sens passe aussi
+(« pour quel événement l'Atomium ? » et « quelle ville pour l'Exposition de
+1958 ? »).
+
+**Avant d'écrire un lot, lancer `npm run audit:doublons`** — et vérifier chaque
+carte neuve contre le corpus. Sur quarante-huit cartes écrites à la main, onze
+reposaient un fait déjà présent ; sur les remplaçantes, treize de plus au premier
+jet.
+
+L'audit **refuse** désormais deux cartes qui posent le même fait au même niveau et
+dans la même catégorie : ce sont celles qui tombent dans la même partie, pour le
+même joueur. Le rapprochement est `restatesSameFact` — recouvrement de vocabulaire
+**et** réponse commune ou citée dans l'autre énoncé. La deuxième condition compte
+autant que la première : sans elle, « le bébé de la vache » et « le bébé de la
+grenouille » passaient pour un doublon, et une centaine de cartes saines auraient
+été réécrites pour rien.
+
+Onze paires signalées restent acceptées, listées et justifiées une par une dans
+`ACCEPTED_TWIN_FACTS` (l'audit) — deux organes que l'on a en double, une carotte et
+un abricot orange. **Ajouter une entrée à cette liste est une décision éditoriale**,
+à discuter avant de l'écrire.
+
+Reste le report d'un niveau à l'autre : environ cent vingt-cinq paires, un fait posé
+à la fois en enfant et en adulte. Non bloquant, visible avec `audit:doublons`, à
+trancher avec la personne qui tient le projet.
+
 ### Modifier des cartes
 
 Les banques sont sous `src/data/questionBank/`, agrégées par `src/data/questions.ts`.
 Pour corriger des cartes existantes sans toucher aux volumes, préférer une passe de
 remplacement par identifiant — voir `adoReplacements.ts` et
 `familyAdultReplacements.ts` — plutôt que d'éditer les gros lots générés.
+
+`cardRewrites.ts` sert les passes récentes et sait aussi **changer le format** d'une
+carte (`factDuplicateRewrites.ts`, `adoVariableFormats.ts`). Attention : une
+conversion vers Vrai/Faux ou vers une carte ouverte ne peut viser que le niveau ado
+ou enfant. Au niveau adulte elle ferait sortir la carte du quota des 400 QCM relues
+par catégorie, que l'audit vérifie ; les formats variés adultes vivent dans un pool
+séparé (`variableFormatPilot.ts`, `variableFormatProches.ts`).
 
 ## Le jeu est multijoueur : le tester comme tel
 

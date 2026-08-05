@@ -322,6 +322,54 @@ export function comparableAnswer(answer: string): string {
 }
 
 /**
+ * Deux réponses désignent-elles la même chose ?
+ *
+ * L'article en moins ne suffisait pas. « Quel détroit sépare la Sicile de la
+ * péninsule italienne ? » existait deux fois, mot pour mot, l'une répondant « Le
+ * détroit de Messine » et l'autre « Messine » : ni le dédoublonnage par la réponse
+ * ni celui par le couple énoncé-options ne les voyaient. On compare donc aussi le
+ * dernier mot plein, celui qui nomme la chose.
+ *
+ * Ce n'est pas la simple inclusion d'une réponse dans l'autre : « le tennis » et
+ * « le tennis de table » sont deux sports, et leurs derniers mots diffèrent.
+ */
+export function answersDesignateSameThing(left: string, right: string): boolean {
+  const a = comparableAnswer(left);
+  const b = comparableAnswer(right);
+  if (!a || !b) return false;
+  if (a === b) return true;
+
+  // Dès qu'une quantité entre en jeu, c'est le nombre qui fait la réponse et non
+  // l'unité : « 45 minutes » et « 30 minutes » sont deux faits, comme « 7 points »
+  // et « 11 points ». On exige alors l'égalité stricte.
+  if (/\d/.test(a) || /\d/.test(b)) return false;
+
+  const head = (value: string): string => {
+    const words = value.split(/\s+/).filter((word) => word.length >= 4);
+    return words[words.length - 1] ?? '';
+  };
+  const headA = head(a);
+  return headA.length >= 4 && headA === head(b);
+}
+
+/**
+ * L'énoncé tel qu'il faut le comparer pour reconnaître deux fois le même fait,
+ * quand les deux cartes n'ont pas la même forme.
+ *
+ * La réponse révélée y est jointe, parce qu'un QCM ne dit pas dans son énoncé ce
+ * qu'il demande : « En quelle année… le franc belge ? » ne se rapproche de
+ * l'affirmation « le franc belge a été remplacé en 2002 » qu'une fois « 2002 »
+ * ajouté. Un « Vrai » ou un « Faux », lui, est écarté : il n'apporte aucun mot au
+ * fait, et sa présence diluait assez le recouvrement pour faire passer le doublon
+ * juste sous le seuil.
+ */
+export function comparableFactText(question: string, answer: string): string {
+  const normalizedAnswer = normalize(answer);
+  if (normalizedAnswer === 'vrai' || normalizedAnswer === 'faux') return question;
+  return `${question} ${answer}`;
+}
+
+/**
  * Deux énoncés reformulent-ils le même fait ? À n'appeler que sur des cartes
  * qui partagent déjà catégorie et bonne réponse.
  */
@@ -339,6 +387,41 @@ export function paraphrasesSameFact(leftQuestion: string, rightQuestion: string)
   const shared = [...left].filter((word) => right.has(word)).length;
   const union = new Set([...left, ...right]).size;
   return shared / union >= PARAPHRASE_OVERLAP;
+}
+
+/**
+ * Deux cartes posent-elles le même fait ? À appeler sur deux cartes de même
+ * catégorie et de même niveau, quelles que soient leurs formes.
+ *
+ * Le recouvrement de vocabulaire ne suffit pas : « Comment s'appelle le bébé de
+ * la vache ? » et « … de la grenouille ? » partagent tout leur moule sans se
+ * marcher dessus. Le veau et le têtard sont deux cartes légitimes, et les
+ * confondre aurait fait réécrire une centaine de cartes saines.
+ *
+ * S'ajoute donc une condition sur la réponse, dans l'une de ses deux formes :
+ *
+ * - la même bonne réponse — sauf entre deux cartes Vrai/Faux, où « Vrai » ne dit
+ *   rien du fait ;
+ * - la réponse de l'une citée dans l'énoncé de l'autre, c'est-à-dire le même fait
+ *   posé dans les deux sens : « qui découvrit la tombe de Toutânkhamon ? » et
+ *   « quel pharaon possède la tombe découverte par Howard Carter ? ».
+ */
+export function restatesSameFact(
+  left: { question: string; answer: string; isBoolean?: boolean },
+  right: { question: string; answer: string; isBoolean?: boolean },
+): boolean {
+  if (!paraphrasesSameFact(
+    comparableFactText(left.question, left.answer),
+    comparableFactText(right.question, right.answer),
+  )) {
+    return false;
+  }
+
+  const sameAnswer = !left.isBoolean && !right.isBoolean
+    && answersDesignateSameThing(left.answer, right.answer);
+  const posedBothWays = containsWholeNormalizedPhrase(right.question, left.answer)
+    || containsWholeNormalizedPhrase(left.question, right.answer);
+  return sameAnswer || posedBothWays;
 }
 
 /** Une option qui n'est qu'un nombre : quatre d'entre elles font un pur hasard. */

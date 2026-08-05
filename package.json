@@ -10,6 +10,7 @@
     "clean": "rm -rf dist server.cjs",
     "lint": "tsc --noEmit",
     "audit:questions": "node --import tsx scripts/audit-questions.ts",
+    "audit:doublons": "node --import tsx scripts/find-duplicate-facts.ts",
     "test": "node --import tsx --test tests/*.test.ts",
     "analyze:difficulty": "node --import tsx scripts/analyze-difficulty.ts",
     "assets:brand": "node --import tsx scripts/render-brand-assets.ts",

@@ -150,11 +150,14 @@ export const VARIABLE_FORMAT_PILOT: Question[] = [
     categoryId: 'histoire',
     difficulty: 'adulte',
     format: 'open',
-    question: 'Comment appelle-t-on les longs navires de guerre des Vikings ?',
+    // Remplace une carte qui reformulait « Comment s'appelaient les longs bateaux
+    // des Vikings ? » du niveau enfant : l'audit ne compare les niveaux que sur des
+    // textes identiques, pas sur une reformulation.
+    question: 'Quel empereur romain a fait bâtir un mur fortifié en travers de la Grande-Bretagne ?',
     options: [],
     correctAnswerIndex: 0,
-    answer: 'Les drakkars',
-    explanation: 'Légers et à faible tirant d’eau, ils remontaient les fleuves aussi bien qu’ils traversaient la haute mer.',
+    answer: 'Hadrien',
+    explanation: 'Ses cent dix-sept kilomètres de pierre traversaient l’île d’une côte à l’autre, avec un fortin tous les milles romains.',
   },
   {
     id: 'var_open_006',
@@ -267,22 +270,22 @@ export const VARIABLE_FORMAT_PILOT: Question[] = [
     categoryId: 'geographie',
     difficulty: 'adulte',
     format: 'open',
-    question: 'Quel détroit sépare l’Europe de l’Afrique à leur point le plus proche ?',
+    question: 'Quel fleuve français traverse Rouen avant de se jeter dans la Manche ?',
     options: [],
     correctAnswerIndex: 0,
-    answer: 'Le détroit de Gibraltar',
-    explanation: 'Large d’à peine quatorze kilomètres, il fait communiquer la Méditerranée et l’océan Atlantique.',
+    answer: 'La Seine',
+    explanation: 'Ses immenses boucles allongent tellement le parcours que les cargos mettent des heures à remonter jusqu’au port.',
   },
   {
     id: 'var_open_009',
     categoryId: 'gastronomie',
     difficulty: 'adulte',
     format: 'open',
-    question: 'Quel petit gâteau en forme de coquillage se cuit dans un moule nervuré ?',
+    question: 'Comment appelle-t-on la crêpe bretonne salée faite de farine de sarrasin ?',
     options: [],
     correctAnswerIndex: 0,
-    answer: 'La madeleine',
-    explanation: 'Immortalisée par Proust, sa bosse dorée naît d’un choc de température au moment de l’enfournement.',
+    answer: 'La galette',
+    explanation: 'Le sarrasin s’est imposé en Bretagne parce qu’il poussait sur des terres où le froment refusait de venir.',
   },
   {
     id: 'var_open_010',
@@ -315,11 +318,11 @@ export const VARIABLE_FORMAT_PILOT: Question[] = [
     // éliminer, il faut produire la réponse. Une attribution y devient donc
     // impitoyable — « fondé par Miyazaki » ne souffle pas le mot « Ghibli ».
     // On demande à la place un terme de métier que l'énoncé décrit entièrement.
-    question: 'Comment appelle-t-on l’animation obtenue en photographiant des objets image par image ?',
+    question: 'Comment appelle-t-on la version d’un film remontée selon les seuls souhaits du réalisateur ?',
     options: [],
     correctAnswerIndex: 0,
-    answer: 'Le stop motion (ou animation en volume)',
-    explanation: 'Wallace et Gromit, en pâte à modeler, ont demandé des mois pour quelques minutes de film.',
+    answer: 'Le director’s cut',
+    explanation: 'Blade Runner en compte plusieurs, dont une qui supprime la voix off que le studio avait imposée.',
   },
   {
     id: 'var_open_013',
@@ -400,10 +403,10 @@ export const VARIABLE_FORMAT_PILOT: Question[] = [
     categoryId: 'popculture',
     difficulty: 'adulte',
     format: 'boolean',
-    question: 'La chanteuse Angèle, révélée par l’album « Brol », est belge.',
+    question: 'La série Le Jeu de la dame a fait bondir les ventes de jeux d’échecs dans le monde.',
     options: ['Vrai', 'Faux'],
     correctAnswerIndex: 0,
-    explanation: 'Bruxelloise, elle a percé en 2018 et rempli depuis les plus grandes salles francophones.',
+    explanation: 'Sortie en 2020, elle a vidé les rayons des fabricants de plateaux et rempli les clubs pendant des mois.',
   },
   {
     id: 'var_boolean_023',
@@ -440,10 +443,13 @@ export const VARIABLE_FORMAT_PILOT: Question[] = [
     categoryId: 'histoire',
     difficulty: 'adulte',
     format: 'boolean',
-    question: 'Le franc belge a été remplacé par l’euro comme monnaie en 2002.',
+    // Remplace une carte qui reposait, en Vrai/Faux, le fait déjà posé par le QCM
+    // sur l'année du passage à l'euro : la clé de dédoublonnage de l'audit ne
+    // pouvait pas le voir, puisque cette carte répondait « Vrai ».
+    question: 'Le premier roi des Belges n’était pas né en Belgique.',
     options: ['Vrai', 'Faux'],
     correctAnswerIndex: 0,
-    explanation: 'Les pièces et billets en euros ont circulé au 1ᵉʳ janvier 2002, comme dans onze autres pays.',
+    explanation: 'Prince allemand de Saxe-Cobourg, Léopold Ier a été choisi par le Congrès national et avait déjà refusé le trône de Grèce.',
   },
 
   // ---- Belgique & France, de 1900 à nos jours : questions ouvertes ---------
@@ -452,11 +458,11 @@ export const VARIABLE_FORMAT_PILOT: Question[] = [
     categoryId: 'popculture',
     difficulty: 'adulte',
     format: 'open',
-    question: 'Quel duo français masqué et casqué a marqué la musique électronique mondiale ?',
+    question: 'Comment appelle-t-on une série dérivée qui suit un personnage secondaire d’une autre série ?',
     options: [],
     correctAnswerIndex: 0,
-    answer: 'Daft Punk',
-    explanation: 'Formé en 1993, il a connu un succès planétaire avant d’annoncer sa séparation en 2021.',
+    answer: 'Un spin-off',
+    explanation: 'Better Call Saul, tiré d’un rôle secondaire de Breaking Bad, a fini par compter plus d’épisodes que son aînée.',
   },
   {
     id: 'var_open_016',

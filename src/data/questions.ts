@@ -78,6 +78,9 @@ import { GASTRONOMIE_ADULT_CURATED_06 } from './questionBank/gastronomieAdultCur
 import { GASTRONOMIE_ADULT_CURATED_FINAL } from './questionBank/gastronomieAdultCuratedFinal';
 import { ADULT_KNOWLEDGE_SUPPLEMENT } from './questionBank/adultKnowledgeSupplement';
 import { VARIABLE_FORMAT_PILOT } from './questionBank/variableFormatPilot';
+import { VARIABLE_FORMAT_PROCHES } from './questionBank/variableFormatProches';
+import { applyFactDuplicateRewrites } from './questionBank/factDuplicateRewrites';
+import { applyAdoVariableFormats } from './questionBank/adoVariableFormats';
 import { MUSIQUE_CLASSIQUE_ADULTE } from './questionBank/musiqueClassiqueAdultEditorial';
 import { POPCULTURE_FRANCOPHONE_ADULTE } from './questionBank/popcultureFrancophoneAdultEditorial';
 import { POPCULTURE_GRAND_PUBLIC_ADULTE } from './questionBank/popcultureGrandPublicAdultEditorial';
@@ -181,6 +184,7 @@ const CURATED_QUESTIONS: Question[] = [
   ...GASTRONOMIE_ADULT_CURATED_FINAL,
   ...ADULT_KNOWLEDGE_SUPPLEMENT,
   ...VARIABLE_FORMAT_PILOT,
+  ...VARIABLE_FORMAT_PROCHES,
 ];
 
 // Safety net: guarantee unique ids even if two bank files ever collide
@@ -189,7 +193,9 @@ const seenIds = new Set<string>();
 // to the teen bank removed a whole step from the difficulty ladder: a teenager
 // received the child questions verbatim. Every level now reaches its target
 // only through banks written for that level.
-const COMPLETED_QUESTIONS = applyHistoireFunPass(
+const COMPLETED_QUESTIONS = applyAdoVariableFormats(
+  applyFactDuplicateRewrites(
+  applyHistoireFunPass(
   applyPopcultureFunPass(
   applyAdoReplacements(
   applyFamilyAdultFunPass(
@@ -198,6 +204,8 @@ const COMPLETED_QUESTIONS = applyHistoireFunPass(
         ),
       ),
     ),
+  ),
+  ),
   ),
 );
 
