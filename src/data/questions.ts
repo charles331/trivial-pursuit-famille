@@ -79,6 +79,8 @@ import { GASTRONOMIE_ADULT_CURATED_FINAL } from './questionBank/gastronomieAdult
 import { ADULT_KNOWLEDGE_SUPPLEMENT } from './questionBank/adultKnowledgeSupplement';
 import { VARIABLE_FORMAT_PILOT } from './questionBank/variableFormatPilot';
 import { VARIABLE_FORMAT_PROCHES } from './questionBank/variableFormatProches';
+import { applyFactDuplicateRewrites } from './questionBank/factDuplicateRewrites';
+import { applyAdoVariableFormats } from './questionBank/adoVariableFormats';
 import { MUSIQUE_CLASSIQUE_ADULTE } from './questionBank/musiqueClassiqueAdultEditorial';
 import { POPCULTURE_FRANCOPHONE_ADULTE } from './questionBank/popcultureFrancophoneAdultEditorial';
 import { POPCULTURE_GRAND_PUBLIC_ADULTE } from './questionBank/popcultureGrandPublicAdultEditorial';
@@ -191,7 +193,9 @@ const seenIds = new Set<string>();
 // to the teen bank removed a whole step from the difficulty ladder: a teenager
 // received the child questions verbatim. Every level now reaches its target
 // only through banks written for that level.
-const COMPLETED_QUESTIONS = applyHistoireFunPass(
+const COMPLETED_QUESTIONS = applyAdoVariableFormats(
+  applyFactDuplicateRewrites(
+  applyHistoireFunPass(
   applyPopcultureFunPass(
   applyAdoReplacements(
   applyFamilyAdultFunPass(
@@ -200,6 +204,8 @@ const COMPLETED_QUESTIONS = applyHistoireFunPass(
         ),
       ),
     ),
+  ),
+  ),
   ),
 );
 

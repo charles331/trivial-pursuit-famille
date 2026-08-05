@@ -398,3 +398,80 @@ test('une carte à format varié finit par sortir pour un joueur adulte', () => 
   assert.equal(served.id, 'bool-1');
   assert.deepEqual(served.options, ['Vrai', 'Faux']);
 });
+
+test('les formats variés sortent aussi pour un joueur ado', () => {
+  // Quatre cartes converties par catégorie, parmi cent trente-cinq : sans le coup
+  // de pouce réservé jusqu'ici au niveau adulte, elles ne seraient jamais tirées.
+  const variableAdo: Question[] = [
+    {
+      ...testQuestion,
+      id: 'ado-bool',
+      question: 'Une même personne a déjà reçu deux prix Nobel dans deux sciences différentes.',
+      format: 'boolean',
+      options: ['Vrai', 'Faux'],
+      correctAnswerIndex: 0,
+      categoryId: 'histoire',
+      difficulty: 'ado',
+    },
+    {
+      ...testQuestion,
+      id: 'ado-open',
+      question: 'Qui a écrit le roman Les Misérables ?',
+      format: 'open',
+      options: [],
+      correctAnswerIndex: 0,
+      answer: 'Victor Hugo',
+      categoryId: 'histoire',
+      difficulty: 'ado',
+    },
+  ];
+  const state = createGameState({
+    settings: { ...createGameState().settings, isReaderMode: true },
+    questionsPool: [...variableAdo, ...officialBank()],
+    usedQuestionIds: [],
+  });
+  const random = seededRandom(11);
+
+  const served: Question[] = [];
+  for (let turn = 0; turn < 40; turn += 1) {
+    served.push(pickQuestionForPlayer(state, 'histoire', 'ado', random));
+  }
+
+  assert.ok(
+    served.some((question) => question.format === 'boolean'),
+    'aucune carte vrai/faux servie à un joueur ado',
+  );
+  assert.ok(
+    served.some((question) => question.format === 'open'),
+    'aucune carte ouverte servie à un joueur ado',
+  );
+  assert.ok(
+    served.every((question) => question.difficulty === 'ado'),
+    'une carte d\'un autre niveau a été servie',
+  );
+});
+
+test('le niveau enfant ne reçoit pas de format varié', () => {
+  // Peser une affirmation ou répondre à l'oral demande une aisance que le niveau
+  // enfant n'a pas : il reste sur le QCM, où l'on reconnaît une image mentale.
+  const variableAdo: Question = {
+    ...testQuestion,
+    id: 'ado-bool',
+    question: 'Le parc de Yellowstone est installé au-dessus d\'un volcan.',
+    format: 'boolean',
+    options: ['Vrai', 'Faux'],
+    correctAnswerIndex: 0,
+    categoryId: 'histoire',
+    difficulty: 'ado',
+  };
+  const state = createGameState({
+    questionsPool: [variableAdo, ...officialBank()],
+    usedQuestionIds: [],
+  });
+  const random = seededRandom(3);
+
+  for (let turn = 0; turn < 30; turn += 1) {
+    const question = pickQuestionForPlayer(state, 'histoire', 'enfant', random);
+    assert.equal(question.format ?? 'mcq', 'mcq');
+  }
+});

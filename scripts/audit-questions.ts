@@ -19,6 +19,7 @@ import {
   normalize,
   quotesAnswerProperName,
   paraphrasesSameFact,
+  restatesSameFact,
   questionSkeleton,
   stripDecorativePrefix,
 } from '../src/data/questionRules';
@@ -214,6 +215,71 @@ for (const group of adultByAnswer.values()) {
   }
 }
 
+/**
+ * Paires que le rapprochement signale et que l'on garde, après relecture.
+ *
+ * Le détecteur exige déjà une réponse commune, ou citée dans l'autre énoncé. Il
+ * reste onze paires où cette condition est remplie sans que le fait soit le même,
+ * et les corriger appauvrirait le jeu. Chacune est acceptée pour une raison
+ * précise ; toute nouvelle entrée dans cette liste est une décision éditoriale, à
+ * discuter avant de l'ajouter.
+ */
+const ACCEPTED_TWIN_FACTS = new Set([
+  // Le roi qui règne et son prédécesseur : deux réponses, deux cartes.
+  'his_069|his_116',
+  // Deux pays différents sur le même continent.
+  'geo_009|geo_070',
+  // La plus petite province, et celle où se trouve Waterloo.
+  'geo_adulte_editorial_02_044|geo_adulte_editorial_final_009',
+  // Deux organes que l'on a en double : la réponse « 2 » ne fait pas le fait.
+  'sci_079|sci_127',
+  // Grammes dans un kilo, millilitres dans un litre : deux conversions.
+  'sci_ado_editorial_121|sci_ado_editorial_124',
+  // L'ours et l'enfant du Livre de la jungle.
+  'art_042|art_130',
+  // Deux ballons ovales, deux sports.
+  'spo_070|spo_113',
+  // Sept joueurs au rugby à sept, sept au handball.
+  'spo_207|spo_251',
+  // Le lionceau et son père.
+  'pop_015|pop_016',
+  // Le hip-hop comme musique, le break comme danse.
+  'pop_ado_editorial_031|pop_ado_editorial_056',
+  // Une carotte orange n'est pas un abricot orange.
+  'gas_086|gas_108',
+]);
+
+function twinKey(leftId: string, rightId: string): string {
+  return [leftId, rightId].sort().join('|');
+}
+
+// --- Un même fait posé deux fois dans un même niveau ------------------------
+// Le dédoublonnage adulte plus haut compare « catégorie + bonne réponse » sur des
+// textes normalisés : il ne voyait ni le fait posé dans les deux sens, ni deux
+// formulations écrites dans deux lots différents, ni les cartes Vrai/Faux — qui
+// répondent toutes « Vrai » ou « Faux » et n'entrent donc jamais en collision de
+// cette façon. Quarante-neuf grappes vivaient ainsi au sein d'un même niveau,
+// c'est-à-dire dans la même partie et pour le même joueur.
+//
+// Le contrôle porte sur le niveau : les paires d'un niveau à l'autre — un fait
+// posé à la fois en enfant et en adulte — sont bien plus nombreuses et se
+// discutent séparément (`npm run audit:doublons` les montre).
+for (let left = 0; left < QUESTIONS_DATABASE.length; left += 1) {
+  for (let right = left + 1; right < QUESTIONS_DATABASE.length; right += 1) {
+    const first = QUESTIONS_DATABASE[left];
+    const second = QUESTIONS_DATABASE[right];
+    if (first.categoryId !== second.categoryId) continue;
+    if (first.difficulty !== second.difficulty) continue;
+    if (ACCEPTED_TWIN_FACTS.has(twinKey(first.id, second.id))) continue;
+    if (restatesSameFact(
+      { question: first.question, answer: answerOfQuestion(first), isBoolean: questionFormat(first) === 'boolean' },
+      { question: second.question, answer: answerOfQuestion(second), isBoolean: questionFormat(second) === 'boolean' },
+    )) {
+      editorialError(`Fait déjà posé au même niveau par ${first.id}`, second.id);
+    }
+  }
+}
+
 // --- Formats variés : le fait ne doit pas déjà exister ailleurs -------------
 // Le dédoublonnage adulte ci-dessus compare « catégorie + bonne réponse ». Une
 // carte Vrai/Faux répond « Vrai » ou « Faux » : elle échappe donc entièrement à
@@ -395,6 +461,7 @@ if (errors.length > 0) {
       + ` ${MAX_ADO_ATTRIBUTION_PER_CATEGORY} cartes d'attribution par catégorie.`,
   );
 
+  console.log('Doublons : aucun fait posé deux fois dans un même niveau et une même catégorie.');
   console.log('Formats variés : aucune carte vrai/faux ni ouverte ne repose un fait déjà posé dans sa catégorie.');
 
   console.log(`Volume adulte : exactement ${ADULT_EDITORIAL_TARGET_PER_CATEGORY} cartes QCM relues par catégorie (les formats variés forment un pool séparé).`);

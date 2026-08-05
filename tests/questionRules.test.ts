@@ -9,6 +9,7 @@ import {
   isPersonNameLotteryCard,
   paraphrasesSameFact,
   quotesAnswerProperName,
+  restatesSameFact,
 } from '../src/data/questionRules';
 
 /** Raccourci de lecture : la bonne réponse est toujours le premier choix. */
@@ -418,6 +419,77 @@ test('deux affirmations sur des faits voisins mais distincts passent', () => {
     paraphrasesSameFact(
       withAnswer('Le tout premier film projeté par les frères Lumière montrait l’arrivée d’un train en gare.', 'Faux'),
       withAnswer('À l’époque du muet, les films étaient toujours projetés en silence.', 'Faux'),
+    ),
+    false,
+  );
+});
+
+// --- Même moule contre même fait --------------------------------------------
+// Le premier jet du rapprochement désignait cent trois cartes à réécrire. Après
+// examen, la moitié étaient des cartes saines qui partageaient seulement un moule
+// d'énoncé : les réécrire aurait appauvri le jeu. D'où la condition sur la réponse.
+
+/** Raccourci : une carte telle que `restatesSameFact` la reçoit. */
+function card(question: string, answer: string, isBoolean = false) {
+  return { question, answer, isBoolean };
+}
+
+test('deux cartes du même moule mais de faits distincts ne sont pas des doublons', () => {
+  assert.equal(
+    restatesSameFact(
+      card('Comment s’appelle le bébé de la vache ?', 'Le veau'),
+      card('Comment s’appelle le bébé de la grenouille ?', 'Le têtard'),
+    ),
+    false,
+  );
+  assert.equal(
+    restatesSameFact(
+      card('Quelle unité mesure une force ?', 'Le newton'),
+      card('Quelle unité mesure une pression ?', 'Le pascal'),
+    ),
+    false,
+  );
+});
+
+test('le même fait posé dans les deux sens est reconnu', () => {
+  assert.equal(
+    restatesSameFact(
+      card('Qui découvrit la tombe de Toutânkhamon en 1922 ?', 'Howard Carter'),
+      card('Quel pharaon possède la tombe découverte presque intacte par Howard Carter ?', 'Toutânkhamon'),
+    ),
+    true,
+  );
+});
+
+test('deux formulations d’un même fait, écrites dans deux lots, sont reconnues', () => {
+  assert.equal(
+    restatesSameFact(
+      card('Quel détroit sépare la Sicile de la péninsule italienne ?', 'Le détroit de Messine'),
+      card('Quel détroit sépare la Sicile de la péninsule italienne ?', 'Messine'),
+    ),
+    true,
+  );
+});
+
+test('une affirmation vrai/faux qui repose le fait d’un QCM est reconnue', () => {
+  // « Vrai » ne dit rien du fait : c'est la citation de la réponse du QCM dans
+  // l'affirmation qui les rapproche.
+  assert.equal(
+    restatesSameFact(
+      card('Le franc belge a été remplacé par l’euro comme monnaie en 2002.', 'Vrai', true),
+      card('En quelle année les pièces et billets en euros ont-ils remplacé le franc belge ?', '2002'),
+    ),
+    true,
+  );
+});
+
+test('deux affirmations vrai/faux ne se confondent pas par leur réponse', () => {
+  // Sans la garde sur le format, toutes les cartes « Vrai » d'une catégorie
+  // deviendraient des doublons les unes des autres.
+  assert.equal(
+    restatesSameFact(
+      card('Un ver de terre possède plusieurs cœurs.', 'Vrai', true),
+      card('Le diamant et le graphite sont faits du même élément chimique.', 'Vrai', true),
     ),
     false,
   );

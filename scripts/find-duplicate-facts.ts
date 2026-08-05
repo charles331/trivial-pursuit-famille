@@ -17,21 +17,18 @@
  * les corriger est une décision éditoriale, pas une correction mécanique. D'où ce
  * script, à lancer avant d'écrire un lot de cartes :
  *
- *   npm run audit:doublons             # paires au seuil par défaut
- *   npm run audit:doublons -- 0.5      # plus sévère, pour ne voir que les criantes
- *   npm run audit:doublons -- 0.34 20  # seuil, puis nombre de paires détaillées
+ *   npm run audit:doublons        # les paires, et leur répartition par niveaux
+ *   npm run audit:doublons -- 60  # avec soixante paires détaillées
+ *
+ * Le rapprochement est exactement celui de l'audit (`restatesSameFact`) : au sein
+ * d'un même niveau, il ne doit plus rien rester en dehors des onze paires relues
+ * et acceptées. Ce qui subsiste ici est le report d'un niveau à l'autre.
  */
 import { QUESTIONS_DATABASE } from '../src/data/questions';
-import {
-  PARAPHRASE_OVERLAP,
-  comparableFactText,
-  comparableWords,
-  distinctiveNames,
-} from '../src/data/questionRules';
+import { restatesSameFact } from '../src/data/questionRules';
 import { CategoryId, Question } from '../src/types';
 
-const threshold = Number(process.argv[2]) || PARAPHRASE_OVERLAP;
-const detailCount = Number(process.argv[3]) || 25;
+const detailCount = Number(process.argv[2]) || 25;
 
 function answerOf(question: Question): string {
   return (question.format ?? 'mcq') === 'open'
@@ -41,15 +38,17 @@ function answerOf(question: Question): string {
 
 interface Indexed {
   card: Question;
-  words: Set<string>;
-  names: Set<string>;
+  side: { question: string; answer: string; isBoolean: boolean };
 }
 
-// Un seul découpage par carte : la comparaison est quadratique par catégorie.
-const indexed: Indexed[] = QUESTIONS_DATABASE.map((card) => {
-  const text = comparableFactText(card.question, answerOf(card));
-  return { card, words: comparableWords(text), names: distinctiveNames(text) };
-});
+const indexed: Indexed[] = QUESTIONS_DATABASE.map((card) => ({
+  card,
+  side: {
+    question: card.question,
+    answer: answerOf(card),
+    isBoolean: (card.format ?? 'mcq') === 'boolean',
+  },
+}));
 
 const byCategory = new Map<CategoryId, Indexed[]>();
 for (const entry of indexed) {
@@ -64,19 +63,9 @@ for (const group of byCategory.values()) {
     for (let j = i + 1; j < group.length; j += 1) {
       const left = group[i];
       const right = group[j];
-      if (left.words.size === 0 || right.words.size === 0) continue;
-
-      // Deux cartes qui nomment chacune une œuvre que l'autre ignore parlent de
-      // deux faits distincts, même si le vocabulaire se recoupe.
-      const eachNamesSomethingOwn = [...left.names].some((name) => !right.names.has(name))
-        && [...right.names].some((name) => !left.names.has(name));
-      if (eachNamesSomethingOwn) continue;
-
-      let shared = 0;
-      for (const word of left.words) if (right.words.has(word)) shared += 1;
-      if (shared === 0) continue;
-      const score = shared / new Set([...left.words, ...right.words]).size;
-      if (score >= threshold) pairs.push({ score, left: left.card, right: right.card });
+      if (restatesSameFact(left.side, right.side)) {
+        pairs.push({ score: 1, left: left.card, right: right.card });
+      }
     }
   }
 }
@@ -89,7 +78,7 @@ for (const pair of pairs) {
   countsByLevels.set(levels(pair), (countsByLevels.get(levels(pair)) ?? 0) + 1);
 }
 
-console.log(`Corpus : ${QUESTIONS_DATABASE.length} cartes. Seuil de recouvrement : ${threshold}`);
+console.log(`Corpus : ${QUESTIONS_DATABASE.length} cartes.`);
 console.log(`${pairs.length} paire(s) posant le même fait dans une même catégorie.\n`);
 
 console.log('Par couple de niveaux');
@@ -99,13 +88,14 @@ for (const [pairLevels, count] of [...countsByLevels].sort((a, b) => b[1] - a[1]
 
 const withinSameLevel = pairs.filter((pair) => pair.left.difficulty === pair.right.difficulty);
 console.log(
-  `\nDont ${withinSameLevel.length} au sein d'un même niveau — celles-là tombent`
-    + ' dans la même partie, pour le même joueur.',
+  `\nDont ${withinSameLevel.length} au sein d'un même niveau — celles-là tombent dans la`
+    + ' même partie, pour le même joueur, et l\'audit les refuse désormais (à onze paires'
+    + ' près, relues et acceptées).',
 );
 
 console.log(`\nLes ${Math.min(detailCount, pairs.length)} paires les plus proches`);
 for (const pair of pairs.slice(0, detailCount)) {
-  console.log(`  ${(pair.score * 100).toFixed(0).padStart(3)}%  ${pair.left.id} / ${pair.right.id}  [${pair.left.categoryId}, ${levels(pair)}]`);
+  console.log(`  ${pair.left.id} / ${pair.right.id}  [${pair.left.categoryId}, ${levels(pair)}]`);
   console.log(`        ${pair.left.question} => ${answerOf(pair.left)}`);
   console.log(`        ${pair.right.question} => ${answerOf(pair.right)}`);
 }

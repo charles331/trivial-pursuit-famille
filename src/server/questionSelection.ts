@@ -164,12 +164,18 @@ export function pickQuestionForPlayer(
     }
   }
 
-  // 1.5 Formats variés (adulte). On garantit une part régulière de vrai/faux et
-  //     de questions ouvertes : trente cartes noyées parmi 3 200 QCM ne
-  //     sortaient sinon quasiment jamais. Elles priment sur la banque QCM quand
-  //     c'est leur tour, à condition de coller à la case, d'être servables (les
-  //     ouvertes hors mode lecteur sont écartées) et hors thème actif.
-  if (playerDifficulty === 'adulte') {
+  // 1.5 Formats variés. On garantit une part régulière de vrai/faux et de
+  //     questions ouvertes : trente cartes noyées parmi 3 200 QCM ne sortaient
+  //     sinon quasiment jamais. Elles priment sur la banque QCM quand c'est leur
+  //     tour, à condition de coller à la case, d'être servables (les ouvertes hors
+  //     mode lecteur sont écartées) et hors thème actif.
+  //
+  //     Le niveau ado en a désormais aussi — quatre cartes par catégorie, converties
+  //     depuis des QCM. Sans ce coup de pouce elles seraient encore plus invisibles
+  //     qu'au niveau adulte : quatre cartes parmi les cent trente-cinq d'une
+  //     catégorie. Le niveau enfant reste sur le seul QCM, où l'on coche une image
+  //     mentale plutôt qu'on ne pèse une affirmation.
+  if (playerDifficulty === 'adulte' || playerDifficulty === 'ado') {
     const isVariable = (question: Question): boolean => (question.format ?? 'mcq') !== 'mcq';
     const servedVariable = state.questionsPool.filter(
       (question) => isVariable(question) && usedIds.has(question.id),
@@ -177,7 +183,7 @@ export function pickQuestionForPlayer(
     if (variableFormatTurnIsDue(state.usedQuestionIds.length, servedVariable, random)) {
       const candidates = state.questionsPool.filter(
         (question) => isVariable(question)
-          && question.difficulty === 'adulte'
+          && question.difficulty === playerDifficulty
           && normalizeCategoryId(question.categoryId) === targetCategory
           && servableFormat(question)
           && (activeThemes.size === 0 || !belongsToActiveTheme(question, activeThemes)),
