@@ -5,7 +5,9 @@ import {
   editorialRejectionReason,
   isAttributionLotteryCard,
   isBareYearCard,
+  comparableFactText,
   isPersonNameLotteryCard,
+  paraphrasesSameFact,
   quotesAnswerProperName,
 } from '../src/data/questionRules';
 
@@ -364,6 +366,58 @@ test('a relative “qui a” is not an interrogative one', () => {
     isPersonNameLotteryCard(
       'De quel pays vient la danse qui a donné son nom au Boléro de Ravel ?',
       ['L’Espagne', 'L’Italie', 'La Russie', 'Le Brésil'],
+    ),
+    false,
+  );
+});
+
+// --- Un fait déjà posé, que la clé « catégorie + bonne réponse » ne voit pas ---
+// L'audit dédoublonne les cartes adultes par leur bonne réponse. Une carte
+// Vrai/Faux répond « Vrai » : deux affirmations n'entrent donc jamais en
+// collision de cette façon, et une carte pouvait reposer un fait déjà posé par un
+// QCM. La comparaison qui les rattrape inclut la réponse révélée de chaque côté.
+
+/** Ce que l'audit compare réellement : l'énoncé, réponse révélée comprise. */
+const withAnswer = comparableFactText;
+
+test('comparer les seuls énoncés laisse passer un fait reposé en vrai/faux', () => {
+  // Le cas réel : une carte du pilote reposait l'année du passage à l'euro, déjà
+  // posée par un QCM. Sans la réponse, les deux énoncés se ressemblent trop peu.
+  const affirmation = 'Le franc belge a été remplacé par l’euro comme monnaie en 2002.';
+  const qcm = 'En quelle année les pièces et billets en euros ont-ils remplacé le franc belge ?';
+  assert.equal(paraphrasesSameFact(affirmation, qcm), false);
+  assert.equal(
+    paraphrasesSameFact(withAnswer(affirmation, 'Vrai'), withAnswer(qcm, '2002')),
+    true,
+    'la réponse révélée doit entrer dans la comparaison',
+  );
+});
+
+test('une carte ouverte qui reformule un niveau plus bas est rattrapée', () => {
+  // « Comment s'appelaient les longs bateaux des Vikings ? » existait au niveau
+  // enfant ; le contrôle des niveaux ne compare que des textes identiques.
+  const ouverte = 'Comment appelle-t-on les longs navires de guerre des Vikings ?';
+  const enfant = 'Comment s’appelaient les longs bateaux des Vikings ?';
+  assert.equal(
+    paraphrasesSameFact(withAnswer(ouverte, 'Les drakkars'), withAnswer(enfant, 'Les drakkars')),
+    true,
+  );
+});
+
+test('deux affirmations sur des faits voisins mais distincts passent', () => {
+  // Le détecteur doit rester utilisable : ces deux cartes coexistent en partie
+  // sans que personne n'ait l'impression de répondre deux fois à la même chose.
+  assert.equal(
+    paraphrasesSameFact(
+      withAnswer('Un ver de terre possède plusieurs cœurs.', 'Vrai'),
+      withAnswer('Quel animal possède trois cœurs ?', 'La pieuvre'),
+    ),
+    false,
+  );
+  assert.equal(
+    paraphrasesSameFact(
+      withAnswer('Le tout premier film projeté par les frères Lumière montrait l’arrivée d’un train en gare.', 'Faux'),
+      withAnswer('À l’époque du muet, les films étaient toujours projetés en silence.', 'Faux'),
     ),
     false,
   );

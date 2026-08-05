@@ -5,6 +5,7 @@ import {
   MAX_BARE_NUMBER_RATIO,
   MAX_SKELETON_REUSE,
   comparableAnswer,
+  comparableFactText,
   echoesCorrectAnswer,
   editorialRejectionReason,
   hasDecorativePrefix,
@@ -213,6 +214,31 @@ for (const group of adultByAnswer.values()) {
   }
 }
 
+// --- Formats variés : le fait ne doit pas déjà exister ailleurs -------------
+// Le dédoublonnage adulte ci-dessus compare « catégorie + bonne réponse ». Une
+// carte Vrai/Faux répond « Vrai » ou « Faux » : elle échappe donc entièrement à
+// ce filet, et une affirmation pouvait reposer un fait déjà posé par un QCM — le
+// record belge d'absence de gouvernement, l'année du passage à l'euro. La carte
+// ouverte, elle, échappait au rapprochement d'un niveau à l'autre, qui ne
+// compare que des textes identiques : « les longs bateaux des Vikings » du
+// niveau enfant revenait en carte ouverte adulte.
+//
+// On compare donc l'énoncé *et* la réponse révélée, contre toutes les cartes de
+// la même catégorie, tous niveaux confondus. La règle ne vise que le pool des
+// formats variés : l'appliquer au corpus entier remonterait plus de deux cents
+// paires anciennes, ce qui est une décision éditoriale à part
+// (`npm run audit:doublons` les liste).
+for (const question of QUESTIONS_DATABASE) {
+  if (questionFormat(question) === 'mcq') continue;
+  const mine = comparableFactText(question.question, answerOfQuestion(question));
+  for (const other of QUESTIONS_DATABASE) {
+    if (other.id === question.id || other.categoryId !== question.categoryId) continue;
+    if (paraphrasesSameFact(mine, comparableFactText(other.question, answerOfQuestion(other)))) {
+      editorialError(`Fait déjà posé par ${other.id}, en format varié`, question.id);
+    }
+  }
+}
+
 // --- Moules d'énoncé sur-utilisés -------------------------------------------
 for (const categoryId of CATEGORIES) {
   const rows = QUESTIONS_DATABASE.filter(
@@ -368,6 +394,8 @@ if (errors.length > 0) {
     'Qualité ado : aucune devinette de millésime, et au plus'
       + ` ${MAX_ADO_ATTRIBUTION_PER_CATEGORY} cartes d'attribution par catégorie.`,
   );
+
+  console.log('Formats variés : aucune carte vrai/faux ni ouverte ne repose un fait déjà posé dans sa catégorie.');
 
   console.log(`Volume adulte : exactement ${ADULT_EDITORIAL_TARGET_PER_CATEGORY} cartes QCM relues par catégorie (les formats variés forment un pool séparé).`);
 }
