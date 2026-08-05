@@ -11,11 +11,11 @@
  * - un fait posé dans les deux sens : « pour quel événement l'Atomium a-t-il été
  *   construit ? » et « quelle ville accueillit l'Exposition de 1958 ? ».
  *
- * L'audit applique la règle pour le pool des formats variés seulement, où elle
- * passe. Sur le corpus entier elle remonte plus de deux cents paires anciennes,
- * pour l'essentiel un fait posé à la fois au niveau enfant et au niveau adulte :
- * les corriger est une décision éditoriale, pas une correction mécanique. D'où ce
- * script, à lancer avant d'écrire un lot de cartes :
+ * L'audit refuse ces paires au sein d'un même niveau — celles qui tombent dans la
+ * même partie, pour le même joueur — à onze exceptions relues et justifiées. Il
+ * laisse passer le report d'un niveau à l'autre, bien plus nombreux : un fait posé
+ * à la fois en enfant et en adulte se discute, il ne se corrige pas mécaniquement.
+ * D'où ce script, à lancer avant d'écrire un lot de cartes :
  *
  *   npm run audit:doublons        # les paires, et leur répartition par niveaux
  *   npm run audit:doublons -- 60  # avec soixante paires détaillées
