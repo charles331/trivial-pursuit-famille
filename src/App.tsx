@@ -436,8 +436,9 @@ export default function App() {
       />
 
       {/* Main Game Stage */}
-      {/* Bottom padding keeps the floating emoji bar from covering the board legend */}
-      <main className="flex-1 w-full max-w-5xl mx-auto p-2 sm:p-4 pb-20 sm:pb-24 flex flex-col justify-center">
+      {/* Le bouton de réactions flotte en bas à droite : il ne faut plus réserver
+          que sa hauteur, et non celle de la palette entière comme avant. */}
+      <main className="flex-1 w-full max-w-5xl mx-auto p-2 sm:p-4 pb-14 sm:pb-16 flex flex-col justify-center">
         <LiveCameraStatusBar />
         {/* Le rappel de la carte précédente vit ici, au-dessus du plateau : il
             survit au « Passer au joueur suivant » et ne disparaît qu'au tirage de
