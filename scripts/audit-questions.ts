@@ -218,11 +218,11 @@ for (const group of adultByAnswer.values()) {
 /**
  * Paires que le rapprochement signale et que l'on garde, après relecture.
  *
- * Le détecteur exige déjà une réponse commune, ou citée dans l'autre énoncé. Il
- * reste onze paires où cette condition est remplie sans que le fait soit le même,
- * et les corriger appauvrirait le jeu. Chacune est acceptée pour une raison
- * précise ; toute nouvelle entrée dans cette liste est une décision éditoriale, à
- * discuter avant de l'ajouter.
+ * Le détecteur exige déjà une réponse commune, ou citée dans l'autre énoncé, et
+ * écarte les réponses qui ne sont qu'une quantité. Il reste huit paires où la
+ * condition est remplie sans que le fait soit le même, et les corriger appauvrirait
+ * le jeu. Chacune est acceptée pour une raison précise ; toute nouvelle entrée dans
+ * cette liste est une décision éditoriale, à discuter avant de l'ajouter.
  */
 const ACCEPTED_TWIN_FACTS = new Set([
   // Le roi qui règne et son prédécesseur : deux réponses, deux cartes.
@@ -231,16 +231,10 @@ const ACCEPTED_TWIN_FACTS = new Set([
   'geo_009|geo_070',
   // La plus petite province, et celle où se trouve Waterloo.
   'geo_adulte_editorial_02_044|geo_adulte_editorial_final_009',
-  // Deux organes que l'on a en double : la réponse « 2 » ne fait pas le fait.
-  'sci_079|sci_127',
-  // Grammes dans un kilo, millilitres dans un litre : deux conversions.
-  'sci_ado_editorial_121|sci_ado_editorial_124',
   // L'ours et l'enfant du Livre de la jungle.
   'art_042|art_130',
   // Deux ballons ovales, deux sports.
   'spo_070|spo_113',
-  // Sept joueurs au rugby à sept, sept au handball.
-  'spo_207|spo_251',
   // Le lionceau et son père.
   'pop_015|pop_016',
   // Le hip-hop comme musique, le break comme danse.

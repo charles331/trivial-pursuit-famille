@@ -12,7 +12,7 @@
  *   construit ? » et « quelle ville accueillit l'Exposition de 1958 ? ».
  *
  * L'audit refuse ces paires au sein d'un même niveau — celles qui tombent dans la
- * même partie, pour le même joueur — à onze exceptions relues et justifiées. Il
+ * même partie, pour le même joueur — à huit exceptions relues et justifiées. Il
  * laisse passer le report d'un niveau à l'autre, bien plus nombreux : un fait posé
  * à la fois en enfant et en adulte se discute, il ne se corrige pas mécaniquement.
  * D'où ce script, à lancer avant d'écrire un lot de cartes :
@@ -21,8 +21,9 @@
  *   npm run audit:doublons -- 60  # avec soixante paires détaillées
  *
  * Le rapprochement est exactement celui de l'audit (`restatesSameFact`) : au sein
- * d'un même niveau, il ne doit plus rien rester en dehors des onze paires relues
- * et acceptées. Ce qui subsiste ici est le report d'un niveau à l'autre.
+ * d'un même niveau, il ne doit plus rien rester en dehors des huit paires relues
+ * et acceptées. Ce qui subsiste entre niveaux, ce sont des approfondissements : la
+ * carte du haut nomme le sujet de celle du bas pour demander davantage.
  */
 import { QUESTIONS_DATABASE } from '../src/data/questions';
 import { restatesSameFact } from '../src/data/questionRules';
@@ -89,8 +90,9 @@ for (const [pairLevels, count] of [...countsByLevels].sort((a, b) => b[1] - a[1]
 const withinSameLevel = pairs.filter((pair) => pair.left.difficulty === pair.right.difficulty);
 console.log(
   `\nDont ${withinSameLevel.length} au sein d'un même niveau — celles-là tombent dans la`
-    + ' même partie, pour le même joueur, et l\'audit les refuse désormais (à onze paires'
-    + ' près, relues et acceptées).',
+    + ' même partie, pour le même joueur, et l\'audit les refuse désormais (à huit paires'
+    + ' près, relues et acceptées). Ce qui reste entre niveaux est un approfondissement :'
+    + ' la carte du haut nomme le sujet de celle du bas pour demander davantage.',
 );
 
 console.log(`\nLes ${Math.min(detailCount, pairs.length)} paires les plus proches`);

@@ -333,16 +333,36 @@ export function comparableAnswer(answer: string): string {
  * Ce n'est pas la simple inclusion d'une réponse dans l'autre : « le tennis » et
  * « le tennis de table » sont deux sports, et leurs derniers mots diffèrent.
  */
+const NUMBER_WORDS = new Set([
+  'zero', 'un', 'une', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit',
+  'neuf', 'dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize',
+  'vingt', 'trente', 'quarante', 'cinquante', 'soixante', 'cent', 'cents',
+  'mille', 'million', 'millions', 'milliard', 'milliards', 'demi',
+]);
+
+/**
+ * La réponse est-elle une quantité ? Un chiffre, ou un nombre écrit en lettres,
+ * éventuellement suivi de son unité : « 42 », « Trois », « Sept mètres »,
+ * « Dix-huit trous ».
+ */
+function isQuantityAnswer(comparable: string): boolean {
+  if (/\d/.test(comparable)) return true;
+  const first = comparable.split(/\s+/)[0] ?? '';
+  return first.split('-').every((part) => NUMBER_WORDS.has(normalize(part)));
+}
+
 export function answersDesignateSameThing(left: string, right: string): boolean {
   const a = comparableAnswer(left);
   const b = comparableAnswer(right);
   if (!a || !b) return false;
-  if (a === b) return true;
 
-  // Dès qu'une quantité entre en jeu, c'est le nombre qui fait la réponse et non
-  // l'unité : « 45 minutes » et « 30 minutes » sont deux faits, comme « 7 points »
-  // et « 11 points ». On exige alors l'égalité stricte.
-  if (/\d/.test(a) || /\d/.test(b)) return false;
+  // Quand la réponse est une quantité, ce n'est pas elle qui porte le fait mais
+  // l'énoncé : « Combien de régions compte la Belgique ? » et « Combien de langues
+  // officielles ? » répondent tous deux « Trois » sans poser le même fait. Ces
+  // cartes-là ne se rapprochent que par l'autre voie, celle du fait posé dans les
+  // deux sens.
+  if (isQuantityAnswer(a) || isQuantityAnswer(b)) return false;
+  if (a === b) return true;
 
   const head = (value: string): string => {
     const words = value.split(/\s+/).filter((word) => word.length >= 4);
@@ -419,8 +439,18 @@ export function restatesSameFact(
 
   const sameAnswer = !left.isBoolean && !right.isBoolean
     && answersDesignateSameThing(left.answer, right.answer);
-  const posedBothWays = containsWholeNormalizedPhrase(right.question, left.answer)
-    || containsWholeNormalizedPhrase(left.question, right.answer);
+  // Retrouver la réponse d'une carte dans l'énoncé de l'autre ne dit rien quand les
+  // deux réponses sont des quantités : « Combien de joueurs au rugby à sept ? »
+  // contient bel et bien « sept », la réponse de la carte du handball, sans poser
+  // son fait. Quand une seule des deux est un nombre, le rapprochement garde tout
+  // son sens : « Le franc belge a été remplacé par l'euro en 2002 » cite bien la
+  // réponse du QCM qui demande cette année-là.
+  const bothQuantities = isQuantityAnswer(comparableAnswer(left.answer))
+    && isQuantityAnswer(comparableAnswer(right.answer));
+  const posedBothWays = !bothQuantities && (
+    containsWholeNormalizedPhrase(right.question, left.answer)
+    || containsWholeNormalizedPhrase(left.question, right.answer)
+  );
   return sameAnswer || posedBothWays;
 }
 
