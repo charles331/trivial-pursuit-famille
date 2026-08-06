@@ -11,6 +11,11 @@ interface Dice3DProps {
   size?: number; // size in px, e.g. 88
   /** Drops the verbose helper text so the die fits a mobile action dock. */
   compact?: boolean;
+  /**
+   * Retire le bouton « Lancer le dé » : le dé lui-même se touche et se lance,
+   * ce qui suffit lorsqu'il est posé sur le plateau et que la place manque.
+   */
+  hideTriggerButton?: boolean;
 }
 
 // Dot positions grid layout for dice faces 1..6
@@ -39,7 +44,8 @@ export const Dice3D: React.FC<Dice3DProps> = ({
   onRollRequest,
   disabled = false,
   size = 88,
-  compact = false
+  compact = false,
+  hideTriggerButton = false
 }) => {
   // Store cumulative rotation angles so die spins forward smoothly without snapping
   const [rotation, setRotation] = useState({ rx: 15, ry: -25, rz: 0 });
@@ -359,7 +365,7 @@ export const Dice3D: React.FC<Dice3DProps> = ({
       </div>
 
       {/* Tactile Guidance Label & Fallback Trigger Button */}
-      {onRollRequest && (
+      {onRollRequest && !hideTriggerButton && (
         <div className="flex flex-col items-center gap-2 mt-1">
           {!compact && (
             <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300 animate-pulse bg-amber-950/70 border border-amber-500/40 px-3.5 py-1 rounded-full shadow-md">

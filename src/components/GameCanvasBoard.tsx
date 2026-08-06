@@ -503,6 +503,13 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
       ? 'question'
       : 'idle';
 
+  // `showTurnIntro` reste vrai tant que personne n'a cliqué sur « C'est parti »,
+  // et ce bouton n'existe qu'en mode local : en ligne, le drapeau ne redescend
+  // jamais. Ce qui recouvre réellement le plateau, c'est donc cette combinaison
+  // — et rien d'autre ne doit s'en servir pour se cacher.
+  const showPassDeviceScreen =
+    showTurnIntro && gameState.settings.isLocalMode && gameState.phase === 'rolling' && isMyTurn;
+
   const phaseHint = () => {
     if (gameState.phase === 'rolling') return isMyTurn ? 'Lancez le dé pour avancer' : 'En attente du lancer…';
     if (gameState.phase === 'moving') return isMyTurn ? 'Choisissez votre case d’arrivée' : 'Choix de la destination…';
@@ -584,44 +591,12 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
       {/* Au-dessus du plateau, et non en dessous : sur un téléphone, le dé et les
           choix de destination se retrouvaient sous la ligne de flottaison, et il
           fallait faire défiler pour jouer son tour. */}
+      {/* Le bandeau ne s'affiche plus que s'il a quelque chose à montrer : au
+          moment du lancer, tout se passe sur le plateau, et la page est d'autant
+          plus courte. */}
+      {(dockMode === 'move' || dockMode === 'question') && (
       <div className="z-10 flex min-h-[92px] w-full items-center justify-center rounded-3xl border border-slate-800 bg-slate-900/80 p-3 shadow-xl backdrop-blur-sm">
         <AnimatePresence mode="wait" initial={false}>
-          {/* Roll the die */}
-          {dockMode === 'roll' && (
-            <motion.div
-              key="dock-roll"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6, transition: { duration: 0.14 } }}
-              transition={{ duration: 0.24, ease: EASE_OUT_SOFT }}
-              className="flex w-full flex-col items-center gap-1"
-            >
-              {gameState.lastTurnEventMessage && showingResultPause === null && (
-                <div className="mb-1 rounded-xl border border-amber-500/60 bg-amber-950/80 px-3 py-1.5 text-center text-xs font-black text-amber-300 shadow-lg">
-                  {gameState.lastTurnEventMessage}
-                </div>
-              )}
-
-              {isMyTurn ? (
-                <Dice3D
-                  value={showingResultPause || gameState.diceValue}
-                  isRolling={isRollingLocally}
-                  onRollRequest={handleRollClick}
-                  disabled={!isMyTurn || hasRequestedRoll}
-                  size={isCompact ? 62 : 82}
-                  compact={isCompact}
-                />
-              ) : (
-                <div className="flex items-center gap-3 px-2 py-4">
-                  <Hourglass className="h-5 w-5 text-amber-400" />
-                  <span className="text-sm font-bold text-slate-300">
-                    {activePlayer?.name} lance le dé…
-                  </span>
-                </div>
-              )}
-            </motion.div>
-          )}
-
           {/* Choose a destination */}
           {dockMode === 'move' && (
             <motion.div
@@ -720,6 +695,7 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
           )}
         </AnimatePresence>
       </div>
+      )}
 
       {/* ---------------------------------------------------------- board stage */}
       <div
@@ -990,9 +966,77 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
           )}
         </AnimatePresence>
 
+        {/* ------------------------------------------------- le dé, sur le plateau */}
+        {/* Le dé occupait un bandeau de plus de cent pixels sous le plateau, pour
+            une action d'un seul geste. Il est posé dans le coin du plateau, là où
+            la roue laisse du vide : rien d'utile n'est recouvert, et la page est
+            plus courte d'autant. Le dé se touche directement — c'est déjà le cas
+            depuis toujours — donc son bouton n'a plus de raison d'être ici.
+
+            Il s'efface le temps du flash de résultat, qui occupe le centre. */}
+        <AnimatePresence>
+          {dockMode === 'roll' && showingResultPause === null && !showPassDeviceScreen && (
+            <motion.div
+              key="board-dice"
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.15 } }}
+              transition={{ duration: 0.22, ease: EASE_OUT_SOFT }}
+              className="absolute bottom-2 right-2 z-20 flex flex-col items-center"
+            >
+              {isMyTurn ? (
+                /* Un fond sombre translucide : sans lui, le dé clair se perd dans
+                   les pastilles de couleur des cases, et l'on ne comprend plus
+                   qu'il est posé par-dessus le plateau. */
+                <div className="flex flex-col items-center rounded-2xl border border-amber-500/30 bg-slate-950/65 px-1 pb-1.5 shadow-2xl backdrop-blur-[2px]">
+                  <Dice3D
+                    value={gameState.diceValue}
+                    isRolling={isRollingLocally}
+                    onRollRequest={handleRollClick}
+                    disabled={hasRequestedRoll}
+                    size={isCompact ? 44 : 56}
+                    compact
+                    hideTriggerButton
+                  />
+                  {/* Sans bouton, il faut dire que le dé se touche. L'invite
+                      disparaît dès que le lancer part. */}
+                  <span className="-mt-2 text-[10px] font-black leading-none text-amber-300">
+                    {isRollingLocally || hasRequestedRoll ? 'Lancement…' : 'Touchez le dé'}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 rounded-full border border-slate-700/80 bg-slate-950/90 px-2.5 py-1.5 shadow-xl backdrop-blur-sm">
+                  <Hourglass className="h-3.5 w-3.5 shrink-0 text-amber-400" />
+                  <span className="max-w-[9rem] truncate text-[11px] font-bold text-slate-300">
+                    {activePlayer?.name} lance le dé…
+                  </span>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Message de fin de tour (« Bonne réponse, vous rejouez ! ») */}
+        <AnimatePresence>
+          {dockMode === 'roll' && showingResultPause === null && gameState.lastTurnEventMessage && (
+            <motion.div
+              key="board-turn-message"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, transition: { duration: 0.15 } }}
+              transition={{ duration: 0.22, ease: EASE_OUT_SOFT }}
+              className="pointer-events-none absolute inset-x-0 top-1.5 z-20 flex justify-center px-2"
+            >
+              <div className="rounded-xl border border-amber-500/60 bg-amber-950/90 px-3 py-1.5 text-center text-xs font-black text-amber-300 shadow-lg backdrop-blur-sm">
+                {gameState.lastTurnEventMessage}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Pass-the-device screen (local mode) */}
         <AnimatePresence>
-          {showTurnIntro && gameState.settings.isLocalMode && gameState.phase === 'rolling' && isMyTurn && (
+          {showPassDeviceScreen && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
