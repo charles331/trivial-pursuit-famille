@@ -51,6 +51,7 @@ export function beginFirstPlayerDraw(state: GameState, now: number): void {
   state.firstPlayerDraw = { startedAt: now, rolls: [], winnerId: null };
   state.activePlayerIndex = 0;
   state.diceValue = null;
+  state.diceThrow = null;
   state.possibleMoves = [];
   state.selectedTileId = null;
   state.currentQuestion = null;
@@ -64,6 +65,7 @@ export function skipFirstPlayerDraw(state: GameState): void {
   state.firstPlayerDraw = null;
   state.activePlayerIndex = 0;
   state.diceValue = null;
+  state.diceThrow = null;
   state.possibleMoves = [];
   state.lastTurnEventMessage = null;
 }
@@ -165,6 +167,7 @@ export function settleFirstPlayerDraw(state: GameState, options: { force?: boole
   state.activePlayerIndex = winnerIndex;
   state.phase = 'rolling';
   state.diceValue = null;
+  state.diceThrow = null;
   state.possibleMoves = [];
   state.lastTurnEventMessage = describeFirstPlayerDraw(state);
   return true;

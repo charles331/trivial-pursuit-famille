@@ -260,9 +260,16 @@ export default function App() {
     }
   }, [socket, gameState?.roomCode]);
 
-  const handleRollDice = React.useCallback(() => {
+  // La poussée du geste part avec le lancer : sa puissance vise la face, son
+  // angle donne la direction du dé sur le plateau. `null` pour un appui simple —
+  // le serveur retombe alors sur un tirage au sort et un départ vers le plateau.
+  const handleRollDice = React.useCallback((push: { power: number; angle: number } | null) => {
     if (socket && gameState) {
-      socket.emit('roll-dice', { roomCode: gameState.roomCode });
+      socket.emit('roll-dice', {
+        roomCode: gameState.roomCode,
+        power: push?.power ?? null,
+        angle: push?.angle ?? null,
+      });
     }
   }, [socket, gameState?.roomCode]);
 
