@@ -143,6 +143,17 @@ passe au changement de phase et de tour.
 
 Points de vigilance connus :
 
+- Le dé est posé **sur** le plateau, dans son coin bas-droit, et il s'affiche sur
+  tous les écrans : celui qui ne lance pas voit la même culbute. Elle est déjà
+  commune sans effort — `isRollingLocally` se déclenche à l'arrivée de la valeur,
+  sans condition de tour ; c'est l'affichage qui était réservé au lanceur.
+  Attention à `showTurnIntro` si l'on veut masquer quelque chose pendant l'écran
+  « passez l'appareil » : ce drapeau ne redescend qu'au clic sur son bouton, qui
+  n'existe qu'en mode local, donc il reste **vrai à jamais** en ligne. La vraie
+  condition est `showPassDeviceScreen`.
+- La force du glissé vise une face (`src/server/diceThrow.ts`, ADR 0005). Le client
+  n'envoie qu'une **puissance**, jamais un résultat, et le serveur la borne : toute
+  nouvelle action qui dépend d'un geste doit suivre la même règle.
 - `src/App.tsx` monte **deux** instances de `QuestionModal` (phases `question` et
   `evaluating`). Passer de l'une à l'autre remonte le composant et réinitialise son
   état local : ce qui doit survivre au changement de phase appartient à l'état

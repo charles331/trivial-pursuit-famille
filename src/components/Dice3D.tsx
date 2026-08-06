@@ -1,12 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { soundManager } from '../utils/sound';
-import { Dices, Sparkles, Hand, ArrowUp, RefreshCw } from 'lucide-react';
+import { Dices, Sparkles, Hand, Target, RefreshCw } from 'lucide-react';
+import { AIM_MIN_DRAG_PX, aimFromDrag } from '../server/diceThrow';
 
 interface Dice3DProps {
   value: number | null; // 1 to 6 or null
   isRolling: boolean;
-  onRollRequest?: () => void;
+  /**
+   * Reçoit la puissance du geste (0 à 100), ou `null` pour un lancer au hasard —
+   * un appui simple, ou le bouton de repli, ne visent rien.
+   */
+  onRollRequest?: (power: number | null) => void;
   disabled?: boolean;
   size?: number; // size in px, e.g. 88
   /** Drops the verbose helper text so the die fits a mobile action dock. */
@@ -16,6 +21,12 @@ interface Dice3DProps {
    * ce qui suffit lorsqu'il est posé sur le plateau et que la place manque.
    */
   hideTriggerButton?: boolean;
+  /**
+   * Le geste vise une face : la jauge l'annonce pendant le glissé. À laisser
+   * faux quand le lancer est une loterie pure — le tirage du premier joueur —,
+   * sinon la jauge promet une visée que le serveur ignore.
+   */
+  aimedThrow?: boolean;
 }
 
 // Dot positions grid layout for dice faces 1..6
@@ -45,7 +56,8 @@ export const Dice3D: React.FC<Dice3DProps> = ({
   disabled = false,
   size = 88,
   compact = false,
-  hideTriggerButton = false
+  hideTriggerButton = false,
+  aimedThrow = false
 }) => {
   // Store cumulative rotation angles so die spins forward smoothly without snapping
   const [rotation, setRotation] = useState({ rx: 15, ry: -25, rz: 0 });
@@ -66,9 +78,9 @@ export const Dice3D: React.FC<Dice3DProps> = ({
   // pour que le dé du tirage au sort (78 px, dans un modal) garde la version large.
   const tightGauge = size <= 60;
 
-  const triggerRoll = () => {
+  const triggerRoll = (power: number | null) => {
     if (disabled || isRolling) return;
-    onRollRequest?.();
+    onRollRequest?.(power);
   };
 
   // Whenever isRolling transitions from false -> true, initiate ONE single clean roll turn
@@ -165,8 +177,14 @@ export const Dice3D: React.FC<Dice3DProps> = ({
     setSwipePower(power);
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (e: React.PointerEvent) => {
     if (!touchStartRef.current) return;
+
+    const dx = e.clientX - touchStartRef.current.x;
+    const dy = e.clientY - touchStartRef.current.y;
+    // La puissance se mesure sur le geste complet, pas sur l'état de rendu :
+    // un coup sec peut se relever avant que React ait repeint la jauge.
+    const power = Math.min(100, Math.round(Math.hypot(dx, dy)));
 
     touchStartRef.current = null;
     setDragOffset(null);
@@ -177,7 +195,9 @@ export const Dice3D: React.FC<Dice3DProps> = ({
     // rattrapait le coup. Posé sur le plateau, le dé n'a plus ce bouton, et il
     // n'y a rien à protéger contre un appui involontaire : la cible ne s'affiche
     // que pendant son propre tour de lancer.
-    if (!disabled && !isRolling) triggerRoll();
+    //
+    // En dessous du seuil, le geste ne vise rien : le dé part au hasard.
+    if (!disabled && !isRolling) triggerRoll(power >= AIM_MIN_DRAG_PX ? power : null);
   };
 
   // Helper to render pips/dots on each face
@@ -213,9 +233,11 @@ export const Dice3D: React.FC<Dice3DProps> = ({
 
   return (
     <div className="relative flex flex-col items-center justify-center select-none py-2 w-full touch-none">
-      {/* Swipe Power Gauge Header when dragging */}
+      {/* La jauge du geste, pendant le glissé. Elle n'annonce la face visée que
+          si la force du geste compte vraiment (voir `aimedThrow`) : ailleurs, le
+          lancer est une loterie et il n'y a rien d'honnête à afficher. */}
       <AnimatePresence>
-        {dragOffset && (
+        {dragOffset && aimedThrow && (
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -229,8 +251,14 @@ export const Dice3D: React.FC<Dice3DProps> = ({
                 : '-top-11 gap-2 px-4 py-1.5 text-xs'
             }`}
           >
-            <ArrowUp className={tightGauge ? 'h-3 w-3 shrink-0 text-amber-400' : 'w-4 h-4 animate-bounce text-amber-400'} />
-            <span>{tightGauge ? `${swipePower}%` : `Puissance : ${swipePower}%`}</span>
+            <Target className={tightGauge ? 'h-3 w-3 shrink-0 text-amber-400' : 'w-4 h-4 text-amber-400'} />
+            <span>
+              {aimFromDrag(swipePower) === null
+                ? tightGauge ? 'au hasard' : 'Trop court : lancer au hasard'
+                : tightGauge
+                ? `visé ${aimFromDrag(swipePower)}`
+                : `Visée : ${aimFromDrag(swipePower)}`}
+            </span>
             <div className={`shrink-0 overflow-hidden rounded-full border border-slate-700 bg-slate-800 ${tightGauge ? 'h-1.5 w-10' : 'w-20 h-2.5'}`}>
               <div
                 className="h-full bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 transition-all duration-75"
@@ -376,14 +404,19 @@ export const Dice3D: React.FC<Dice3DProps> = ({
           {!compact && (
             <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300 animate-pulse bg-amber-950/70 border border-amber-500/40 px-3.5 py-1 rounded-full shadow-md">
               <Hand className="w-3.5 h-3.5 text-amber-400 animate-bounce" />
-              <span>Glissez le dé avec votre doigt pour le lancer ! 👆💨</span>
+              <span>
+                {aimedThrow
+                  ? 'Glissez le dé : plus le geste est ample, plus il va loin ! 👆💨'
+                  : 'Glissez le dé avec votre doigt pour le lancer ! 👆💨'}
+              </span>
             </div>
           )}
 
           <button
             onClick={(e) => {
               e.stopPropagation();
-              triggerRoll();
+              // Le bouton ne vise rien : c'est le repli, il lance au hasard.
+              triggerRoll(null);
             }}
             disabled={disabled || isRolling}
             className={`px-5 py-2.5 rounded-2xl font-black text-xs sm:text-sm flex items-center gap-2 shadow-2xl transition-all transform active:scale-95 ${

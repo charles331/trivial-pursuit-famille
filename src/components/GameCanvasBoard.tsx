@@ -23,7 +23,6 @@ import {
   Trophy,
   Maximize2,
   Minimize2,
-  Hourglass,
   MoveRight
 } from 'lucide-react';
 import { soundManager } from '../utils/sound';
@@ -33,7 +32,8 @@ import { EASE_OUT_SOFT, readableInk, useMediaQuery, usePrefersReducedMotion, wit
 interface GameCanvasBoardProps {
   gameState: GameState;
   currentUserId: string;
-  onRollDice: () => void;
+  /** Reçoit la puissance du geste, ou `null` pour un lancer au hasard. */
+  onRollDice: (power: number | null) => void;
   onSelectTile: (tileId: number) => void;
 }
 
@@ -428,14 +428,14 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
     []
   );
 
-  const handleRollClick = () => {
+  const handleRollClick = (power: number | null) => {
     if (!isMyTurn || gameState.phase !== 'rolling' || hasRequestedRoll) return;
 
     setHasRequestedRoll(true);
     setIsRollingLocally(true);
 
     // Request roll from server
-    onRollDice();
+    onRollDice(power);
 
     // Auto-release guard safety timeout after 2.5s if server state doesn't update phase
     rollGuardTimerRef.current = setTimeout(() => {
@@ -984,35 +984,50 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
               transition={{ duration: 0.22, ease: EASE_OUT_SOFT }}
               className="absolute bottom-2 right-2 z-20 flex flex-col items-center"
             >
-              {isMyTurn ? (
-                /* Un fond sombre translucide : sans lui, le dé clair se perd dans
-                   les pastilles de couleur des cases, et l'on ne comprend plus
-                   qu'il est posé par-dessus le plateau. */
-                <div className="flex flex-col items-center rounded-2xl border border-amber-500/30 bg-slate-950/65 px-1 pb-1.5 shadow-2xl backdrop-blur-[2px]">
-                  <Dice3D
-                    value={gameState.diceValue}
-                    isRolling={isRollingLocally}
-                    onRollRequest={handleRollClick}
-                    disabled={hasRequestedRoll}
-                    size={isCompact ? 44 : 56}
-                    compact
-                    hideTriggerButton
-                  />
-                  {/* Sans bouton, il faut dire comment on lance. « Glissez »
-                      plutôt que « touchez » : les deux marchent, mais seul le
-                      premier fait découvrir le geste de lancer. */}
-                  <span className="-mt-2 text-[10px] font-black leading-none text-amber-300">
-                    {isRollingLocally || hasRequestedRoll ? 'Lancement…' : 'Glissez le dé'}
-                  </span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5 rounded-full border border-slate-700/80 bg-slate-950/90 px-2.5 py-1.5 shadow-xl backdrop-blur-sm">
-                  <Hourglass className="h-3.5 w-3.5 shrink-0 text-amber-400" />
-                  <span className="max-w-[9rem] truncate text-[11px] font-bold text-slate-300">
-                    {activePlayer?.name} lance le dé…
-                  </span>
-                </div>
-              )}
+              {/* Un fond sombre translucide : sans lui, le dé clair se perd dans
+                  les pastilles de couleur des cases, et l'on ne comprend plus
+                  qu'il est posé par-dessus le plateau.
+
+                  Le même dé, au même endroit, sur tous les écrans. Les autres
+                  joueurs n'avaient qu'un sablier : ils apprenaient le résultat
+                  sans avoir rien vu rouler. `isRollingLocally` se déclenche déjà
+                  partout — à l'arrivée de la valeur, sans condition de tour —
+                  donc la culbute est commune ; seul l'affichage lui manquait. */}
+              <div
+                className={`flex flex-col items-center rounded-2xl border shadow-2xl backdrop-blur-[2px] ${
+                  isMyTurn
+                    ? 'border-amber-500/30 bg-slate-950/65 px-1 pb-1.5'
+                    : 'border-slate-700/70 bg-slate-950/75 px-1.5 pb-1'
+                }`}
+              >
+                <Dice3D
+                  value={gameState.diceValue}
+                  isRolling={isRollingLocally}
+                  // Le dé des spectateurs se regarde : ni geste, ni bouton.
+                  onRollRequest={isMyTurn ? handleRollClick : undefined}
+                  disabled={!isMyTurn || hasRequestedRoll}
+                  size={isCompact ? 44 : 56}
+                  compact
+                  hideTriggerButton
+                  aimedThrow
+                />
+                {/* Sans bouton, il faut dire comment on lance. « Glissez »
+                    plutôt que « touchez » : les deux marchent, mais seul le
+                    premier fait découvrir le geste — qui vise, désormais. */}
+                <span
+                  className={`-mt-2 max-w-[7.5rem] truncate text-[10px] font-black leading-none ${
+                    isMyTurn ? 'text-amber-300' : 'text-slate-400'
+                  }`}
+                >
+                  {isMyTurn
+                    ? isRollingLocally || hasRequestedRoll
+                      ? 'Lancement…'
+                      : 'Glissez le dé'
+                    : isRollingLocally
+                    ? `${activePlayer?.name} lance…`
+                    : `À ${activePlayer?.name}`}
+                </span>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

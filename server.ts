@@ -22,6 +22,7 @@ import {
   skipFirstPlayerDraw,
   transferFirstPlayerRoll,
 } from './src/server/firstPlayerDraw.js';
+import { resolveThrow } from './src/server/diceThrow.js';
 import { createGameStateView } from './src/server/gameStateView.js';
 import { describeRecoveredSeat, findAbandonedSeat, mergeSeatInto } from './src/server/seats.js';
 import { isCardReadAloud, resolveOnAirIds, resolveReaderId } from './src/server/turnRoles.js';
@@ -1054,7 +1055,7 @@ io.on('connection', (socket: Socket) => {
   }
 
   // Roll Dice
-  socket.on('roll-dice', (data: { roomCode: string }) => {
+  socket.on('roll-dice', (data: { roomCode: string; power?: number | null }) => {
     const room = getRoom(data.roomCode);
     if (!room || room.gameState.phase !== 'rolling') return;
     if (isPaused(room)) return;
@@ -1064,7 +1065,10 @@ io.on('connection', (socket: Socket) => {
       return;
     }
 
-    const dice = Math.floor(Math.random() * 6) + 1;
+    // La force du geste vise, le serveur tranche : le client n'envoie qu'une
+    // puissance, jamais une face. Un appui simple n'envoie rien et reste un
+    // lancer au hasard.
+    const dice = resolveThrow(data?.power);
     room.gameState.diceValue = dice;
     room.gameState.phase = 'moving';
     room.gameState.lastTurnEventMessage = null;
