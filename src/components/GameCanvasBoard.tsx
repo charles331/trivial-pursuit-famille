@@ -26,14 +26,15 @@ import {
   MoveRight
 } from 'lucide-react';
 import { soundManager } from '../utils/sound';
+import { DICE_REST, describeFlight, flightToPixels } from '../server/diceThrow';
 import { isCardReadAloud } from '../server/turnRoles';
 import { EASE_OUT_SOFT, readableInk, useMediaQuery, usePrefersReducedMotion, withAlpha } from '../utils/motion';
 
 interface GameCanvasBoardProps {
   gameState: GameState;
   currentUserId: string;
-  /** Reçoit la puissance du geste, ou `null` pour un lancer au hasard. */
-  onRollDice: (power: number | null) => void;
+  /** Reçoit la poussée du geste, ou `null` pour un lancer au hasard. */
+  onRollDice: (push: { power: number; angle: number } | null) => void;
   onSelectTile: (tileId: number) => void;
 }
 
@@ -416,9 +417,17 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
     ) {
       prevDiceValRef.current = gameState.diceValue;
       const resultVal = gameState.diceValue;
+      const vol = flightRef.current;
 
-      // Allow 3D tumble animation to complete cleanly for 0.85s
+      // La culbute dure le temps du vol : un dé encore en l'air quand le résultat
+      // s'affiche, ou posé bien avant, se voit immédiatement.
       setIsRollingLocally(true);
+
+      // Un choc par rebond, comme le pion fait un pas par case traversée : c'est
+      // ce qui donne au dé son poids sans un mot à l'écran.
+      const bounceTimers = (vol?.bounces ?? []).map((instant, index) =>
+        setTimeout(() => soundManager.playTick(), Math.max(0, index === 0 ? instant - 40 : instant))
+      );
 
       const tumbleTimer = setTimeout(() => {
         setIsRollingLocally(false);
@@ -427,11 +436,12 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
         resultPauseTimerRef.current = setTimeout(() => {
           setShowingResultPause(null);
           resultPauseTimerRef.current = null;
-        }, 1200);
-      }, 850);
+        }, 1100);
+      }, vol?.durationMs ?? 850);
 
       return () => {
         clearTimeout(tumbleTimer);
+        bounceTimers.forEach(clearTimeout);
         if (resultPauseTimerRef.current) {
           clearTimeout(resultPauseTimerRef.current);
           resultPauseTimerRef.current = null;
@@ -448,16 +458,16 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
     []
   );
 
-  const handleRollClick = (power: number | null) => {
+  const handleRollClick = (push: { power: number; angle: number } | null) => {
     if (!isMyTurn || gameState.phase !== 'rolling' || hasRequestedRoll) return;
 
     setHasRequestedRoll(true);
-    setIsRollingLocally(true);
+    // Pas de culbute locale avant la réponse : le parcours vient du serveur, et
+    // le dé partirait sur place le temps de l'aller-retour.
+    onRollDice(push);
 
-    // Request roll from server
-    onRollDice(power);
-
-    // Auto-release guard safety timeout after 2.5s if server state doesn't update phase
+    // Filet de sécurité si le serveur ne répond pas : plus long que le vol le
+    // plus lent, sinon il couperait une culbute en cours.
     rollGuardTimerRef.current = setTimeout(() => {
       setHasRequestedRoll(false);
       setIsRollingLocally(false);
@@ -491,8 +501,35 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
     return [originTile];
   }, [originTile, isChoosing, previewTileId, gameState.possibleMoves.join(','), gameState.phase]);
 
-  const cameraEnabled = autoFocus && isCompact && boardConfig.layout !== 'grid';
+  // Pendant toute la phase de lancer, la caméra lâche prise. Zoomée à 1,45 sur le
+  // pion, elle sortait du cadre le coin où le dé attend — impossible de le
+  // saisir — puis la moitié de son parcours. Le zoom garde tout son sens au
+  // moment du choix de la destination, qui est la question qu'il aide à lire.
+  const cameraEnabled =
+    autoFocus
+    && isCompact
+    && boardConfig.layout !== 'grid'
+    && !(gameState.phase === 'rolling' || isRevealingRoll);
   const camera = computeCamera(focusPoints, cameraEnabled, isChoosing ? 1.7 : 1.45);
+
+  // ---------------------------------------------------------------- le dé
+  // Exactement l'échelle des pions (`basePawn`) : c'est la condition pour qu'on
+  // ne voie aucune différence de traitement entre le dé et eux.
+  const diePx = Math.max(30, Math.min(68, boardPx * 0.1));
+  const dieBoxPx = diePx * 1.6;
+
+  // Le parcours ne dépend que de la poussée et de la graine retenues par le
+  // serveur : tous les écrans le recalculent à l'identique.
+  const flight = useMemo(() => {
+    if (!gameState.diceThrow || boardPx <= 0) return null;
+    const { power, angle, seed } = gameState.diceThrow;
+    return flightToPixels(describeFlight(power, angle, seed), boardPx, diePx);
+  }, [gameState.diceThrow?.seed, gameState.diceThrow?.power, gameState.diceThrow?.angle, boardPx, diePx]);
+
+  // L'effet qui ouvre la culbute a besoin de sa durée sans dépendre du parcours :
+  // la valeur et la poussée arrivent dans le même envoi du serveur.
+  const flightRef = useRef<ReturnType<typeof flightToPixels> | null>(null);
+  flightRef.current = flight;
 
   const previewPath = useMemo(() => {
     if (!isChoosing || !originTile || previewTargetId === null) return null;
@@ -953,6 +990,51 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
                 );
               })}
           </div>
+
+          {/* ------------------------------------------------------------- le dé */}
+          {/* Le dé vit dans le repère du plateau, comme les pions : même échelle,
+              mêmes coordonnées, même ombre de contact, et il voyage sous la même
+              transformation de caméra. Il était auparavant posé dans un cadre
+              accroché au coin de l'écran — « je veux pas d'encadré autour du dé,
+              il est présent à droite » — et il sautait sur place, ce qui le
+              rendait étranger au plateau qu'il est censé parcourir.
+
+              Le même dé, au même endroit, sur tous les écrans : le parcours se
+              déduit de la poussée et de la graine que le serveur a retenues. */}
+          {boardPx > 0 && dockMode === 'roll' && !showPassDeviceScreen && (
+            <div
+              className="absolute"
+              style={{
+                left: (DICE_REST.x / 1000) * boardPx - dieBoxPx / 2,
+                top: (DICE_REST.y / 1000) * boardPx - (dieBoxPx + 16) / 2,
+                width: dieBoxPx,
+                zIndex: 70,
+              }}
+            >
+              <Dice3D
+                value={gameState.diceValue}
+                isRolling={isRollingLocally}
+                // Le dé des spectateurs se regarde : ni geste, ni bouton.
+                onRollRequest={isMyTurn ? handleRollClick : undefined}
+                disabled={!isMyTurn || hasRequestedRoll}
+                size={diePx}
+                compact
+                hideTriggerButton
+                flight={flight}
+              />
+              {/* Une ligne de texte, sans cadre : elle dit comment on lance, et
+                  s'effface dès que le dé part. La face du dé et le flash au
+                  centre disent le reste. */}
+              {!isRollingLocally && !hasRequestedRoll && showingResultPause === null && (
+                <span
+                  className="pointer-events-none absolute inset-x-0 -bottom-1 truncate text-center text-[10px] font-black leading-none text-amber-300"
+                  style={{ textShadow: '0 1px 3px rgba(2, 6, 23, 0.95)' }}
+                >
+                  {isMyTurn ? 'Glissez le dé' : activePlayer?.name}
+                </span>
+              )}
+            </div>
+          )}
         </motion.div>
 
         {/* --------------------------------------------------- board overlays */}
@@ -987,79 +1069,6 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
                   {isMyTurn ? 'Vous avancez de' : `${activePlayer?.name} avance de`}{' '}
                   <strong className="text-3xl font-black text-amber-300">{showingResultPause}</strong>
                 </span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* ------------------------------------------------- le dé, sur le plateau */}
-        {/* Le dé occupait un bandeau de plus de cent pixels sous le plateau, pour
-            une action d'un seul geste. Il est posé dans le coin du plateau, là où
-            la roue laisse du vide : rien d'utile n'est recouvert, et la page est
-            plus courte d'autant. Le dé se touche directement — c'est déjà le cas
-            depuis toujours — donc son bouton n'a plus de raison d'être ici.
-
-            Il reste posé pendant le flash de résultat, qui occupe le centre :
-            c'est le seul moment où l'on voit la face sur laquelle il s'est
-            arrêté. L'effacer faisait annoncer le chiffre par le bandeau, et le
-            dé n'était plus qu'une animation sans conclusion. */}
-        <AnimatePresence>
-          {dockMode === 'roll' && !showPassDeviceScreen && (
-            <motion.div
-              key="board-dice"
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.15 } }}
-              transition={{ duration: 0.22, ease: EASE_OUT_SOFT }}
-              className="absolute bottom-2 right-2 z-20 flex flex-col items-center"
-            >
-              {/* Un fond sombre translucide : sans lui, le dé clair se perd dans
-                  les pastilles de couleur des cases, et l'on ne comprend plus
-                  qu'il est posé par-dessus le plateau.
-
-                  Le même dé, au même endroit, sur tous les écrans. Les autres
-                  joueurs n'avaient qu'un sablier : ils apprenaient le résultat
-                  sans avoir rien vu rouler. `isRollingLocally` se déclenche déjà
-                  partout — à l'arrivée de la valeur, sans condition de tour —
-                  donc la culbute est commune ; seul l'affichage lui manquait. */}
-              <div
-                className={`flex flex-col items-center rounded-2xl border shadow-2xl backdrop-blur-[2px] ${
-                  isMyTurn
-                    ? 'border-amber-500/30 bg-slate-950/65 px-1 pb-1.5'
-                    : 'border-slate-700/70 bg-slate-950/75 px-1.5 pb-1'
-                }`}
-              >
-                <Dice3D
-                  value={gameState.diceValue}
-                  isRolling={isRollingLocally}
-                  // Le dé des spectateurs se regarde : ni geste, ni bouton.
-                  onRollRequest={isMyTurn ? handleRollClick : undefined}
-                  disabled={!isMyTurn || hasRequestedRoll}
-                  size={isCompact ? 44 : 56}
-                  compact
-                  hideTriggerButton
-                  aimedThrow
-                />
-                {/* Sans bouton, il faut dire comment on lance. « Glissez »
-                    plutôt que « touchez » : les deux marchent, mais seul le
-                    premier fait découvrir le geste — qui vise, désormais.
-                    Une fois le dé arrêté, plus rien à dire : sa face parle, et
-                    le flash au centre annonce le déplacement. */}
-                {showingResultPause === null && (
-                  <span
-                    className={`-mt-2 max-w-[7.5rem] truncate text-[10px] font-black leading-none ${
-                      isMyTurn ? 'text-amber-300' : 'text-slate-400'
-                    }`}
-                  >
-                    {isMyTurn
-                      ? isRollingLocally || hasRequestedRoll
-                        ? 'Lancement…'
-                        : 'Glissez le dé'
-                      : isRollingLocally
-                      ? `${activePlayer?.name} lance…`
-                      : `À ${activePlayer?.name}`}
-                  </span>
-                )}
               </div>
             </motion.div>
           )}

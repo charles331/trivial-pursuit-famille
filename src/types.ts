@@ -182,6 +182,12 @@ export interface GameState {
   players: Player[];
   activePlayerIndex: number;
   diceValue: number | null;
+  /**
+   * La poussée qui a lancé le dé, telle que le serveur l'a retenue : puissance
+   * et angle du geste, plus la graine du hasard. Tous les écrans en déduisent le
+   * même parcours sur le plateau — sans elle, chacun inventerait le sien.
+   */
+  diceThrow: { power: number; angle: number; seed: number } | null;
   possibleMoves: number[]; // tile IDs player can move to after roll
   selectedTileId: number | null;
   currentQuestion: Question | null;

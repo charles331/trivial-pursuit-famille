@@ -62,6 +62,12 @@ const io = new Server(httpServer, {
 });
 
 const PORT = Number(process.env.PORT) || 3000;
+/**
+ * Sans geste — appui simple, ou bouton de repli —, le dé part quand même vers le
+ * plateau : en haut à gauche depuis son coin, la direction qu'aurait prise une
+ * main qui le pousse en jeu.
+ */
+const DEFAULT_THROW_ANGLE = 225;
 const PLAYER_COLORS = ['#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#F97316'];
 
 app.set('trust proxy', 1);
@@ -499,6 +505,7 @@ io.on('connection', (socket: Socket) => {
       players: [hostPlayer],
       activePlayerIndex: 0,
       diceValue: null,
+      diceThrow: null,
       possibleMoves: [],
       selectedTileId: null,
       currentQuestion: null,
@@ -1055,7 +1062,12 @@ io.on('connection', (socket: Socket) => {
   }
 
   // Roll Dice
-  socket.on('roll-dice', (data: { roomCode: string; power?: number | null }) => {
+  socket.on('roll-dice', (data: {
+    roomCode: string;
+    power?: number | null;
+    /** Angle du geste, en degrés : il donne la direction du dé sur le plateau. */
+    angle?: number | null;
+  }) => {
     const room = getRoom(data.roomCode);
     if (!room || room.gameState.phase !== 'rolling') return;
     if (isPaused(room)) return;
@@ -1065,11 +1077,26 @@ io.on('connection', (socket: Socket) => {
       return;
     }
 
-    // La force du geste vise, le serveur tranche : le client n'envoie qu'une
-    // puissance, jamais une face. Un appui simple n'envoie rien et reste un
-    // lancer au hasard.
+    // La force du geste vise, le serveur tranche : le client n'envoie qu'un
+    // geste, jamais une face. Un appui simple n'envoie rien et reste un lancer
+    // au hasard.
     const dice = resolveThrow(data?.power);
     room.gameState.diceValue = dice;
+
+    // Le parcours du dé sur le plateau se déduit de la poussée et d'une graine
+    // tirée ici : tous les écrans rejouent alors le même vol. Les deux nombres
+    // qui viennent du réseau sont bornés — l'angle tourne, la puissance non.
+    const power = typeof data?.power === 'number' && Number.isFinite(data.power)
+      ? Math.max(0, Math.min(100, data.power))
+      : 0;
+    const angle = typeof data?.angle === 'number' && Number.isFinite(data.angle)
+      ? ((data.angle % 360) + 360) % 360
+      : DEFAULT_THROW_ANGLE;
+    room.gameState.diceThrow = {
+      power,
+      angle,
+      seed: Math.floor(Math.random() * 0x7fffffff) + 1,
+    };
     room.gameState.phase = 'moving';
     room.gameState.lastTurnEventMessage = null;
     room.gameState.bonusAwardedThisTurn = null;

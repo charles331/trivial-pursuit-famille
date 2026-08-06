@@ -76,6 +76,7 @@ export function createGameState(overrides: Partial<GameState> = {}): GameState {
     players: [createPlayer('host', true), createPlayer('reader')],
     activePlayerIndex: 0,
     diceValue: 2,
+    diceThrow: null,
     possibleMoves: [],
     selectedTileId: 1,
     currentQuestion: { ...testQuestion },

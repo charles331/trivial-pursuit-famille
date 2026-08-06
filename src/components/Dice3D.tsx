@@ -1,17 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { soundManager } from '../utils/sound';
-import { Dices, Sparkles, Hand, Target, RefreshCw } from 'lucide-react';
-import { AIM_MIN_DRAG_PX, aimFromDrag } from '../server/diceThrow';
+import { Dices, Sparkles, Hand, RefreshCw } from 'lucide-react';
+import { AIM_MIN_DRAG_PX, DiceFlightPx } from '../server/diceThrow';
+import { EASE_OUT_SOFT } from '../utils/motion';
 
 interface Dice3DProps {
   value: number | null; // 1 to 6 or null
   isRolling: boolean;
   /**
-   * Reçoit la puissance du geste (0 à 100), ou `null` pour un lancer au hasard —
-   * un appui simple, ou le bouton de repli, ne visent rien.
+   * Reçoit la poussée : sa puissance (0 à 100) et son angle en degrés, dans le
+   * repère de l'écran. `null` pour un lancer au hasard — un appui simple, ou le
+   * bouton de repli, ne poussent dans aucune direction.
    */
-  onRollRequest?: (power: number | null) => void;
+  onRollRequest?: (push: { power: number; angle: number } | null) => void;
   disabled?: boolean;
   size?: number; // size in px, e.g. 88
   /** Drops the verbose helper text so the die fits a mobile action dock. */
@@ -22,11 +24,11 @@ interface Dice3DProps {
    */
   hideTriggerButton?: boolean;
   /**
-   * Le geste vise une face : la jauge l'annonce pendant le glissé. À laisser
-   * faux quand le lancer est une loterie pure — le tirage du premier joueur —,
-   * sinon la jauge promet une visée que le serveur ignore.
+   * Le parcours du dé sur le plateau, en pixels et relativement à sa position de
+   * repos. Absent, le dé saute sur place — c'est le cas du tirage du premier
+   * joueur, qui se joue dans un modal et n'a pas de plateau sous lui.
    */
-  aimedThrow?: boolean;
+  flight?: DiceFlightPx | null;
 }
 
 // Dot positions grid layout for dice faces 1..6
@@ -57,7 +59,7 @@ export const Dice3D: React.FC<Dice3DProps> = ({
   size = 88,
   compact = false,
   hideTriggerButton = false,
-  aimedThrow = false
+  flight = null
 }) => {
   // Store cumulative rotation angles so die spins forward smoothly without snapping
   const [rotation, setRotation] = useState({ rx: 15, ry: -25, rz: 0 });
@@ -65,7 +67,6 @@ export const Dice3D: React.FC<Dice3DProps> = ({
   
   // Interactive gesture drag state
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
-  const [swipePower, setSwipePower] = useState(0); // 0 to 100%
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
 
   // Track previous rolling state and roll spin animation lock to prevent multiple spin loops
@@ -73,14 +74,22 @@ export const Dice3D: React.FC<Dice3DProps> = ({
   const currentTurnSpinRef = useRef<{ extraX: number; extraY: number } | null>(null);
 
   const halfSize = size / 2;
-  // Un petit dé est un dé à l'étroit : la jauge de puissance en pleine largeur
-  // sortirait de son logement. Le seuil suit la taille et non un réglage à part,
-  // pour que le dé du tirage au sort (78 px, dans un modal) garde la version large.
-  const tightGauge = size <= 60;
+  // Le dé voyage sur le plateau dès qu'un parcours accompagne le lancer ; sinon
+  // il saute sur place, comme dans le modal du tirage au sort.
+  const voyage = Boolean(flight) && isRolling;
+  // Le vol fini, le dé reste où il est tombé : il revenait dans son coin comme
+  // aspiré, ce qui effaçait le lancer qu'on venait de voir.
+  const pose = Boolean(flight) && !isRolling;
+  const chute = flight
+    ? { x: flight.x[flight.x.length - 1], y: flight.y[flight.y.length - 1] }
+    : { x: 0, y: 0 };
+  // La rotation dure le temps du vol : une culbute qui s'arrête avant que le dé
+  // ne touche le sol se voit tout de suite.
+  const rouleMs = flight?.durationMs ?? 1250;
 
-  const triggerRoll = (power: number | null) => {
+  const triggerRoll = (push: { power: number; angle: number } | null) => {
     if (disabled || isRolling) return;
-    onRollRequest?.(power);
+    onRollRequest?.(push);
   };
 
   // Whenever isRolling transitions from false -> true, initiate ONE single clean roll turn
@@ -96,8 +105,10 @@ export const Dice3D: React.FC<Dice3DProps> = ({
       // Rolling started: play sound and pick fixed extra spin turns for THIS roll sequence
       soundManager.playDiceRoll();
 
-      const extraX = (Math.floor(Math.random() * 2) + 2) * 360; // 720 or 1080 deg
-      const extraY = (Math.floor(Math.random() * 2) + 2) * 360;
+      // Avec un parcours, les tours viennent de la graine du serveur : tous les
+      // écrans voient la même culbute, comme ils voient le même déplacement.
+      const extraX = (flight?.spin.x ?? Math.floor(Math.random() * 2) + 2) * 360;
+      const extraY = (flight?.spin.y ?? Math.floor(Math.random() * 2) + 2) * 360;
       currentTurnSpinRef.current = { extraX, extraY };
 
       setRotation((prev) => {
@@ -157,7 +168,6 @@ export const Dice3D: React.FC<Dice3DProps> = ({
       time: Date.now()
     };
     setDragOffset({ x: 0, y: 0 });
-    setSwipePower(0);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
@@ -171,10 +181,6 @@ export const Dice3D: React.FC<Dice3DProps> = ({
     const clampedX = Math.max(-80, Math.min(80, dx));
     const clampedY = Math.max(-80, Math.min(80, dy));
     setDragOffset({ x: clampedX, y: clampedY });
-
-    // Calculate dynamic power percentage (0 to 100%)
-    const power = Math.min(100, Math.round((dist / 100) * 100));
-    setSwipePower(power);
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
@@ -182,9 +188,10 @@ export const Dice3D: React.FC<Dice3DProps> = ({
 
     const dx = e.clientX - touchStartRef.current.x;
     const dy = e.clientY - touchStartRef.current.y;
-    // La puissance se mesure sur le geste complet, pas sur l'état de rendu :
-    // un coup sec peut se relever avant que React ait repeint la jauge.
+    // La poussée se mesure sur le geste complet, pas sur l'état de rendu : un
+    // coup sec peut se relever avant que React ait repeint quoi que ce soit.
     const power = Math.min(100, Math.round(Math.hypot(dx, dy)));
+    const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
 
     touchStartRef.current = null;
     setDragOffset(null);
@@ -197,7 +204,7 @@ export const Dice3D: React.FC<Dice3DProps> = ({
     // que pendant son propre tour de lancer.
     //
     // En dessous du seuil, le geste ne vise rien : le dé part au hasard.
-    if (!disabled && !isRolling) triggerRoll(power >= AIM_MIN_DRAG_PX ? power : null);
+    if (!disabled && !isRolling) triggerRoll(power >= AIM_MIN_DRAG_PX ? { power, angle } : null);
   };
 
   // Helper to render pips/dots on each face
@@ -243,49 +250,15 @@ export const Dice3D: React.FC<Dice3DProps> = ({
 
   return (
     <div className="relative flex flex-col items-center justify-center select-none py-2 w-full touch-none">
-      {/* La jauge du geste, pendant le glissé. Elle n'annonce la face visée que
-          si la force du geste compte vraiment (voir `aimedThrow`) : ailleurs, le
-          lancer est une loterie et il n'y a rien d'honnête à afficher. */}
-      <AnimatePresence>
-        {dragOffset && aimedThrow && (
-          <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            /* Réduite et calée à droite en mode compact : le dé vit dans le coin
-               du plateau, et la version large sortait du cadre — le texte
-               passait sur deux lignes et la barre était rognée. */
-            className={`absolute z-30 flex items-center whitespace-nowrap rounded-full border border-amber-400/80 bg-slate-900/95 font-black text-amber-300 shadow-2xl ${
-              tightGauge
-                ? '-top-9 right-0 gap-1.5 px-2 py-0.5 text-[10px]'
-                : '-top-11 gap-2 px-4 py-1.5 text-xs'
-            }`}
-          >
-            <Target className={tightGauge ? 'h-3 w-3 shrink-0 text-amber-400' : 'w-4 h-4 text-amber-400'} />
-            <span>
-              {aimFromDrag(swipePower) === null
-                ? tightGauge ? 'au hasard' : 'Trop court : lancer au hasard'
-                : tightGauge
-                ? `visé ${aimFromDrag(swipePower)}`
-                : `Visée : ${aimFromDrag(swipePower)}`}
-            </span>
-            <div className={`shrink-0 overflow-hidden rounded-full border border-slate-700 bg-slate-800 ${tightGauge ? 'h-1.5 w-10' : 'w-20 h-2.5'}`}>
-              <div
-                className="h-full bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 transition-all duration-75"
-                style={{ width: `${Math.max(8, swipePower)}%` }}
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Touch & Drag Target Area */}
-      <div
+      {/* Zone de préhension, qui porte aussi le déplacement au sol.
+          C'est elle et non le cube qui voyage : la perspective se déplace avec le
+          dé, donc sa projection reste la même d'un bout à l'autre du parcours. */}
+      <motion.div
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
-        className={`relative flex items-center justify-center cursor-grab active:cursor-grabbing p-4 rounded-3xl transition-all select-none touch-none ${
+        className={`relative flex items-center justify-center cursor-grab active:cursor-grabbing p-4 rounded-3xl select-none touch-none ${
           !disabled && !isRolling ? 'hover:bg-amber-500/10 active:bg-amber-500/20' : ''
         }`}
         style={{
@@ -294,6 +267,18 @@ export const Dice3D: React.FC<Dice3DProps> = ({
           perspective: `${size * 9}px`,
           touchAction: 'none'
         }}
+        animate={
+          voyage
+            ? { x: flight.x, y: flight.y }
+            : pose
+            ? { x: chute.x, y: chute.y }
+            : { x: 0, y: 0 }
+        }
+        transition={
+          voyage
+            ? { duration: flight.durationMs / 1000, times: flight.times, ease: 'linear' }
+            : { duration: pose ? 0 : 0.25, ease: EASE_OUT_SOFT }
+        }
       >
         {/* Dynamic Shadow on Felt Table Surface */}
         <motion.div
@@ -303,11 +288,19 @@ export const Dice3D: React.FC<Dice3DProps> = ({
             height: `${size * 0.4}px`,
             bottom: `${size * 0.12}px`
           }}
-          animate={{
-            scale: isRolling ? [1, 0.3, 1.3, 0.8, 1] : dragOffset ? 0.75 : 1,
-            opacity: isRolling ? [0.8, 0.2, 0.9, 0.5, 0.8] : 0.65,
-          }}
-          transition={{ duration: 1.25, ease: "easeInOut" }}
+          animate={
+            voyage
+              ? { scale: flight.shadow, opacity: flight.shadow.map(v => 0.25 + v * 0.4) }
+              : {
+                  scale: isRolling ? [1, 0.3, 1.3, 0.8, 1] : dragOffset ? 0.75 : 1,
+                  opacity: isRolling ? [0.8, 0.2, 0.9, 0.5, 0.8] : 0.65,
+                }
+          }
+          transition={
+            voyage
+              ? { duration: flight.durationMs / 1000, times: flight.times, ease: 'linear' }
+              : { duration: 1.25, ease: 'easeInOut' }
+          }
         />
 
         {/* Impact Shockwave Ring */}
@@ -341,21 +334,25 @@ export const Dice3D: React.FC<Dice3DProps> = ({
             rotateY: dragOffset ? rotation.ry + dragOffset.x * 0.8 : rotation.ry,
             rotateZ: rotation.rz,
             x: dragOffset ? dragOffset.x * 0.5 : 0,
-            y: isRolling
+            y: voyage
+              ? flight.lift
+              : isRolling
               ? [-90, -110, -15, -35, 0]
               : dragOffset
               ? dragOffset.y * 0.5
               : 0,
           }}
           transition={{
-            y: isRolling
+            y: voyage
+              ? { duration: flight.durationMs / 1000, times: flight.times, ease: 'linear' }
+              : isRolling
               ? { duration: 1.25, times: [0, 0.3, 0.7, 0.85, 1], ease: [0.22, 1, 0.36, 1] }
               : dragOffset
               ? { duration: 0 }
               : { duration: 0.2 },
-            rotateX: dragOffset ? { duration: 0 } : { duration: 1.25, ease: [0.15, 0.85, 0.35, 1] },
-            rotateY: dragOffset ? { duration: 0 } : { duration: 1.25, ease: [0.15, 0.85, 0.35, 1] },
-            rotateZ: { duration: 1.25, ease: [0.15, 0.85, 0.35, 1] },
+            rotateX: dragOffset ? { duration: 0 } : { duration: rouleMs / 1000, ease: [0.15, 0.85, 0.35, 1] },
+            rotateY: dragOffset ? { duration: 0 } : { duration: rouleMs / 1000, ease: [0.15, 0.85, 0.35, 1] },
+            rotateZ: { duration: rouleMs / 1000, ease: [0.15, 0.85, 0.35, 1] },
           }}
         >
           {/* FACE 1 (Front) */}
@@ -406,7 +403,7 @@ export const Dice3D: React.FC<Dice3DProps> = ({
             {renderFacePips(6)}
           </div>
         </motion.div>
-      </div>
+      </motion.div>
 
       {/* Tactile Guidance Label & Fallback Trigger Button */}
       {onRollRequest && !hideTriggerButton && (
@@ -414,18 +411,15 @@ export const Dice3D: React.FC<Dice3DProps> = ({
           {!compact && (
             <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300 animate-pulse bg-amber-950/70 border border-amber-500/40 px-3.5 py-1 rounded-full shadow-md">
               <Hand className="w-3.5 h-3.5 text-amber-400 animate-bounce" />
-              <span>
-                {aimedThrow
-                  ? 'Glissez le dé : plus le geste est ample, plus il va loin ! 👆💨'
-                  : 'Glissez le dé avec votre doigt pour le lancer ! 👆💨'}
-              </span>
+              <span>Glissez le dé avec votre doigt pour le lancer ! 👆💨</span>
             </div>
           )}
 
           <button
             onClick={(e) => {
               e.stopPropagation();
-              // Le bouton ne vise rien : c'est le repli, il lance au hasard.
+              // Le bouton ne pousse dans aucune direction : c'est le repli, il
+              // lance au hasard et le dé saute sur place.
               triggerRoll(null);
             }}
             disabled={disabled || isRolling}

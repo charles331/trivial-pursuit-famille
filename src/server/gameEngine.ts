@@ -102,6 +102,7 @@ export function advanceTurn(state: GameState): void {
 
   state.phase = 'rolling';
   state.diceValue = null;
+  state.diceThrow = null;
   state.possibleMoves = [];
   state.currentQuestion = null;
   state.lastAnswerResult = null;
@@ -125,6 +126,7 @@ export function advanceTurn(state: GameState): void {
 export function resetGameForNewRound(state: GameState): void {
   state.activePlayerIndex = 0;
   state.diceValue = null;
+  state.diceThrow = null;
   state.possibleMoves = [];
   state.selectedTileId = null;
   state.currentQuestion = null;
@@ -186,6 +188,7 @@ export function removePlayerFromGame(state: GameState, playerId: string): boolea
   if (wasActive && state.phase !== 'lobby' && state.phase !== 'game_over') {
     state.phase = 'rolling';
     state.diceValue = null;
+  state.diceThrow = null;
     state.possibleMoves = [];
     state.selectedTileId = null;
     state.currentQuestion = null;

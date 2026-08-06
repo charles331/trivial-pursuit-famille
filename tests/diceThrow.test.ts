@@ -3,7 +3,9 @@ import test from 'node:test';
 import {
   AIM_MIN_DRAG_PX,
   DICE_FACES,
-  aimFromDrag,
+  DICE_REST,
+  describeFlight,
+  flightToPixels,
   aimedFace,
   expectedFace,
   resolveThrow,
@@ -36,9 +38,10 @@ test('la puissance est bornée : le réseau peut envoyer n’importe quoi', () =
   assert.equal(aimedFace(10_000), DICE_FACES);
 });
 
-test('en dessous du seuil, le geste n’est pas une visée', () => {
-  assert.equal(aimFromDrag(AIM_MIN_DRAG_PX - 1), null);
-  assert.equal(aimFromDrag(AIM_MIN_DRAG_PX), aimedFace(AIM_MIN_DRAG_PX));
+test('en dessous du seuil, le geste ne vise rien', () => {
+  // Le lancer part quand même, mais au hasard : c'est l'appui simple.
+  assert.equal(expectedFace(AIM_MIN_DRAG_PX - 1), 3.5);
+  assert.notEqual(expectedFace(AIM_MIN_DRAG_PX), 3.5);
 });
 
 test('sans puissance, le lancer reste un tirage au sort sur les six faces', () => {
@@ -116,4 +119,89 @@ test('le tirage parcourt les faces dans l’ordre, du 1 au 6', () => {
   assert.equal(resolveThrow(100, scriptedRandom(0.999999)), 6);
   assert.equal(resolveThrow(0, scriptedRandom(0)), 1);
   assert.equal(resolveThrow(0, scriptedRandom(0.999999)), 6);
+});
+
+/* ---------------------------------------------------- la trajectoire du dé */
+
+/** Distance au centre du plateau, pour vérifier qu'un point y reste. */
+const auCentre = (p: { x: number; y: number }) => Math.hypot(p.x - 500, p.y - 500);
+
+test('le dé part du coin et suit la direction poussée', () => {
+  const vol = describeFlight(100, 225, 7); // 225° = vers le haut à gauche
+  assert.deepEqual(vol.contacts[0], DICE_REST);
+
+  const premier = vol.contacts[1];
+  assert.ok(premier.x < DICE_REST.x, `poussé vers la gauche, il doit aller à gauche : ${premier.x}`);
+  assert.ok(premier.y < DICE_REST.y, `poussé vers le haut, il doit monter : ${premier.y}`);
+});
+
+test('une poussée franche envoie le dé plus loin qu’une poussée molle', () => {
+  const court = describeFlight(10, 225, 7);
+  const long = describeFlight(100, 225, 7);
+  const parcouru = (vol: ReturnType<typeof describeFlight>) =>
+    vol.contacts.slice(1).reduce(
+      (total, point, i) => total + Math.hypot(point.x - vol.contacts[i].x, point.y - vol.contacts[i].y),
+      0
+    );
+  assert.ok(
+    parcouru(long) > parcouru(court) * 2,
+    `${Math.round(parcouru(long))} contre ${Math.round(parcouru(court))} unités de plateau`
+  );
+});
+
+test('le dé ne quitte jamais le plateau, quelle que soit la poussée', () => {
+  for (let angle = 0; angle < 360; angle += 15) {
+    for (const power of [0, 25, 60, 100]) {
+      for (const seed of [1, 42, 9999]) {
+        const vol = describeFlight(power, angle, seed);
+        for (const contact of vol.contacts.slice(1)) {
+          assert.ok(
+            auCentre(contact) <= 406,
+            `angle ${angle}, puissance ${power} : le dé atterrit à ${Math.round(auCentre(contact))} du centre`
+          );
+        }
+      }
+    }
+  }
+});
+
+test('poussé vers le coin, le dé rebondit et revient en jeu', () => {
+  // 45° pointe vers l'extérieur depuis le coin de repos : sans rebond sur le
+  // bord, le dé resterait collé là où personne ne le lit.
+  const vol = describeFlight(90, 45, 3);
+  const arrivee = vol.contacts[vol.contacts.length - 1];
+  assert.ok(auCentre(arrivee) <= 406, `resté hors du feutre : ${Math.round(auCentre(arrivee))}`);
+  assert.ok(
+    Math.hypot(arrivee.x - DICE_REST.x, arrivee.y - DICE_REST.y) > 60,
+    'un dé poussé doit avoir quitté son coin'
+  );
+});
+
+test('même poussée et même graine : même parcours sur tous les écrans', () => {
+  assert.deepEqual(describeFlight(70, 200, 12345), describeFlight(70, 200, 12345));
+  assert.notDeepEqual(describeFlight(70, 200, 12345), describeFlight(70, 200, 999));
+});
+
+test('les rebonds retombent de plus en plus bas, et le dé finit au sol', () => {
+  const vol = describeFlight(100, 225, 7);
+  for (let i = 1; i < vol.lifts.length; i++) {
+    assert.ok(vol.lifts[i] < vol.lifts[i - 1], `rebond ${i} plus haut que le précédent : ${vol.lifts}`);
+  }
+  assert.ok(vol.durationMs > 500 && vol.durationMs < 1200, `durée du vol : ${vol.durationMs} ms`);
+});
+
+test('en pixels, le parcours commence au repos et finit posé', () => {
+  const enPixels = flightToPixels(describeFlight(80, 225, 7), 400, 40);
+  assert.equal(enPixels.x[0], 0);
+  assert.equal(enPixels.y[0], 0);
+  assert.equal(enPixels.lift[0], 0);
+  assert.equal(enPixels.lift[enPixels.lift.length - 1], 0, 'le dé doit finir au sol');
+  assert.equal(enPixels.times[0], 0);
+  assert.equal(enPixels.times[enPixels.times.length - 1], 1);
+  // Une image de sommet et une de contact par bond, plus le départ.
+  assert.equal(enPixels.x.length, enPixels.times.length);
+  assert.equal(enPixels.x.length, 1 + 2 * enPixels.bounces.length);
+  // L'ombre rétrécit quand le dé monte.
+  const plusHaut = enPixels.lift.indexOf(Math.min(...enPixels.lift));
+  assert.ok(enPixels.shadow[plusHaut] < enPixels.shadow[0], 'l’ombre doit rétrécir en l’air');
 });
