@@ -61,6 +61,10 @@ export const Dice3D: React.FC<Dice3DProps> = ({
   const currentTurnSpinRef = useRef<{ extraX: number; extraY: number } | null>(null);
 
   const halfSize = size / 2;
+  // Un petit dé est un dé à l'étroit : la jauge de puissance en pleine largeur
+  // sortirait de son logement. Le seuil suit la taille et non un réglage à part,
+  // pour que le dé du tirage au sort (78 px, dans un modal) garde la version large.
+  const tightGauge = size <= 60;
 
   const triggerRoll = () => {
     if (disabled || isRolling) return;
@@ -161,24 +165,19 @@ export const Dice3D: React.FC<Dice3DProps> = ({
     setSwipePower(power);
   };
 
-  const handlePointerUp = (e: React.PointerEvent) => {
+  const handlePointerUp = () => {
     if (!touchStartRef.current) return;
-
-    const dt = Math.max(10, Date.now() - touchStartRef.current.time);
-    const dx = e.clientX - touchStartRef.current.x;
-    const dy = e.clientY - touchStartRef.current.y;
-    const dist = Math.hypot(dx, dy);
-    const velocity = (dist / dt) * 1000; // px/sec
 
     touchStartRef.current = null;
     setDragOffset(null);
 
-    // Trigger roll request if swiped (>10px or velocity > 100) OR simple tap/click
-    if (!disabled && !isRolling) {
-      if (dist >= 8 || velocity >= 80 || dt < 350) {
-        triggerRoll();
-      }
-    }
+    // Relâcher le dé le lance, toujours. Le seuil précédent (8 px de glissé, ou
+    // 80 px/s, ou moins de 350 ms) laissait un doigt hésitant — posé sans bouger
+    // puis relevé après une seconde — sans aucun effet ; le bouton de repli
+    // rattrapait le coup. Posé sur le plateau, le dé n'a plus ce bouton, et il
+    // n'y a rien à protéger contre un appui involontaire : la cible ne s'affiche
+    // que pendant son propre tour de lancer.
+    if (!disabled && !isRolling) triggerRoll();
   };
 
   // Helper to render pips/dots on each face
@@ -221,11 +220,18 @@ export const Dice3D: React.FC<Dice3DProps> = ({
             initial={{ opacity: 0, y: 10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="absolute -top-11 z-30 flex items-center gap-2 bg-slate-900/95 border border-amber-400/80 px-4 py-1.5 rounded-full shadow-2xl text-xs font-black text-amber-300"
+            /* Réduite et calée à droite en mode compact : le dé vit dans le coin
+               du plateau, et la version large sortait du cadre — le texte
+               passait sur deux lignes et la barre était rognée. */
+            className={`absolute z-30 flex items-center whitespace-nowrap rounded-full border border-amber-400/80 bg-slate-900/95 font-black text-amber-300 shadow-2xl ${
+              tightGauge
+                ? '-top-9 right-0 gap-1.5 px-2 py-0.5 text-[10px]'
+                : '-top-11 gap-2 px-4 py-1.5 text-xs'
+            }`}
           >
-            <ArrowUp className="w-4 h-4 animate-bounce text-amber-400" />
-            <span>Puissance : {swipePower}%</span>
-            <div className="w-20 h-2.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+            <ArrowUp className={tightGauge ? 'h-3 w-3 shrink-0 text-amber-400' : 'w-4 h-4 animate-bounce text-amber-400'} />
+            <span>{tightGauge ? `${swipePower}%` : `Puissance : ${swipePower}%`}</span>
+            <div className={`shrink-0 overflow-hidden rounded-full border border-slate-700 bg-slate-800 ${tightGauge ? 'h-1.5 w-10' : 'w-20 h-2.5'}`}>
               <div
                 className="h-full bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 transition-all duration-75"
                 style={{ width: `${Math.max(8, swipePower)}%` }}

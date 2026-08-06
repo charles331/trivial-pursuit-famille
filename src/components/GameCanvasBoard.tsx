@@ -998,10 +998,11 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
                     compact
                     hideTriggerButton
                   />
-                  {/* Sans bouton, il faut dire que le dé se touche. L'invite
-                      disparaît dès que le lancer part. */}
+                  {/* Sans bouton, il faut dire comment on lance. « Glissez »
+                      plutôt que « touchez » : les deux marchent, mais seul le
+                      premier fait découvrir le geste de lancer. */}
                   <span className="-mt-2 text-[10px] font-black leading-none text-amber-300">
-                    {isRollingLocally || hasRequestedRoll ? 'Lancement…' : 'Touchez le dé'}
+                    {isRollingLocally || hasRequestedRoll ? 'Lancement…' : 'Glissez le dé'}
                   </span>
                 </div>
               ) : (
