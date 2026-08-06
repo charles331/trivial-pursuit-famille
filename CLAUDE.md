@@ -150,7 +150,9 @@ Points de vigilance connus :
   expliquerait le geste par du texte est à proscrire — le dé se lit à son parcours.
 - Ses arêtes sont **vives**, et cela n'est pas négociable : six faces arrondies ne
   forment pas une surface fermée, et le dé se voit au travers dès qu'il se présente
-  dans le plan d'une arête (ADR 0005). Le dé se mesure sur fond magenta, en comptant
+  dans le plan d'une arête (ADR 0005). Son biais de repos ne porte que sur **un**
+  axe : sur deux, le cube ne touche le plateau que par un sommet, et cela se voit —
+  la ligne la plus basse de sa silhouette tombait à 1 % de sa largeur. Le dé se mesure sur fond magenta, en comptant
   les pixels de fond enfermés dans sa silhouette — et **à la taille du jeu** : un
   rembourrage fixe comprimait le cube à 39 px sans que rien ne se voie à 200 px.
 - Il s'affiche sur tous les écrans : celui qui ne lance pas voit le même vol. La

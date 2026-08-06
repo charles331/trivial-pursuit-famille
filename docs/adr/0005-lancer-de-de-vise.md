@@ -157,9 +157,9 @@ contour fantôme aux coins vifs autour d'une face arrondie. Corrigé par
 huit images de culbute (jamais une face de dos).
 
 **2. La face gagnante était présentée pile de face**, donc le cube se réduisait à
-un carré : aucun relief, aucun dessus, aucun côté. Un biais de repos
-(`REST_TILT`, −17° et 21°) montre désormais la face du dessus et une face
-latérale. Trois faces tournées vers la caméra pour les six valeurs, vérifié.
+un carré : aucun relief, aucun dessus, aucun côté. Un biais de repos (`REST_TILT`)
+montre désormais le dessus du dé. Il a d'abord porté sur deux axes — corrigé
+depuis, voir la révision « Un dé posé est posé à plat ».
 
 **3. Les six faces partageaient un seul matériau.** Trois faces de teinte
 identique qui se rejoignent à un coin se lisent comme un hexagone plat. Chaque
@@ -234,3 +234,37 @@ désormais proportionnel, et le cube porte `shrink-0`.
 Ce défaut était latent depuis toujours ; il n'est apparu qu'en posant le dé sur le
 plateau, à 39 px. Toute mesure de rendu doit donc se faire **à la taille du jeu**,
 pas seulement sur un dé grossi.
+
+## Révision — Un dé posé est posé à plat
+
+Signalé par le propriétaire du projet : « le dé ne termine pas complètement à plat
+sur le plateau, je pense pas que c'est normal ». Il ne l'était pas, et ce n'était
+pas un défaut d'animation : la rotation atteignait exactement sa cible. C'était la
+cible qui était fausse.
+
+Le biais de repos portait sur **deux** axes (−17° et 21°). Incliné sur deux axes,
+un cube ne touche plus son support que par un sommet. La silhouette le dit sans
+ambiguïté : mesurée au banc sur fond magenta, la ligne la plus basse ne faisait
+que **1 % de la largeur du dé**, et s'élargissait de huit pixels par ligne — un V,
+la silhouette d'un dé en équilibre sur un coin. Pour les six valeurs.
+
+Le biais ne porte plus que sur **un** axe, celui de l'horizontale de l'écran
+(−12°, 0°). L'arête du bas redevient horizontale et large : 97 % de la largeur du
+dé, pour les six valeurs. On voit la face de valeur et, au-dessus d'elle, une bande
+du dessus du dé — deux faces au lieu de trois, ce qui suffit à lire un cube.
+
+L'angle n'est pas choisi au hasard : il vient du repère implicite du plateau, celui
+des pions. Le disque du dessus d'un pion est une ellipse de rapport 0,19, soit une
+caméra à onze degrés au-dessus de la surface. Le dé adopte le même point de vue,
+à un degré près — c'est la condition pour qu'il ait l'air posé sur le même plateau
+que les pions, et non flottant devant.
+
+Mesure de contrôle : l'opacité ne régresse pas — zéro pixel de fuite au repos, aux
+deux tailles du jeu, et 18 pixels sur les seize images d'une culbute.
+
+### Comment vérifier qu'un dé est posé
+
+La silhouette suffit, et elle se mesure : sur fond uni, on relève la largeur du dé
+ligne par ligne en partant du bas. Posé sur une face, il commence large — plus de
+85 % de sa largeur maximale. Posé sur une arête, autour de la moitié. Posé sur un
+coin, quelques pixels. Aucune capture d'écran à interpréter à l'œil.

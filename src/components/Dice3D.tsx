@@ -52,19 +52,26 @@ const FACE_ROTATIONS: Record<number, { rx: number; ry: number }> = {
 };
 
 /**
- * Le dé posé n'est jamais tout à fait face à nous.
+ * Le dé posé est basculé en arrière, et sur ce seul axe.
  *
  * Présentée pile de face, la face gagnante occupait tout le cube et les cinq
- * autres se voyaient exactement de profil : à l'écran, un carré arrondi et
- * quatre traits jaunes aux coins — mesuré au banc, 191 × 191 px pour la face
- * avant, 171 × 171 px pour celle qui nous tournait le dos, et quatre bandes de
- * 10 px pour les autres. Aucun relief, et un contour fantôme par-dessus.
+ * autres se voyaient exactement de profil : à l'écran, un carré et quatre traits
+ * jaunes aux coins, aucun relief. Un basculement montre le dessus du dé, et c'est
+ * ce qui fait lire un cube.
  *
- * Ce quart de tour de biais montre la face du dessus et celle du côté : c'est ce
- * qui fait lire un cube. La face gagnante reste largement dominante — 18° ne la
- * raccourcissent que de 5 % — donc les points se comptent aussi bien.
+ * Mais il doit se faire sur **un seul axe**. Incliné sur deux, le cube ne touche
+ * plus le plateau que par un sommet : mesuré au banc, la ligne la plus basse de sa
+ * silhouette ne faisait que 1 % de sa largeur, et s'élargissait de huit pixels par
+ * ligne — un V, la silhouette d'un dé en équilibre sur un coin. Signalé par le
+ * propriétaire du projet : « le dé ne termine pas complètement à plat sur le
+ * plateau, je pense pas que c'est normal ». Sur un seul axe, l'arête du bas reste
+ * horizontale et large : le dé est posé.
+ *
+ * L'angle vient du repère implicite du plateau, celui des pions : leur disque du
+ * dessus est une ellipse de rapport 0,19, soit une caméra à onze degrés au-dessus
+ * de la surface. Le dé adopte le même point de vue, à un degré près.
  */
-const REST_TILT = { rx: -17, ry: 21 };
+const REST_TILT = { rx: -12, ry: 0 };
 
 /**
  * L'angle à viser pour présenter une orientation donnée, par le plus court
