@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GameState, BoardTile, CategoryId, BoardConfig } from '../types';
 import { BOARD_PRESETS, resolveTilePath } from '../data/boards';
@@ -316,7 +316,20 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
   const boardConfig = BOARD_PRESETS[gameState.settings.boardType] || BOARD_PRESETS.wheel;
   const tiles = boardConfig.tiles;
 
-  const isChoosing = gameState.phase === 'moving';
+  /**
+   * Le dé roule encore, ou son résultat s'affiche en grand au centre.
+   *
+   * Le serveur envoie la valeur **avec** le passage en phase `moving` : sans
+   * précaution, tout ce qui découle du résultat apparaît dès le premier tour de
+   * culbute — les cases d'arrivée cerclées de jaune et numérotées, l'assombrissement
+   * des autres cases, le zoom de la caméra sur le trajet, la valeur dans le
+   * bandeau du haut. Le dé annonce alors un résultat que le plateau a déjà donné.
+   */
+  const isRevealingRoll = isRollingLocally || showingResultPause !== null;
+
+  // On ne choisit sa destination qu'une fois le dé posé. Tout ce qui trahit le
+  // résultat sur le plateau descend de ce booléen : le verrouiller ici suffit.
+  const isChoosing = gameState.phase === 'moving' && !isRevealingRoll;
   const possibleDestinationTiles = gameState.possibleMoves
     .map(tileId => tiles.find(tile => tile.id === tileId))
     .filter((tile): tile is BoardTile => Boolean(tile));
@@ -387,8 +400,15 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
     }
   }, [gameState.phase, gameState.activePlayerIndex]);
 
-  // Handle dice roll result arriving from server cleanly
-  useEffect(() => {
+  // Handle dice roll result arriving from server cleanly.
+  //
+  // `useLayoutEffect` et non `useEffect` : la valeur du dé arrive avec la phase
+  // `moving`, donc la trame rendue avant cet effet contient déjà le résultat —
+  // badge du bandeau, cases d'arrivée, assombrissement. Avec un effet normal,
+  // cette trame est peinte : mesuré au banc, le « 5 » restait lisible cent
+  // cinquante millisecondes avant que le dé ne l'annonce. Un effet de mise en
+  // page s'exécute avant la peinture, et le rendu qu'il déclenche la remplace.
+  useLayoutEffect(() => {
     if (
       gameState.diceValue !== null &&
       gameState.diceValue !== prevDiceValRef.current &&
@@ -511,6 +531,10 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
     showTurnIntro && gameState.settings.isLocalMode && gameState.phase === 'rolling' && isMyTurn;
 
   const phaseHint = () => {
+    // Tant que le dé n'est pas posé, on ne parle pas encore de destination :
+    // l'annoncer laissait entendre que le résultat était connu.
+    if (isRollingLocally) return 'Le dé roule…';
+    if (showingResultPause !== null) return `Le dé s’arrête sur ${showingResultPause}`;
     if (gameState.phase === 'rolling') return isMyTurn ? 'Lancez le dé pour avancer' : 'En attente du lancer…';
     if (gameState.phase === 'moving') return isMyTurn ? 'Choisissez votre case d’arrivée' : 'Choix de la destination…';
     if (gameState.phase === 'question') return 'Question en cours';
@@ -556,7 +580,9 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
 
         <div className="flex shrink-0 items-center gap-1.5">
           <AnimatePresence>
-            {gameState.diceValue !== null && (
+            {/* Pas pendant la culbute : ce badge donnait la réponse avant le dé.
+                Il paraît avec le flash du résultat, qui l'annonce déjà. */}
+            {gameState.diceValue !== null && !isRollingLocally && (
               <motion.div
                 initial={{ scale: 0.7, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -973,9 +999,12 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
             plus courte d'autant. Le dé se touche directement — c'est déjà le cas
             depuis toujours — donc son bouton n'a plus de raison d'être ici.
 
-            Il s'efface le temps du flash de résultat, qui occupe le centre. */}
+            Il reste posé pendant le flash de résultat, qui occupe le centre :
+            c'est le seul moment où l'on voit la face sur laquelle il s'est
+            arrêté. L'effacer faisait annoncer le chiffre par le bandeau, et le
+            dé n'était plus qu'une animation sans conclusion. */}
         <AnimatePresence>
-          {dockMode === 'roll' && showingResultPause === null && !showPassDeviceScreen && (
+          {dockMode === 'roll' && !showPassDeviceScreen && (
             <motion.div
               key="board-dice"
               initial={{ opacity: 0, scale: 0.85 }}
@@ -1013,20 +1042,24 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
                 />
                 {/* Sans bouton, il faut dire comment on lance. « Glissez »
                     plutôt que « touchez » : les deux marchent, mais seul le
-                    premier fait découvrir le geste — qui vise, désormais. */}
-                <span
-                  className={`-mt-2 max-w-[7.5rem] truncate text-[10px] font-black leading-none ${
-                    isMyTurn ? 'text-amber-300' : 'text-slate-400'
-                  }`}
-                >
-                  {isMyTurn
-                    ? isRollingLocally || hasRequestedRoll
-                      ? 'Lancement…'
-                      : 'Glissez le dé'
-                    : isRollingLocally
-                    ? `${activePlayer?.name} lance…`
-                    : `À ${activePlayer?.name}`}
-                </span>
+                    premier fait découvrir le geste — qui vise, désormais.
+                    Une fois le dé arrêté, plus rien à dire : sa face parle, et
+                    le flash au centre annonce le déplacement. */}
+                {showingResultPause === null && (
+                  <span
+                    className={`-mt-2 max-w-[7.5rem] truncate text-[10px] font-black leading-none ${
+                      isMyTurn ? 'text-amber-300' : 'text-slate-400'
+                    }`}
+                  >
+                    {isMyTurn
+                      ? isRollingLocally || hasRequestedRoll
+                        ? 'Lancement…'
+                        : 'Glissez le dé'
+                      : isRollingLocally
+                      ? `${activePlayer?.name} lance…`
+                      : `À ${activePlayer?.name}`}
+                  </span>
+                )}
               </div>
             </motion.div>
           )}

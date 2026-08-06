@@ -204,7 +204,14 @@ export const Dice3D: React.FC<Dice3DProps> = ({
   const renderFacePips = (faceNumber: number) => {
     const activeIndices = PIP_LAYOUTS[faceNumber] || [];
     return (
-      <div className="w-full h-full grid grid-cols-3 grid-rows-3 p-2.5 items-center justify-items-center">
+      // Marge proportionnelle et non fixe : avec `p-2.5` (10 px), un dé de 44 px
+      // ne laissait que 8 px par case pour des points de 8,4 px. Ils se
+      // touchaient et la face se lisait comme quatre capsules au lieu de cinq
+      // points — le dé annonçait une face fausse.
+      <div
+        className="grid h-full w-full grid-cols-3 grid-rows-3 items-center justify-items-center"
+        style={{ padding: `${size * 0.13}px` }}
+      >
         {Array.from({ length: 9 }).map((_, idx) => {
           const hasPip = activeIndices.includes(idx);
           const isCenterPip = idx === 4 && faceNumber === 1;
@@ -219,8 +226,11 @@ export const Dice3D: React.FC<Dice3DProps> = ({
                       : 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 shadow-slate-950/90 ring-1 ring-slate-700/60'
                   }`}
                   style={{
-                    width: `${size * 0.19}px`,
-                    height: `${size * 0.19}px`,
+                    // 0,17 et non 0,19 : la case fait 0,247 × la taille du dé
+                    // (marge de 0,13 de part et d'autre), il faut de l'air entre
+                    // deux points voisins pour qu'on les compte d'un coup d'œil.
+                    width: `${size * 0.17}px`,
+                    height: `${size * 0.17}px`,
                   }}
                 />
               )}
