@@ -15,6 +15,7 @@ import {
   isBareYearCard,
   isAttributionLotteryCard,
   leaksCorrectAnswer,
+  promptGivesAwayQuantity,
   merelyRestatesQuestion,
   normalize,
   quotesAnswerProperName,
@@ -134,6 +135,12 @@ for (const question of QUESTIONS_DATABASE) {
     // Le nom propre qui nomme la réponse ne peut pas figurer dans l'énoncé.
     if (quotesAnswerProperName(question.question, question.options, question.correctAnswerIndex)) {
       editorialError(`Nom propre de la bonne réponse cité dans l'énoncé`, question.id);
+    }
+
+    // Une carte de quantité dont l'énoncé porte déjà le nombre demandé se recopie
+    // au lieu de se jouer : « une équipe de rugby à sept » pour « 7 ».
+    if (promptGivesAwayQuantity(question.question, question.options, question.correctAnswerIndex)) {
+      editorialError(`Énoncé qui donne la quantité demandée`, question.id);
     }
   }
 

@@ -9,6 +9,7 @@ import {
   comparableFactText,
   isPersonNameLotteryCard,
   paraphrasesSameFact,
+  promptGivesAwayQuantity,
   quotesAnswerProperName,
   restatesSameFact,
 } from '../src/data/questionRules';
@@ -535,4 +536,101 @@ test('« Le détroit de Messine » et « Messine » désignent la même chose', 
   assert.equal(answersDesignateSameThing('Le détroit de Messine', 'Messine'), true);
   // Mais le tennis et le tennis de table restent deux sports.
   assert.equal(answersDesignateSameThing('Le tennis', 'Le tennis de table'), false);
+});
+
+/** Raccourci de lecture : la bonne réponse est toujours le premier choix. */
+function donneLeNombre(question: string, correct: string, ...wrong: [string, string, string]): boolean {
+  return promptGivesAwayQuantity(question, [correct, ...wrong], 0);
+}
+
+test('un nombre écrit en lettres dans l’énoncé donne la réponse', () => {
+  // Signalé en partie : « la réponse est dans la question ».
+  assert.equal(
+    donneLeNombre(
+      'Combien de joueurs compte une équipe de rugby à sept sur le terrain ?',
+      '7', '9', '5', '10',
+    ),
+    true,
+  );
+});
+
+test('un chiffre romain dans l’énoncé donne la réponse aussi', () => {
+  assert.equal(
+    donneLeNombre(
+      'Combien de joueurs compte une équipe de rugby à XV sur le terrain ?',
+      '15', '11', '13', '18',
+    ),
+    true,
+  );
+});
+
+test('un chiffre dans le nom de l’épreuve ou du jeu donne la réponse', () => {
+  assert.equal(
+    donneLeNombre(
+      'Combien de coureurs composent une équipe de relais 4 x 100 mètres ?',
+      '4', '3', '5', '8',
+    ),
+    true,
+  );
+  assert.equal(
+    donneLeNombre(
+      'Au jeu Puissance 4, combien de jetons faut-il aligner pour gagner ?',
+      '4', '3', '5', '6',
+    ),
+    true,
+  );
+});
+
+test('un accord au pluriel n’est pas la quantité demandée', () => {
+  // « Que sont deux isomères ? » ne demande aucun nombre : ce « deux » s'accorde
+  // avec le sujet. Sans la condition « l'énoncé demande un nombre », le premier
+  // jet du détecteur rejetait cette carte, qui est saine.
+  assert.equal(
+    donneLeNombre(
+      'Que sont deux isomères ?',
+      'Deux molécules de même formule brute et de structure différente',
+      'Deux atomes de masses différentes',
+      'Deux formes cristallines du même métal',
+      'Deux ions de charges opposées',
+    ),
+    false,
+  );
+});
+
+test('l’article « une » dans l’énoncé ne vaut pas la réponse « 1 »', () => {
+  // Sinon toute carte « Combien de … une équipe … ? » dont la réponse est 1
+  // serait rejetée pour un article.
+  assert.equal(
+    donneLeNombre(
+      'Combien de médailles d’or une nation peut-elle gagner dans une finale ?',
+      '1', '2', '3', '4',
+    ),
+    false,
+  );
+});
+
+test('un millésime dans l’énoncé ne se confond pas avec ses chiffres', () => {
+  // « 1998 » vaut mille neuf cent quatre-vingt-dix-huit, pas 8 : les séparateurs
+  // de milliers font partie du nombre, et « 1 000 » ne vaut pas 1.
+  assert.equal(
+    donneLeNombre(
+      'Combien de buts la Belgique a-t-elle marqués lors du Mondial 1998 ?',
+      '8', '4', '6', '12',
+    ),
+    false,
+  );
+  assert.equal(
+    donneLeNombre(
+      'Combien de mètres compte un kilomètre, sachant qu’il en faut 1 000 ?',
+      '1 000', '100', '10 000', '500',
+    ),
+    true,
+  );
+});
+
+test('une quantité déduite, absente de l’énoncé, reste une bonne carte', () => {
+  assert.equal(
+    donneLeNombre('Combien de côtés compte un octogone ?', '8', '6', '10', '12'),
+    false,
+  );
 });

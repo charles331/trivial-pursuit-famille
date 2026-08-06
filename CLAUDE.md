@@ -67,6 +67,13 @@ comme « question impossible et vraiment pas fun ».
   propres : « Quel dieu grec règne sur les mers, armé de son trident ? ». La
   description *est* le chemin. Ne pas « corriger » ces cartes.
 - Jamais quatre millésimes voisins. L'année a sa place dans l'énoncé.
+- Une carte de quantité ne porte pas son nombre dans l'énoncé. « Combien de joueurs
+  compte une équipe de rugby à sept ? » se recopie — signalé en partie, « la réponse
+  est dans la question ». Le nombre se cache sous trois formes, toutes vues :
+  en lettres (« à sept »), en chiffres romains (« à XV ») et en chiffres dans un nom
+  propre (« relais 4 x 100 », « Puissance 4 »). `promptGivesAwayQuantity` les refuse.
+  Une quantité **déduite** de l'énoncé reste bonne, elle : « combien de temps dure un
+  match de rugby à sept ? » → deux périodes de sept minutes, donc 14.
 - Ancrer en Belgique et en francophonie quand le sujet est interchangeable, et
   préférer le proche dans le temps. Une carte anglo-saxonne et lointaine cumule
   les deux reproches les plus fréquents.

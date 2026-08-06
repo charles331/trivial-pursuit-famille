@@ -351,6 +351,105 @@ function isQuantityAnswer(comparable: string): boolean {
   return first.split('-').every((part) => NUMBER_WORDS.has(normalize(part)));
 }
 
+/** Valeur des nombres écrits en lettres, pour les lire dans un texte. */
+const WORD_VALUES: Record<string, number> = {
+  zero: 0, un: 1, une: 1, deux: 2, trois: 3, quatre: 4, cinq: 5, six: 6,
+  sept: 7, huit: 8, neuf: 9, dix: 10, onze: 11, douze: 12, treize: 13,
+  quatorze: 14, quinze: 15, seize: 16, vingt: 20, trente: 30, quarante: 40,
+  cinquante: 50, soixante: 60, cent: 100, cents: 100, mille: 1000,
+};
+
+/**
+ * Valeur des chiffres romains, à partir de deux signes.
+ *
+ * Un seul signe est trop ambigu pour servir de mesure : « V » et « X » figurent
+ * dans des sigles, et « I » partout. « XV » ou « VII » ne désignent qu'un nombre.
+ */
+const ROMAN_VALUES: Record<string, number> = {
+  II: 2, III: 3, IV: 4, VI: 6, VII: 7, VIII: 8, IX: 9, XI: 11, XII: 12,
+  XIII: 13, XIV: 14, XV: 15, XVI: 16, XX: 20,
+};
+
+/**
+ * Tous les nombres qu'un texte contient, sous leurs trois formes : chiffres
+ * (« 100 », « 1 000 »), lettres (« sept ») et chiffres romains (« XV »).
+ *
+ * `countOne` distingue les deux emplois du mot « un ». Dans une réponse, « Un »
+ * est une quantité ; dans un énoncé, c'est presque toujours un article — « une
+ * équipe », « un terrain » —, et le compter donnerait la valeur 1 à la moitié
+ * des cartes.
+ */
+function numbersIn(text: string, countOne: boolean): Set<number> {
+  const found = new Set<number>();
+
+  // Les séparateurs de milliers font partie du nombre : « 1 000 » vaut mille, et
+  // non un suivi de zéro.
+  for (const match of text.matchAll(/\d[\d\s  .]*\d|\d/g)) {
+    const value = Number(match[0].replace(/[\s  .]/g, ''));
+    if (Number.isFinite(value)) found.add(value);
+  }
+
+  // Les chiffres romains se lisent sur le texte d'origine : ce sont des capitales.
+  for (const match of text.matchAll(/\b[IVX]{2,5}\b/g)) {
+    const value = ROMAN_VALUES[match[0]];
+    if (value !== undefined) found.add(value);
+  }
+
+  for (const word of normalize(text).split(' ')) {
+    if (word === 'un' || word === 'une') {
+      if (countOne) found.add(1);
+      continue;
+    }
+    const value = WORD_VALUES[word];
+    if (value !== undefined) found.add(value);
+  }
+
+  return found;
+}
+
+/** L'énoncé demande-t-il un nombre ? */
+function asksForQuantity(question: string): boolean {
+  return /\bcombien\b/i.test(question)
+    || /\bquel(?:le)?\s+(?:nombre|quantite|quantité)\b/i.test(question);
+}
+
+/**
+ * L'énoncé contient-il déjà le nombre qu'il demande ?
+ *
+ * Signalé en partie sur « Combien de joueurs compte une équipe de rugby à sept
+ * sur le terrain ? » : « la réponse est dans la question ». Le joueur n'a rien
+ * à savoir, il recopie. Trois formes trahissent le même défaut et se valent —
+ * « rugby à sept », « rugby à XV », « relais 4 x 100 », « Puissance 4 ».
+ *
+ * Deux conditions, et les deux comptent. L'énoncé doit **demander** un nombre :
+ * sans cela, « Que sont deux isomères ? » suivi de « Deux molécules de même
+ * formule brute… » passait pour une fuite, alors que ce « deux » est un accord.
+ * Et les autres propositions doivent être des nombres aussi : c'est ce qui fait
+ * de la carte une question de quantité, où seul le nombre distingue les choix.
+ */
+export function promptGivesAwayQuantity(
+  question: string,
+  options: string[],
+  correctIndex: number,
+): boolean {
+  if (options.length !== 4) return false;
+  if (!asksForQuantity(question)) return false;
+
+  const answer = options[correctIndex];
+  if (typeof answer !== 'string') return false;
+  const answerNumbers = numbersIn(answer, true);
+  // Une seule quantité dans la réponse, sinon on ne sait pas laquelle est demandée.
+  if (answerNumbers.size !== 1) return false;
+
+  const distractorsAreNumbers = options.every(
+    (option, index) => index === correctIndex || numbersIn(option, true).size >= 1,
+  );
+  if (!distractorsAreNumbers) return false;
+
+  const [expected] = answerNumbers;
+  return numbersIn(question, false).has(expected);
+}
+
 export function answersDesignateSameThing(left: string, right: string): boolean {
   const a = comparableAnswer(left);
   const b = comparableAnswer(right);
@@ -716,6 +815,9 @@ export function editorialRejectionReason(card: QuestionCandidate): string | null
   }
   if (quotesAnswerProperName(question, card.options, card.correctAnswerIndex)) {
     return 'nom propre de la bonne réponse cité dans l’énoncé';
+  }
+  if (promptGivesAwayQuantity(question, card.options, card.correctAnswerIndex)) {
+    return 'énoncé qui donne la quantité demandée';
   }
   if (merelyRestatesQuestion({ question, explanation: card.explanation }, correctAnswer)) {
     return 'explication non informative';
