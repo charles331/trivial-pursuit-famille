@@ -51,6 +51,98 @@ const FACE_ROTATIONS: Record<number, { rx: number; ry: number }> = {
   6: { rx: 0, ry: 180 },
 };
 
+/**
+ * Le dé posé n'est jamais tout à fait face à nous.
+ *
+ * Présentée pile de face, la face gagnante occupait tout le cube et les cinq
+ * autres se voyaient exactement de profil : à l'écran, un carré arrondi et
+ * quatre traits jaunes aux coins — mesuré au banc, 191 × 191 px pour la face
+ * avant, 171 × 171 px pour celle qui nous tournait le dos, et quatre bandes de
+ * 10 px pour les autres. Aucun relief, et un contour fantôme par-dessus.
+ *
+ * Ce quart de tour de biais montre la face du dessus et celle du côté : c'est ce
+ * qui fait lire un cube. La face gagnante reste largement dominante — 18° ne la
+ * raccourcissent que de 5 % — donc les points se comptent aussi bien.
+ */
+const REST_TILT = { rx: -17, ry: 21 };
+
+/**
+ * L'angle à viser pour présenter une orientation donnée, par le plus court
+ * chemin depuis l'angle courant.
+ *
+ * Les rotations s'accumulent — le dé a pu faire six tours — et l'orientation
+ * voulue n'est définie qu'à 360° près. L'ancien calcul ramenait l'angle au
+ * multiple de 360 inférieur, ce qui supposait une orientation cible entre 0 et
+ * 360°. L'inclinaison de repos étant négative (−17°), cette hypothèse tombait :
+ * le dé posé repartait d'un tour complet en arrière, et mettait une seconde de
+ * plus à s'immobiliser — mesuré en situation, le dé tournait encore à 1 250 ms.
+ */
+function settleTo(current: number, orientation: number): number {
+  const delta = ((((orientation - current) % 360) + 540) % 360) - 180;
+  return current + delta;
+}
+
+/** L'orientation sous laquelle on présente une face donnée. */
+function presentFace(face: number): { rx: number; ry: number } {
+  const base = FACE_ROTATIONS[face] || FACE_ROTATIONS[1];
+  return { rx: base.rx + REST_TILT.rx, ry: base.ry + REST_TILT.ry };
+}
+
+/**
+ * Normale de chaque face dans le repère du cube, pour l'éclairer.
+ * L'ordre suit celui des faces dans le rendu : avant, droite, dessus, dessous,
+ * gauche, arrière.
+ */
+const FACE_NORMALS: Record<number, [number, number, number]> = {
+  1: [0, 0, 1],
+  2: [1, 0, 0],
+  3: [0, -1, 0],
+  4: [0, 1, 0],
+  5: [-1, 0, 0],
+  6: [0, 0, -1],
+};
+
+/**
+ * La lumière, fixe dans le repère de l'écran.
+ *
+ * Elle vient surtout **de face**, et non d'en haut : le plateau est horizontal et
+ * on le regarde de dessus, donc la face qui porte la valeur est celle tournée
+ * vers le ciel. Une lumière verticale rendait le dessus du dé plus clair que sa
+ * valeur — mesuré au banc, voile de 0,08 contre 0,27 —, ce qui revenait à
+ * éclairer un dé posé à plat comme s'il était debout contre un mur. Le léger
+ * biais vers le haut et la gauche suffit à séparer les faces latérales.
+ */
+const LIGHT: [number, number, number] = [-0.26, -0.32, 0.91];
+
+/**
+ * L'assombrissement d'une face, entre 0 et 1, pour une rotation donnée du cube.
+ *
+ * Les six faces partagent un seul matériau : sans cela, trois faces de même
+ * teinte se rejoignant à un coin se lisent comme un hexagone plat, et non comme
+ * un cube. On ne peut pas éclairer en CSS une face dont l'orientation change :
+ * on calcule donc l'angle avec la lumière à partir de la rotation, et on pose un
+ * voile sombre par-dessus.
+ */
+function faceShade(face: number, rotation: { rx: number; ry: number; rz: number }): number {
+  const rad = (deg: number) => (deg * Math.PI) / 180;
+  const [nx, ny, nz] = FACE_NORMALS[face];
+  const cx = Math.cos(rad(rotation.rx)), sx = Math.sin(rad(rotation.rx));
+  const cy = Math.cos(rad(rotation.ry)), sy = Math.sin(rad(rotation.ry));
+  const cz = Math.cos(rad(rotation.rz)), sz = Math.sin(rad(rotation.rz));
+
+  // Rotation Z, puis Y, puis X — l'ordre dans lequel CSS les compose.
+  let x = nx * cz - ny * sz;
+  let y = nx * sz + ny * cz;
+  let z = nz;
+  [x, z] = [x * cy + z * sy, -x * sy + z * cy];
+  [y, z] = [y * cx - z * sx, y * sx + z * cx];
+
+  const eclairement = Math.max(0, x * LIGHT[0] + y * LIGHT[1] + z * LIGHT[2]);
+  // Un voile de 0 (pleine lumière) à 0,42 (face rasante) : assez pour séparer
+  // trois faces voisines, pas assez pour noircir un dé en ivoire.
+  return 0.42 * (1 - eclairement);
+}
+
 export const Dice3D: React.FC<Dice3DProps> = ({
   value,
   isRolling,
@@ -62,7 +154,10 @@ export const Dice3D: React.FC<Dice3DProps> = ({
   flight = null
 }) => {
   // Store cumulative rotation angles so die spins forward smoothly without snapping
-  const [rotation, setRotation] = useState({ rx: 15, ry: -25, rz: 0 });
+  const [rotation, setRotation] = useState({
+    ...presentFace(1),
+    rz: 0,
+  });
   const [impactRipple, setImpactRipple] = useState(false);
   
   // Interactive gesture drag state
@@ -74,6 +169,14 @@ export const Dice3D: React.FC<Dice3DProps> = ({
   const currentTurnSpinRef = useRef<{ extraX: number; extraY: number } | null>(null);
 
   const halfSize = size / 2;
+  /**
+   * Le rayon des coins suit la taille du dé.
+   *
+   * `rounded-2xl` valait 16 px quelle que soit la taille : 9 % d'une face de
+   * 180 px dans le modal du tirage, mais 41 % d'une face de 39 px en partie. Le
+   * dé du plateau se lisait comme une pastille ovale, et son relief avec lui.
+   */
+  const faceRadius = size * 0.11;
   // Le dé voyage sur le plateau dès qu'un parcours accompagne le lancer ; sinon
   // il saute sur place, comme dans le modal du tirage au sort.
   const voyage = Boolean(flight) && isRolling;
@@ -87,6 +190,20 @@ export const Dice3D: React.FC<Dice3DProps> = ({
   // ne touche le sol se voit tout de suite.
   const rouleMs = flight?.durationMs ?? 1250;
 
+  /**
+   * L'ombre d'une face à l'instant présent.
+   *
+   * `rotation` est l'orientation **visée**, pas celle affichée : pendant la
+   * culbute, le cube tourne alors que le calcul, lui, resterait figé sur
+   * l'arrivée — la lumière semblerait tourner avec le dé. Recalculer à chaque
+   * image coûterait soixante rendus par seconde et six voiles à repeindre, sur
+   * un téléphone, pour un cube qui file. Le temps du vol, les faces prennent donc
+   * un ton unique ; les arêtes suffisent à les séparer, et l'éclairage juste
+   * revient en fondu dès que le dé se pose.
+   */
+  const TUMBLE_SHADE = 0.2;
+  const shadeOf = (face: number) => (isRolling ? TUMBLE_SHADE : faceShade(face, rotation));
+
   const triggerRoll = (push: { power: number; angle: number } | null) => {
     if (disabled || isRolling) return;
     onRollRequest?.(push);
@@ -99,7 +216,7 @@ export const Dice3D: React.FC<Dice3DProps> = ({
     prevIsRollingRef.current = isNowRolling;
 
     const targetFace = value && value >= 1 && value <= 6 ? value : 1;
-    const baseRot = FACE_ROTATIONS[targetFace] || FACE_ROTATIONS[1];
+    const baseRot = presentFace(targetFace);
 
     if (isNowRolling && !wasRolling) {
       // Rolling started: play sound and pick fixed extra spin turns for THIS roll sequence
@@ -111,34 +228,26 @@ export const Dice3D: React.FC<Dice3DProps> = ({
       const extraY = (flight?.spin.y ?? Math.floor(Math.random() * 2) + 2) * 360;
       currentTurnSpinRef.current = { extraX, extraY };
 
-      setRotation((prev) => {
-        const nextRx = Math.ceil(prev.rx / 360) * 360 + extraX + baseRot.rx;
-        const nextRy = Math.ceil(prev.ry / 360) * 360 + extraY + baseRot.ry;
-        return { rx: nextRx, ry: nextRy, rz: 0 };
-      });
+      setRotation((prev) => ({
+        rx: settleTo(prev.rx + extraX, baseRot.rx),
+        ry: settleTo(prev.ry + extraY, baseRot.ry),
+        rz: 0,
+      }));
     } else if (isNowRolling && wasRolling && value) {
       // Value arrived while rolling: update target face orientation WITHOUT adding extra turns
-      setRotation((prev) => {
-        const currentTurnsX = Math.floor(prev.rx / 360) * 360;
-        const currentTurnsY = Math.floor(prev.ry / 360) * 360;
-        return {
-          rx: currentTurnsX + baseRot.rx,
-          ry: currentTurnsY + baseRot.ry,
-          rz: 0
-        };
-      });
+      setRotation((prev) => ({
+        rx: settleTo(prev.rx, baseRot.rx),
+        ry: settleTo(prev.ry, baseRot.ry),
+        rz: 0,
+      }));
     } else if (!isNowRolling && wasRolling) {
       // Rolling ended: land cleanly on final face and trigger impact shockwave
       currentTurnSpinRef.current = null;
-      setRotation((prev) => {
-        const currentTurnsX = Math.floor(prev.rx / 360) * 360;
-        const currentTurnsY = Math.floor(prev.ry / 360) * 360;
-        return {
-          rx: currentTurnsX + baseRot.rx,
-          ry: currentTurnsY + baseRot.ry,
-          rz: 0
-        };
-      });
+      setRotation((prev) => ({
+        rx: settleTo(prev.rx, baseRot.rx),
+        ry: settleTo(prev.ry, baseRot.ry),
+        rz: 0,
+      }));
 
       setImpactRipple(true);
       soundManager.playClick();
@@ -146,15 +255,11 @@ export const Dice3D: React.FC<Dice3DProps> = ({
       return () => clearTimeout(timer);
     } else if (!isNowRolling && value && value >= 1 && value <= 6) {
       // Idle state update (e.g. initial render or value display)
-      setRotation((prev) => {
-        const currentTurnsX = Math.floor(prev.rx / 360) * 360;
-        const currentTurnsY = Math.floor(prev.ry / 360) * 360;
-        return {
-          rx: currentTurnsX + baseRot.rx,
-          ry: currentTurnsY + baseRot.ry,
-          rz: 0
-        };
-      });
+      setRotation((prev) => ({
+        rx: settleTo(prev.rx, baseRot.rx),
+        ry: settleTo(prev.ry, baseRot.ry),
+        rz: 0,
+      }));
     }
   }, [isRolling, value]);
 
@@ -357,50 +462,98 @@ export const Dice3D: React.FC<Dice3DProps> = ({
         >
           {/* FACE 1 (Front) */}
           <div
-            className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-visible"
-            style={{ transform: `rotateY(0deg) translateZ(${halfSize}px)` }}
+            className="absolute inset-0 bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-hidden"
+            style={{ borderRadius: faceRadius, transform: `rotateY(0deg) translateZ(${halfSize}px)` }}
           >
             {renderFacePips(1)}
+            {/* Le voile d'éclairage : il assombrit la face à mesure qu'elle
+                s'écarte de la lumière. Posé au-dessus des points, parce qu'un
+                point sur une face dans l'ombre est dans l'ombre aussi. */}
+            <div
+              className="pointer-events-none absolute"
+              style={{ inset: -2, borderRadius: faceRadius + 2, backgroundColor: `rgba(2, 6, 23, ${shadeOf(1)})`,
+                transition: 'background-color 240ms linear' }}
+            />
           </div>
 
           {/* FACE 2 (Right) */}
           <div
-            className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-visible"
-            style={{ transform: `rotateY(90deg) translateZ(${halfSize}px)` }}
+            className="absolute inset-0 bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-hidden"
+            style={{ borderRadius: faceRadius, transform: `rotateY(90deg) translateZ(${halfSize}px)` }}
           >
             {renderFacePips(2)}
+            {/* Le voile d'éclairage : il assombrit la face à mesure qu'elle
+                s'écarte de la lumière. Posé au-dessus des points, parce qu'un
+                point sur une face dans l'ombre est dans l'ombre aussi. */}
+            <div
+              className="pointer-events-none absolute"
+              style={{ inset: -2, borderRadius: faceRadius + 2, backgroundColor: `rgba(2, 6, 23, ${shadeOf(2)})`,
+                transition: 'background-color 240ms linear' }}
+            />
           </div>
 
           {/* FACE 3 (Top) */}
           <div
-            className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-visible"
-            style={{ transform: `rotateX(90deg) translateZ(${halfSize}px)` }}
+            className="absolute inset-0 bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-hidden"
+            style={{ borderRadius: faceRadius, transform: `rotateX(90deg) translateZ(${halfSize}px)` }}
           >
             {renderFacePips(3)}
+            {/* Le voile d'éclairage : il assombrit la face à mesure qu'elle
+                s'écarte de la lumière. Posé au-dessus des points, parce qu'un
+                point sur une face dans l'ombre est dans l'ombre aussi. */}
+            <div
+              className="pointer-events-none absolute"
+              style={{ inset: -2, borderRadius: faceRadius + 2, backgroundColor: `rgba(2, 6, 23, ${shadeOf(3)})`,
+                transition: 'background-color 240ms linear' }}
+            />
           </div>
 
           {/* FACE 4 (Bottom) */}
           <div
-            className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-visible"
-            style={{ transform: `rotateX(-90deg) translateZ(${halfSize}px)` }}
+            className="absolute inset-0 bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-hidden"
+            style={{ borderRadius: faceRadius, transform: `rotateX(-90deg) translateZ(${halfSize}px)` }}
           >
             {renderFacePips(4)}
+            {/* Le voile d'éclairage : il assombrit la face à mesure qu'elle
+                s'écarte de la lumière. Posé au-dessus des points, parce qu'un
+                point sur une face dans l'ombre est dans l'ombre aussi. */}
+            <div
+              className="pointer-events-none absolute"
+              style={{ inset: -2, borderRadius: faceRadius + 2, backgroundColor: `rgba(2, 6, 23, ${shadeOf(4)})`,
+                transition: 'background-color 240ms linear' }}
+            />
           </div>
 
           {/* FACE 5 (Left) */}
           <div
-            className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-visible"
-            style={{ transform: `rotateY(-90deg) translateZ(${halfSize}px)` }}
+            className="absolute inset-0 bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-hidden"
+            style={{ borderRadius: faceRadius, transform: `rotateY(-90deg) translateZ(${halfSize}px)` }}
           >
             {renderFacePips(5)}
+            {/* Le voile d'éclairage : il assombrit la face à mesure qu'elle
+                s'écarte de la lumière. Posé au-dessus des points, parce qu'un
+                point sur une face dans l'ombre est dans l'ombre aussi. */}
+            <div
+              className="pointer-events-none absolute"
+              style={{ inset: -2, borderRadius: faceRadius + 2, backgroundColor: `rgba(2, 6, 23, ${shadeOf(5)})`,
+                transition: 'background-color 240ms linear' }}
+            />
           </div>
 
           {/* FACE 6 (Back) */}
           <div
-            className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-visible"
-            style={{ transform: `rotateY(180deg) translateZ(${halfSize}px)` }}
+            className="absolute inset-0 bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-hidden"
+            style={{ borderRadius: faceRadius, transform: `rotateY(180deg) translateZ(${halfSize}px)` }}
           >
             {renderFacePips(6)}
+            {/* Le voile d'éclairage : il assombrit la face à mesure qu'elle
+                s'écarte de la lumière. Posé au-dessus des points, parce qu'un
+                point sur une face dans l'ombre est dans l'ombre aussi. */}
+            <div
+              className="pointer-events-none absolute"
+              style={{ inset: -2, borderRadius: faceRadius + 2, backgroundColor: `rgba(2, 6, 23, ${shadeOf(6)})`,
+                transition: 'background-color 240ms linear' }}
+            />
           </div>
         </motion.div>
       </motion.div>

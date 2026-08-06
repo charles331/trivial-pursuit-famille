@@ -140,3 +140,58 @@ le serveur, pourrait alors la choisir.
 
 Le tirage du premier joueur garde un dé nu qui saute sur place : il se joue dans
 un modal, sans plateau sous lui, et reste une loterie (`flight` absent).
+
+## Révision — Le relief du dé était faux, et mesurable
+
+Signalé par le propriétaire du projet : « l'effet 3D semble pas cohérent mais je
+ne suis pas sûr ». Il l'était. Quatre défauts, tous chiffrés au banc sur un dé
+grossi à 180 px.
+
+**1. Le cube se peignait en entier.** Les six faces portaient
+`backface-visible` (utilitaire Tailwind v4 : `backface-visibility: visible`).
+Au repos, une seule face était tournée vers la caméra, et pourtant six étaient
+dessinées : la face avant en 191 × 191 px, celle qui nous tournait le dos en
+171 × 171 px juste derrière, et les quatre autres en bandes de 10 px — soit un
+contour fantôme aux coins vifs autour d'une face arrondie. Corrigé par
+`backface-hidden` : seules les faces tournées vers nous se peignent, vérifié sur
+huit images de culbute (jamais une face de dos).
+
+**2. La face gagnante était présentée pile de face**, donc le cube se réduisait à
+un carré : aucun relief, aucun dessus, aucun côté. Un biais de repos
+(`REST_TILT`, −17° et 21°) montre désormais la face du dessus et une face
+latérale. Trois faces tournées vers la caméra pour les six valeurs, vérifié.
+
+**3. Les six faces partageaient un seul matériau.** Trois faces de teinte
+identique qui se rejoignent à un coin se lisent comme un hexagone plat. Chaque
+face reçoit maintenant un voile calculé à partir de sa normale et d'une lumière
+fixe dans le repère de l'écran (`faceShade`).
+
+La direction de cette lumière a demandé un second essai. Venue d'en haut, elle
+rendait le *dessus* du dé plus clair que sa valeur — voile de 0,08 contre 0,27 —
+ce qui revient à éclairer un dé posé à plat comme s'il était debout contre un
+mur. Le plateau est horizontal et on le regarde de dessus : la face qui porte la
+valeur est celle tournée vers le ciel, donc la lumière vient surtout **de face**.
+Après correction, la valeur est la face la plus éclairée pour les six valeurs.
+
+Le voile est figé pendant la culbute (ton unique) : `rotation` est l'orientation
+visée, pas celle affichée, et recalculer six voiles à chaque image coûterait
+soixante rendus par seconde sur un téléphone. Les arêtes suffisent à séparer les
+faces d'un cube qui file, et l'éclairage juste revient en fondu de 240 ms dès que
+le dé se pose.
+
+**4. Le rayon des coins ne suivait pas la taille.** `rounded-2xl` vaut 16 px quelle
+que soit la taille : 9 % d'une face de 180 px dans le modal du tirage, mais 41 %
+d'une face de 39 px en partie. Le dé du plateau — celui qu'on regarde à chaque
+tour — se lisait comme une pastille ovale. Le rayon vaut désormais 11 % de la
+taille du dé.
+
+### Un tour de trop à l'atterrissage
+
+L'inclinaison de repos a révélé une hypothèse cachée du calcul de rotation.
+L'ancien code ramenait l'angle accumulé au multiple de 360 inférieur avant
+d'ajouter l'orientation voulue, ce qui suppose cette orientation entre 0 et 360°.
+Avec un biais négatif (−17°), le dé posé repartait d'un tour complet en arrière :
+mesuré en situation, il tournait encore une seconde après avoir touché le
+plateau. `settleTo` prend désormais le plus court chemin vers l'orientation
+voulue, quel que soit le nombre de tours déjà accumulés. Le dé s'immobilise
+183 ms après la fin du vol, le temps que son dernier rebond s'amortisse.
