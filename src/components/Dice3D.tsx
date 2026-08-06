@@ -464,8 +464,9 @@ export const Dice3D: React.FC<Dice3DProps> = ({
                 duration: flight.durationMs / 1000,
                 times: flight.times,
                 ease: 'linear',
-                // Le dé rétrécit pendant qu'il descend vers le plateau, le temps
-                // du premier arc : il quitte une main et arrive chez les pions.
+                // Le dé rétrécit en montant, jusqu'au sommet du premier arc
+                // (`times[1]`, chaque bond en comptant deux) : il quitte une main
+                // et redescend à la taille des pions.
                 scale: { duration: (flight.durationMs * flight.times[1]) / 1000, ease: EASE_OUT_SOFT },
               }
             : { duration: pose ? 0 : 0.25, ease: EASE_OUT_SOFT }

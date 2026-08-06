@@ -12,12 +12,7 @@ import { Timer, CheckCircle2, XCircle, Sparkles, HelpCircle, ArrowRight, Eye, Ey
 
 const LETTERS = ['A', 'B', 'C', 'D'];
 
-/**
- * Durée de la rotation de la roue surprise, et de son animation CSS.
- *
- * Elle doit être la même partout : c'est elle qui, comparée à l'instant du lancer
- * retenu par le serveur, dit à un écran arrivé en retard où la roue en est.
- */
+/** Durée de la rotation de la roue surprise, la même sur tous les écrans. */
 const WHEEL_SPIN_MS = 3500;
 
 interface QuestionModalProps {
@@ -316,31 +311,28 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
     ? wheelLanding
     : 0;
 
-  // L'arrivée de l'instant du lancer déclenche la même roue partout. Un écran qui
-  // arrive en retard — reconnexion en pleine roue — rattrape le temps écoulé au
-  // lieu de repartir de zéro, et se contente du résultat si elle est déjà finie.
+  // L'arrivée de l'instant du lancer déclenche la même roue partout.
+  //
+  // `startedAt` sert de **signal**, pas de chronomètre : la durée part de l'instant
+  // où l'écran reçoit le lancer, et non d'une comparaison avec l'horloge du
+  // serveur. Un premier jet retranchait le temps écoulé, ce qui avait l'air plus
+  // juste et ne l'était pas : un téléphone dont l'horloge avance de quatre
+  // secondes calculait une roue déjà terminée et sautait toute l'animation. Le prix
+  // de ce choix est qu'un écran qui revient en pleine roue la rejoue en entier —
+  // il verra ce qu'il a manqué, et il s'arrête sur le même quartier.
   useEffect(() => {
     if (wheelStartedAt === null) {
       setWheelSettled(false);
       setWheelSpinMs(0);
       return;
     }
-    // Borné par le haut : `startedAt` est l'horloge du serveur, celle du téléphone
-    // peut être en retard, et la roue tournerait alors bien plus longtemps qu'un
-    // tour complet.
-    const remaining = Math.min(WHEEL_SPIN_MS, WHEEL_SPIN_MS - (Date.now() - wheelStartedAt));
-    if (remaining <= 0) {
-      setWheelSpinMs(0);
-      setWheelSettled(true);
-      return;
-    }
-    setWheelSpinMs(remaining);
+    setWheelSpinMs(WHEEL_SPIN_MS);
     setWheelSettled(false);
     soundManager.playClick();
     const timer = window.setTimeout(() => {
       setWheelSettled(true);
       if (bonusAwardedThisTurn) soundManager.playCorrect(); else soundManager.playWrong();
-    }, remaining);
+    }, WHEEL_SPIN_MS);
     return () => window.clearTimeout(timer);
   }, [wheelStartedAt]);
 

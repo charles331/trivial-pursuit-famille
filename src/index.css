@@ -16,10 +16,14 @@ html {
 
 body {
   background-color: #020617;
-  /* Le rebond élastique d'iOS révèle la page sous le contenu : sans cette
-     ligne, on peut « tirer » le jeu et voir apparaître du vide. */
-  overscroll-behavior-y: none;
 }
+
+/* On ne coupe **pas** le rebond élastique de la page (`overscroll-behavior`) :
+   il ne montre plus rien de blanc maintenant que la page a un fond, et sur
+   Android le supprimer emporte avec lui le « tirer pour rafraîchir » — le seul
+   geste qui permette à la famille de récupérer une nouvelle version du jeu. Le
+   confinement du défilement se joue là où il compte, à l'intérieur de la carte
+   de question (`overscroll-contain`). */
 
 /* ------------------------------------------------------------------
    Motion design tokens
