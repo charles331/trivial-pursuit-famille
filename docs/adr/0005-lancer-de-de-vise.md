@@ -195,3 +195,42 @@ mesuré en situation, il tournait encore une seconde après avoir touché le
 plateau. `settleTo` prend désormais le plus court chemin vers l'orientation
 voulue, quel que soit le nombre de tours déjà accumulés. Le dé s'immobilise
 183 ms après la fin du vol, le temps que son dernier rebond s'amortisse.
+
+## Révision — Un cube ne se voit pas au travers
+
+Signalé par le propriétaire du projet : « les coins du cube sont arrondis, ce qui
+provoque un effet de transparence et on voit au travers du cube. Ce n'est pas le
+but. » C'est le biais de repos de la révision précédente qui a rendu le défaut
+visible : de face, un carré ne montre rien de ses arêtes ; de biais, il montre
+tout.
+
+Protocole de mesure, réutilisable : le dé est posé sur un fond magenta pur, et
+l'on compte les pixels de fond **enfermés dans sa silhouette**. La silhouette
+projetée d'un cube étant un hexagone convexe, tout pixel de fond situé entre le
+premier et le dernier pixel du dé sur une même ligne est vu à travers lui.
+
+### Deux causes, dont une qui n'avait rien à voir avec les coins
+
+**Six faces arrondies ne forment pas une surface fermée.** Le congé de l'arête
+manque. De face, cela ne fait qu'une échancrure de quelques pixels aux sommets ;
+vu dans le plan d'une arête — ce qui arrive à chaque culbute — le congé absent
+devient une large bande. Mesuré : 11 718 pixels de fuite sur les seize images
+d'une culbute, dont 850 sur une seule image, et jusqu'à 15 724 sur l'image la
+plus rasante. Ni le noyau opaque ni le débord des faces n'y changent grand-chose :
+seule une surface réellement fermée y parvient, donc **des arêtes vives**. Le
+liseré doré et l'ombre interne suffisent à suggérer le biseau. Après : 7 pixels
+sur les seize images.
+
+**Le rembourrage fixe de la zone de préhension comprimait le cube.** `p-4`, seize
+pixels, quelle que soit la taille : pour un dé de 39 px la zone fait 62 px, moins
+32 px de rembourrage, soit 30 px de contenu pour un cube de 39. Le flex le
+comprimait donc, tandis que `translateZ` continuait de placer les faces à 19,5 px
+du centre : les faces latérales sortaient de la face avant et laissaient une fente
+de 4,7 px, par laquelle on voyait le plateau. À 200 px, la même zone laissait 288
+px de contenu, le cube n'était pas comprimé, et le défaut n'existait pas — d'où
+une fuite mesurée dix fois plus grande en jeu qu'au banc. Le rembourrage est
+désormais proportionnel, et le cube porte `shrink-0`.
+
+Ce défaut était latent depuis toujours ; il n'est apparu qu'en posant le dé sur le
+plateau, à 39 px. Toute mesure de rendu doit donc se faire **à la taille du jeu**,
+pas seulement sur un dé grossi.

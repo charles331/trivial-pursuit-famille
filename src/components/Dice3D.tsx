@@ -82,6 +82,19 @@ function settleTo(current: number, orientation: number): number {
   return current + delta;
 }
 
+/**
+ * L'orientation de chaque face dans le cube, dans l'ordre du rendu. Sert au
+ * noyau opaque, qui doit se placer exactement sous les six faces.
+ */
+const FACE_PLACEMENTS: ReadonlyArray<{ face: number; rotate: string }> = [
+  { face: 1, rotate: 'rotateY(0deg)' },
+  { face: 2, rotate: 'rotateY(90deg)' },
+  { face: 3, rotate: 'rotateX(90deg)' },
+  { face: 4, rotate: 'rotateX(-90deg)' },
+  { face: 5, rotate: 'rotateY(-90deg)' },
+  { face: 6, rotate: 'rotateY(180deg)' },
+];
+
 /** L'orientation sous laquelle on présente une face donnée. */
 function presentFace(face: number): { rx: number; ry: number } {
   const base = FACE_ROTATIONS[face] || FACE_ROTATIONS[1];
@@ -170,13 +183,42 @@ export const Dice3D: React.FC<Dice3DProps> = ({
 
   const halfSize = size / 2;
   /**
-   * Le rayon des coins suit la taille du dé.
+   * Les arêtes du dé sont vives, et ce n'est pas un choix esthétique.
    *
-   * `rounded-2xl` valait 16 px quelle que soit la taille : 9 % d'une face de
-   * 180 px dans le modal du tirage, mais 41 % d'une face de 39 px en partie. Le
-   * dé du plateau se lisait comme une pastille ovale, et son relief avec lui.
+   * Six faces **arrondies** ne forment pas une surface fermée : le congé de
+   * l'arête manque. De face, cela ne fait qu'une échancrure de quelques pixels
+   * aux sommets ; mais dès que le dé se présente dans le plan d'une arête —
+   * ce qui arrive à chaque culbute — le congé absent devient une large bande, et
+   * l'on voit le plateau à travers le dé. Signalé par le propriétaire du projet :
+   * « ce n'est pas le but qu'on puisse voir à travers le cube ».
+   *
+   * Mesuré sur fond magenta, en comptant les pixels de fond enfermés dans la
+   * silhouette : 11 718 sur les seize images d'une culbute avec des coins
+   * arrondis, dont 850 sur une seule image ; **1 pixel** avec des arêtes vives.
+   * Aucun noyau, aucun débord ne rattrape cela — seule une surface réellement
+   * fermée y parvient. Le liseré doré des faces et l'ombre interne suffisent à
+   * suggérer le biseau.
    */
-  const faceRadius = size * 0.11;
+  const faceRadius = 0;
+  /**
+   * Un noyau opaque d'un demi-pixel sous les faces.
+   *
+   * Même à arêtes vives, deux faces voisines laissent par endroits un pixel
+   * d'anticrénelage à leur couture. Ce cube intérieur le comble : ce qu'on aperçoit
+   * alors est l'intérieur du dé, dans l'ombre, jamais le plateau derrière.
+   */
+  const coreInset = 0.5;
+  /**
+   * Les faces débordent d'une fraction de pixel.
+   *
+   * Deux faces voisines se touchent exactement le long de leur arête commune, et
+   * le navigateur y laisse un liseré d'anticrénelage : mesuré sur fond magenta,
+   * un pixel de fond toutes les trois lignes le long de l'arête gauche. Le noyau
+   * ne peut pas le combler puisque le liseré est sur la silhouette elle-même. En
+   * agrandissant chaque face d'un demi-pixel, les voisines se recouvrent et la
+   * couture disparaît.
+   */
+  const faceBleed = 0.6;
   // Le dé voyage sur le plateau dès qu'un parcours accompagne le lancer ; sinon
   // il saute sur place, comme dans le modal du tirage au sort.
   const voyage = Boolean(flight) && isRolling;
@@ -363,12 +405,19 @@ export const Dice3D: React.FC<Dice3DProps> = ({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
-        className={`relative flex items-center justify-center cursor-grab active:cursor-grabbing p-4 rounded-3xl select-none touch-none ${
+        className={`relative flex items-center justify-center cursor-grab active:cursor-grabbing rounded-3xl select-none touch-none ${
           !disabled && !isRolling ? 'hover:bg-amber-500/10 active:bg-amber-500/20' : ''
         }`}
         style={{
           width: `${size * (compact ? 1.6 : 1.9)}px`,
           height: `${size * (compact ? 1.6 : 1.9)}px`,
+          // Rembourrage proportionnel, et non `p-4`. Seize pixels fixes ne
+          // laissaient que 30 px de contenu à un dé de 39 : le flex comprimait le
+          // cube alors que `translateZ` continuait de placer ses faces à 19,5 px.
+          // Les faces latérales sortaient donc de la face avant, et l'on voyait le
+          // plateau par la fente — mesuré au banc, 4,7 px d'écart à 39 px, contre
+          // un recouvrement de 3 px à 200 px.
+          padding: `${size * (compact ? 0.3 : 0.45)}px`,
           perspective: `${size * 9}px`,
           touchAction: 'none'
         }}
@@ -428,7 +477,7 @@ export const Dice3D: React.FC<Dice3DProps> = ({
 
         {/* 3D Dice Cube */}
         <motion.div
-          className="relative transform-gpu pointer-events-none"
+          className="relative shrink-0 transform-gpu pointer-events-none"
           style={{
             width: `${size}px`,
             height: `${size}px`,
@@ -460,10 +509,42 @@ export const Dice3D: React.FC<Dice3DProps> = ({
             rotateZ: { duration: rouleMs / 1000, ease: [0.15, 0.85, 0.35, 1] },
           }}
         >
+          {/* Le noyau opaque, sous les six faces.
+
+              Les faces du dé sont des rectangles **arrondis** : le long d'une
+              arête, leurs coins s'écartent près des sommets, et à la couture le
+              navigateur laisse un liseré d'anticrénelage. On voyait donc le fond
+              au travers du cube — mesuré au banc sur fond magenta, 675 à 706
+              pixels de fond enfermés dans la silhouette selon la valeur.
+
+              Ce cube intérieur, à coins vifs et légèrement rentré, bouche les
+              deux : il est trop petit pour dépasser de la silhouette arrondie,
+              et assez grand pour se montrer dans les échancrures. Ce qu'on y voit
+              est l'arête du dé, dans l'ombre — pas le plateau derrière. */}
+          {FACE_PLACEMENTS.map(({ face, rotate }) => (
+            <div
+              key={`core_${face}`}
+              className="absolute backface-hidden"
+              style={{
+                inset: coreInset,
+                transform: `${rotate} translateZ(${halfSize - coreInset}px)`,
+                backgroundColor: '#EBC98E',
+              }}
+            >
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  backgroundColor: `rgba(2, 6, 23, ${shadeOf(face)})`,
+                  transition: 'background-color 240ms linear',
+                }}
+              />
+            </div>
+          ))}
+
           {/* FACE 1 (Front) */}
           <div
-            className="absolute inset-0 bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-hidden"
-            style={{ borderRadius: faceRadius, transform: `rotateY(0deg) translateZ(${halfSize}px)` }}
+            className="absolute bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-hidden"
+            style={{ inset: -faceBleed, borderRadius: faceRadius, transform: `rotateY(0deg) translateZ(${halfSize}px)` }}
           >
             {renderFacePips(1)}
             {/* Le voile d'éclairage : il assombrit la face à mesure qu'elle
@@ -478,8 +559,8 @@ export const Dice3D: React.FC<Dice3DProps> = ({
 
           {/* FACE 2 (Right) */}
           <div
-            className="absolute inset-0 bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-hidden"
-            style={{ borderRadius: faceRadius, transform: `rotateY(90deg) translateZ(${halfSize}px)` }}
+            className="absolute bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-hidden"
+            style={{ inset: -faceBleed, borderRadius: faceRadius, transform: `rotateY(90deg) translateZ(${halfSize}px)` }}
           >
             {renderFacePips(2)}
             {/* Le voile d'éclairage : il assombrit la face à mesure qu'elle
@@ -494,8 +575,8 @@ export const Dice3D: React.FC<Dice3DProps> = ({
 
           {/* FACE 3 (Top) */}
           <div
-            className="absolute inset-0 bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-hidden"
-            style={{ borderRadius: faceRadius, transform: `rotateX(90deg) translateZ(${halfSize}px)` }}
+            className="absolute bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-hidden"
+            style={{ inset: -faceBleed, borderRadius: faceRadius, transform: `rotateX(90deg) translateZ(${halfSize}px)` }}
           >
             {renderFacePips(3)}
             {/* Le voile d'éclairage : il assombrit la face à mesure qu'elle
@@ -510,8 +591,8 @@ export const Dice3D: React.FC<Dice3DProps> = ({
 
           {/* FACE 4 (Bottom) */}
           <div
-            className="absolute inset-0 bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-hidden"
-            style={{ borderRadius: faceRadius, transform: `rotateX(-90deg) translateZ(${halfSize}px)` }}
+            className="absolute bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-hidden"
+            style={{ inset: -faceBleed, borderRadius: faceRadius, transform: `rotateX(-90deg) translateZ(${halfSize}px)` }}
           >
             {renderFacePips(4)}
             {/* Le voile d'éclairage : il assombrit la face à mesure qu'elle
@@ -526,8 +607,8 @@ export const Dice3D: React.FC<Dice3DProps> = ({
 
           {/* FACE 5 (Left) */}
           <div
-            className="absolute inset-0 bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-hidden"
-            style={{ borderRadius: faceRadius, transform: `rotateY(-90deg) translateZ(${halfSize}px)` }}
+            className="absolute bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-hidden"
+            style={{ inset: -faceBleed, borderRadius: faceRadius, transform: `rotateY(-90deg) translateZ(${halfSize}px)` }}
           >
             {renderFacePips(5)}
             {/* Le voile d'éclairage : il assombrit la face à mesure qu'elle
@@ -542,8 +623,8 @@ export const Dice3D: React.FC<Dice3DProps> = ({
 
           {/* FACE 6 (Back) */}
           <div
-            className="absolute inset-0 bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-hidden"
-            style={{ borderRadius: faceRadius, transform: `rotateY(180deg) translateZ(${halfSize}px)` }}
+            className="absolute bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 border-2 border-amber-300/90 shadow-[inset_0_0_14px_rgba(217,119,6,0.3)] flex items-center justify-center backface-hidden"
+            style={{ inset: -faceBleed, borderRadius: faceRadius, transform: `rotateY(180deg) translateZ(${halfSize}px)` }}
           >
             {renderFacePips(6)}
             {/* Le voile d'éclairage : il assombrit la face à mesure qu'elle

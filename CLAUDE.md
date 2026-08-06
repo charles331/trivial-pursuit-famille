@@ -148,6 +148,11 @@ Points de vigilance connus :
   chaque arc, une au contact, une ombre qui rétrécit avec la hauteur). Il n'a ni
   cadre ni étiquette : décision du propriétaire du projet, ADR 0005. Tout ce qui
   expliquerait le geste par du texte est à proscrire — le dé se lit à son parcours.
+- Ses arêtes sont **vives**, et cela n'est pas négociable : six faces arrondies ne
+  forment pas une surface fermée, et le dé se voit au travers dès qu'il se présente
+  dans le plan d'une arête (ADR 0005). Le dé se mesure sur fond magenta, en comptant
+  les pixels de fond enfermés dans sa silhouette — et **à la taille du jeu** : un
+  rembourrage fixe comprimait le cube à 39 px sans que rien ne se voie à 200 px.
 - Il s'affiche sur tous les écrans : celui qui ne lance pas voit le même vol. La
   culbute est déjà commune sans effort — `isRollingLocally` se déclenche à
   l'arrivée de la valeur, sans condition de tour ; c'est l'affichage qui était
