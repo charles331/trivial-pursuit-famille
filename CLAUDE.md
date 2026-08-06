@@ -177,6 +177,19 @@ Points de vigilance connus :
   oublié — le dé restait posé au milieu du plateau puis sautait dans son coin au
   lancer suivant. Le client ne s'y fie plus : en phase `rolling`, il ignore la
   poussée et remet le dé dans son coin, quoi qu'ait envoyé le serveur.
+- La roue surprise suit la même grammaire que le dé : le serveur retient le
+  **quartier** (`surpriseWheel.slot`, décidé sur la case Surprise) et l'**instant**
+  du lancer (`startedAt`, posé sur le geste du joueur). Le client ne tire rien —
+  il le faisait, et deux quartiers portant le même 50/50, la roue s'arrêtait
+  ailleurs selon l'écran. Elle s'affiche partout, seul le joueur actif tient les
+  boutons, et tout le monde referme quand le minuteur démarre. Comme `diceThrow`,
+  elle décrit *le* lancer en cours : tout chemin qui éteint `surpriseSpinThisTurn`
+  doit l'effacer.
+- Une transition CSS ne démarre que si sa durée existait **avant** le changement de
+  valeur. React posant les deux dans le même rendu, la roue surprise sautait sur son
+  quartier sans tourner — mesuré, 150° dès la cinquantième milliseconde. Pour une
+  animation déclenchée par un changement d'état, passer par Motion (`animate`), et
+  la mesurer : on n'anime pas ce qu'on n'a pas vu bouger dans deux images.
 - Attention à `showTurnIntro` si l'on veut masquer quelque chose pendant l'écran
   « passez l'appareil » : ce drapeau ne redescend qu'au clic sur son bouton, qui
   n'existe qu'en mode local, donc il reste **vrai à jamais** en ligne. La vraie

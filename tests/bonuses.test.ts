@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  SURPRISE_WHEEL,
   awardSurpriseBonus,
   bonusCount,
   fiftyFiftyCount,
   jokerCanEarnWedge,
   useBonus,
+  wheelSlotFor,
   useFiftyFiftyBonus,
 } from '../src/server/bonuses';
 import { createGameState } from './fixtures';
@@ -158,4 +160,33 @@ test('the wheel still hands a joker to a player who can use it', () => {
 
   assert.equal(awardSurpriseBonus(state, rollJoker), 'camembert_joker');
   assert.equal(bonusCount(state.players[0], 'camembert_joker'), 1);
+});
+
+test('la roue décrite par le serveur porte bien le résultat annoncé', () => {
+  // C'est l'invariant qui rend la roue partageable : le quartier d'arrivée est
+  // décidé une fois pour toute la table, et il doit annoncer le bon lot. Chaque
+  // client le tirait de son côté, et deux quartiers portent le même 50/50 — la
+  // roue s'arrêtait donc ailleurs selon l'écran.
+  const state = createGameState();
+  state.settings.enableBonuses = true;
+
+  for (const roll of [rollFiftyFifty, rollJoker, rollEmpty]) {
+    const outcome = awardSurpriseBonus(state, roll);
+    const wheel = state.surpriseWheel;
+    assert.ok(wheel, 'la roue doit être décrite dans l’état');
+    assert.equal(SURPRISE_WHEEL[wheel!.slot], outcome);
+    // Elle attend son lancement : c'est le geste du joueur qui donne l'instant.
+    assert.equal(wheel!.startedAt, null);
+  }
+});
+
+test('les six résultats possibles trouvent tous un quartier', () => {
+  // Un tirage au bord du quartier ne doit pas sortir de la roue : sans le repli,
+  // `wheelSlotFor` renverrait `undefined` et la roue s'arrêterait sur le premier.
+  for (const outcome of ['fifty_fifty', 'camembert_joker', null] as const) {
+    for (const r of [0, 0.49, 0.999]) {
+      const slot = wheelSlotFor(outcome, () => r);
+      assert.equal(SURPRISE_WHEEL[slot], outcome, `${outcome} à r=${r}`);
+    }
+  }
 });

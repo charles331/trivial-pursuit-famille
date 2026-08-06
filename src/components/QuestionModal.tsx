@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'motion/react';
 import { ActiveQuestionBonus, BonusType, Question, Player, CategoryId } from '../types';
 import { CATEGORIES } from '../data/categories';
 import { PlayerWedgeBadge } from './PlayerWedgeBadge';
@@ -10,6 +11,14 @@ import { resolveQuestionTimerSeconds } from '../utils/questionTimer';
 import { Timer, CheckCircle2, XCircle, Sparkles, HelpCircle, ArrowRight, Eye, EyeOff, BookOpen, Gift } from 'lucide-react';
 
 const LETTERS = ['A', 'B', 'C', 'D'];
+
+/**
+ * Durée de la rotation de la roue surprise, et de son animation CSS.
+ *
+ * Elle doit être la même partout : c'est elle qui, comparée à l'instant du lancer
+ * retenu par le serveur, dit à un écran arrivé en retard où la roue en est.
+ */
+const WHEEL_SPIN_MS = 3500;
 
 interface QuestionModalProps {
   question: Question;
@@ -32,11 +41,15 @@ interface QuestionModalProps {
   onNextTurn: () => void;
   /** Le joueur actif signale la fin de la roue surprise pour lancer le minuteur. */
   onSurpriseWheelDone?: () => void;
+  /** Le joueur actif lance la roue ; le serveur en retient l'instant pour tous. */
+  onSpinSurpriseWheel?: () => void;
   /** Nombre de camemberts requis pour gagner : dit si le Joker sert encore. */
   wedgesToWin?: number;
   bonusesEnabled?: boolean;
   bonusAwardedThisTurn?: BonusType | null;
   surpriseSpinThisTurn?: boolean;
+  /** La roue du tour, décidée par le serveur : quartier d'arrivée et instant du lancer. */
+  surpriseWheel?: { slot: number; startedAt: number | null } | null;
   activeQuestionBonus?: ActiveQuestionBonus | null;
 }
 
@@ -55,10 +68,12 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   onUseBonus,
   onNextTurn,
   onSurpriseWheelDone,
+  onSpinSurpriseWheel,
   wedgesToWin = 6,
   bonusesEnabled = false,
   bonusAwardedThisTurn = null,
   surpriseSpinThisTurn = false,
+  surpriseWheel = null,
   activeQuestionBonus = null,
 }) => {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
@@ -72,10 +87,10 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   // maintien les déverrouille ; ils restent ensuite affichés pour trancher.
   const [hasRevealedOnce, setHasRevealedOnce] = useState(false);
   // Boîte mystère : le bonus gagné se dévoile en lançant une roue. Le serveur a
-  // déjà décidé du résultat ; la roue ne fait que le révéler avec du panache.
-  const [wheelAngle, setWheelAngle] = useState(0);
-  const [wheelSpinning, setWheelSpinning] = useState(false);
-  const [wheelSpun, setWheelSpun] = useState(false);
+  // déjà décidé du résultat *et* du quartier ; la roue ne fait que le révéler
+  // avec du panache, sur tous les écrans à la fois.
+  const [wheelSettled, setWheelSettled] = useState(false);
+  const [wheelSpinMs, setWheelSpinMs] = useState(0);
   const [wheelDismissed, setWheelDismissed] = useState(false);
   // L'inventaire des bonus vit dans un popup ouvert par un bouton en bas de
   // carte, au lieu d'occuper en permanence l'espace de la question.
@@ -124,6 +139,11 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   const surpriseTimerPending = surpriseSpinThisTurn === true
     && (questionStartTime === null || questionStartTime === undefined);
   const canAnswer = isMyTurn || isIReader;
+  // L'écran « passez l'appareil » du mode local : rien ne doit s'afficher par
+  // dessus, sans quoi le joueur interrogé verrait ce qui ne lui est pas destiné.
+  const showLocalReaderGate = Boolean(
+    isReaderMode && isLocalMode && !localReaderReady && !lastAnswerResult,
+  );
   // Dépenser un bonus n'est pas répondre : le lecteur peut trancher une réponse
   // orale, mais l'inventaire appartient au joueur actif seul. En pass & play, un
   // seul appareil circule et c'est le joueur actif qui l'a en main.
@@ -239,9 +259,8 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
     setSelectedIdx(null);
     setIsSolutionHeld(false);
     setHasRevealedOnce(false);
-    setWheelAngle(0);
-    setWheelSpinning(false);
-    setWheelSpun(false);
+    setWheelSettled(false);
+    setWheelSpinMs(0);
     setWheelDismissed(false);
     setBonusPickerOpen(false);
   }, [question.id]);
@@ -282,25 +301,48 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   const jokerUsable = jokerCount > 0 && jokerCanEarn;
   const hasUsableBonus = (isMcqFormat && fiftyFiftyCount > 0) || jokerUsable;
 
-  // La roue tourne cinq tours puis s'arrête sur le quartier déjà décidé côté
-  // serveur (bonus ou case vide). On vise au hasard l'un des quartiers du bon
-  // type pour que la roue paraisse libre.
-  const spinBonusWheel = () => {
-    if (wheelSpinning || wheelSpun) return;
-    const matching = SURPRISE_WHEEL
-      .map((slot, index) => (slot === bonusAwardedThisTurn ? index : -1))
-      .filter(index => index >= 0);
-    const target = matching[Math.floor(Math.random() * matching.length)] ?? 0;
-    const landing = 360 * 5 - (target * 60 + 30);
-    setWheelSpinning(true);
-    setWheelAngle(landing);
+  // La roue tourne cinq tours puis s'arrête sur le quartier décidé par le serveur
+  // (bonus ou case vide). Rien n'est tiré ici : c'est la condition pour qu'elle
+  // s'arrête au même endroit sur tous les écrans — le client tirait son propre
+  // quartier, et deux quartiers portent le même 50/50.
+  const wheelStartedAt = surpriseWheel?.startedAt ?? null;
+  const wheelSpinning = wheelStartedAt !== null && !wheelSettled;
+  // La roue ne bouge qu'une fois sa durée connue. L'angle vient de la propriété,
+  // la durée d'un effet : au premier rendu qui suit le lancer, l'angle était déjà
+  // celui de l'arrivée alors que la durée valait encore zéro — la roue sautait sur
+  // son quartier sans tourner. Elle reste donc à zéro un rendu de plus.
+  const wheelLanding = 360 * 5 - ((surpriseWheel?.slot ?? 0) * 60 + 30);
+  const wheelAngle = wheelStartedAt !== null && (wheelSpinMs > 0 || wheelSettled)
+    ? wheelLanding
+    : 0;
+
+  // L'arrivée de l'instant du lancer déclenche la même roue partout. Un écran qui
+  // arrive en retard — reconnexion en pleine roue — rattrape le temps écoulé au
+  // lieu de repartir de zéro, et se contente du résultat si elle est déjà finie.
+  useEffect(() => {
+    if (wheelStartedAt === null) {
+      setWheelSettled(false);
+      setWheelSpinMs(0);
+      return;
+    }
+    // Borné par le haut : `startedAt` est l'horloge du serveur, celle du téléphone
+    // peut être en retard, et la roue tournerait alors bien plus longtemps qu'un
+    // tour complet.
+    const remaining = Math.min(WHEEL_SPIN_MS, WHEEL_SPIN_MS - (Date.now() - wheelStartedAt));
+    if (remaining <= 0) {
+      setWheelSpinMs(0);
+      setWheelSettled(true);
+      return;
+    }
+    setWheelSpinMs(remaining);
+    setWheelSettled(false);
     soundManager.playClick();
-    window.setTimeout(() => {
-      setWheelSpinning(false);
-      setWheelSpun(true);
+    const timer = window.setTimeout(() => {
+      setWheelSettled(true);
       if (bonusAwardedThisTurn) soundManager.playCorrect(); else soundManager.playWrong();
-    }, 3600);
-  };
+    }, remaining);
+    return () => window.clearTimeout(timer);
+  }, [wheelStartedAt]);
 
   const wheelBackground = `conic-gradient(${SURPRISE_WHEEL
     .map((slot, i) => {
@@ -312,8 +354,15 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   // garde `!isAnswered`, elle réapparaissait en phase « evaluating », car cette
   // phase remonte un nouveau modal (état local réinitialisé) alors que
   // `surpriseSpinThisTurn` reste vrai jusqu'au tour suivant.
-  const showWheelPopup = bonusesEnabled && surpriseSpinThisTurn && isIActivePlayer
-    && !wheelDismissed && !isAnswered;
+  //
+  // Elle s'affiche sur **tous** les écrans, et non plus sur celui du seul joueur
+  // actif : signalé par le propriétaire du projet, « quand l'utilisateur lance sa
+  // roue tout le monde devrait le voir ». Gagner un bonus est un moment de partie,
+  // pas une notification privée. La condition de fermeture est donc commune, elle
+  // aussi : le minuteur qui démarre. C'est le joueur actif qui le déclenche en
+  // continuant, et `wheelDismissed` lui referme sa roue sans attendre l'aller-retour.
+  const showWheelPopup = bonusesEnabled && surpriseTimerPending
+    && !wheelDismissed && !isAnswered && !showLocalReaderGate;
   const hiddenOptionIndexes = activeQuestionBonus?.type === 'fifty_fifty'
     ? activeQuestionBonus.hiddenOptionIndexes
     : [];
@@ -341,7 +390,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex justify-center bg-slate-950 animate-fadeIn sm:items-center sm:p-4">
-      {isReaderMode && isLocalMode && !localReaderReady && !lastAnswerResult && (
+      {showLocalReaderGate && (
         <div className="absolute inset-0 z-20 flex items-start justify-center overflow-y-auto bg-slate-950/95 p-4">
           <div className="my-auto w-full max-w-md space-y-4 rounded-3xl border-2 border-amber-500/50 bg-slate-900 p-5 text-center shadow-2xl">
             <div className="text-4xl">📱</div>
@@ -783,22 +832,36 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
 
         {/* Popup de la boîte surprise : le joueur actif lance la roue, qui
             s'arrête sur un bonus ou sur une case vide. Elle s'ouvre d'elle-même
-            en arrivant sur une case Surprise et se ferme sur « Continuer ». */}
+            en arrivant sur une case Surprise et se ferme sur « Continuer ».
+
+            Toute la table la voit : c'est le même quartier, le même départ et la
+            même durée, puisque tout cela vient du serveur. Seul le joueur actif
+            tient les deux boutons — lancer, puis continuer. Les autres écrans
+            suivent, et se referment quand le minuteur démarre. */}
         {showWheelPopup && (
           <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 p-4">
             <div className="flex w-full max-w-xs flex-col items-center gap-3 rounded-3xl bg-white p-5 shadow-2xl dark:bg-slate-900">
               <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-pink-700 dark:text-pink-300">
                 <Gift className="h-3.5 w-3.5" /> Boîte surprise
               </div>
+              <p className="-mt-1.5 text-center text-xs font-bold text-slate-600 dark:text-slate-300">
+                {isMyTurn ? 'C’est votre roue' : `La roue de ${activePlayer.name}`}
+              </p>
               <div className="relative h-44 w-44">
                 <div className="absolute left-1/2 top-[-2px] z-10 h-0 w-0 -translate-x-1/2 border-x-8 border-t-[14px] border-x-transparent border-t-slate-900 dark:border-t-white" />
-                <div
+                {/* La rotation est confiée à Motion, et non à une transition CSS.
+                    Une transition ne démarre que si sa durée existait *avant* le
+                    changement de valeur : React posait les deux dans le même
+                    rendu, la roue sautait donc directement à son quartier, sans
+                    tourner. Mesuré au banc — 150° dès la cinquantième
+                    milliseconde, immobile ensuite. */}
+                <motion.div
                   className="h-full w-full rounded-full border-4 border-white shadow-lg dark:border-slate-700"
-                  style={{
-                    background: wheelBackground,
-                    transform: `rotate(${wheelAngle}deg)`,
-                    transition: wheelSpinning ? 'transform 3.5s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
-                  }}
+                  style={{ background: wheelBackground }}
+                  animate={{ rotate: wheelAngle }}
+                  transition={wheelSpinMs > 0
+                    ? { duration: wheelSpinMs / 1000, ease: [0.17, 0.67, 0.12, 0.99] }
+                    : { duration: 0 }}
                 >
                   {SURPRISE_WHEEL.map((slot, i) => (
                     <span
@@ -809,10 +872,10 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                       {slot === 'fifty_fifty' ? '🎯' : slot === 'camembert_joker' ? '🧀' : ''}
                     </span>
                   ))}
-                </div>
+                </motion.div>
                 <div className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-slate-200 bg-white shadow dark:border-slate-600 dark:bg-slate-800" />
               </div>
-              {wheelSpun ? (
+              {wheelSettled ? (
                 <>
                   <p className="text-center text-base font-black text-slate-900 dark:text-white">
                     {bonusAwardedThisTurn === 'camembert_joker'
@@ -821,28 +884,45 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                         ? '🎉 50/50 gagné !'
                         : '😅 Case vide — pas de bonus cette fois.'}
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      soundManager.playClick();
-                      setWheelDismissed(true);
-                      // La roue est finie : on lance le minuteur pour toute la table.
-                      onSurpriseWheelDone?.();
-                    }}
-                    className="tap-target w-full rounded-xl bg-slate-900 py-2.5 text-sm font-black text-white dark:bg-amber-500 dark:text-slate-950"
-                  >
-                    Continuer
-                  </button>
+                  {isMyTurn ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundManager.playClick();
+                        setWheelDismissed(true);
+                        // La roue est finie : on lance le minuteur pour toute la table.
+                        onSurpriseWheelDone?.();
+                      }}
+                      className="tap-target w-full rounded-xl bg-slate-900 py-2.5 text-sm font-black text-white dark:bg-amber-500 dark:text-slate-950"
+                    >
+                      Continuer
+                    </button>
+                  ) : (
+                    <p className="text-center text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                      {activePlayer.name} enchaîne sur la question…
+                    </p>
+                  )}
                 </>
-              ) : (
+              ) : isMyTurn ? (
                 <button
                   type="button"
                   disabled={wheelSpinning}
-                  onClick={spinBonusWheel}
+                  onClick={() => {
+                    if (wheelSpinning) return;
+                    // On n'envoie qu'un geste : le serveur retient l'instant du
+                    // lancer, et le quartier était décidé sur la case Surprise.
+                    onSpinSurpriseWheel?.();
+                  }}
                   className="tap-target w-full rounded-xl bg-pink-500 py-2.5 text-sm font-black text-white hover:bg-pink-400 disabled:opacity-60"
                 >
                   {wheelSpinning ? 'La roue tourne…' : 'Lancer la roue 🎡'}
                 </button>
+              ) : (
+                <p className="text-center text-xs font-bold text-slate-500 dark:text-slate-400">
+                  {wheelSpinning
+                    ? 'La roue tourne…'
+                    : `${activePlayer.name} va lancer la roue…`}
+                </p>
               )}
             </div>
           </div>

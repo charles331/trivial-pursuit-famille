@@ -36,7 +36,7 @@ import { activeThemeKeys, pickQuestionForPlayer } from './src/server/questionSel
 import { previewOrigin, withAbsolutePreviewImages } from './src/server/previewMeta.js';
 import { createQuestionGenerator } from './src/server/questionGenerator.js';
 import { DEFAULT_GENERATED_PACK_COUNT } from './src/config/generatedPack.js';
-import { BONUS_ROSTER, awardSurpriseBonus, useBonus } from './src/server/bonuses.js';
+import { BONUS_ROSTER, awardSurpriseBonus, useBonus, wheelSlotFor } from './src/server/bonuses.js';
 import {
   DEFAULT_BONUS_MODE,
   DEFAULT_QUESTION_TIMER_SECONDS,
@@ -1101,6 +1101,7 @@ io.on('connection', (socket: Socket) => {
     room.gameState.lastTurnEventMessage = null;
     room.gameState.bonusAwardedThisTurn = null;
     room.gameState.surpriseSpinThisTurn = false;
+    room.gameState.surpriseWheel = null;
     room.gameState.activeQuestionBonus = null;
 
     const activePlayer = room.gameState.players[room.gameState.activePlayerIndex];
@@ -1190,9 +1191,32 @@ io.on('connection', (socket: Socket) => {
     saveRooms(rooms);
   });
 
+  // Lancement de la roue surprise. Le client n'envoie qu'un **geste** — un appui,
+  // sans résultat —, comme pour le dé : c'est le serveur qui retient l'instant du
+  // lancer, et le quartier d'arrivée était déjà décidé en arrivant sur la case.
+  // Toute la table voit alors la même roue tourner et s'arrêter au même endroit.
+  socket.on('spin-surprise-wheel', (data: { roomCode: string }) => {
+    const room = getRoom(data.roomCode);
+    if (!room || isPaused(room)) return;
+    if (room.gameState.phase !== 'question') return;
+    if (!isPlayerAllowedToAct(room, socket.id)) return;
+    if (!room.gameState.surpriseSpinThisTurn) return;
+    const wheel = room.gameState.surpriseWheel;
+    if (wheel?.startedAt != null) return; // déjà lancée
+
+    // Un salon repris du disque peut avoir été enregistré avant que la roue ne
+    // soit décrite dans l'état : sans ce repli, son quartier manquerait et
+    // personne ne pourrait plus la lancer — la table resterait bloquée devant.
+    const slot = wheel?.slot ?? wheelSlotFor(room.gameState.bonusAwardedThisTurn ?? null);
+    room.gameState.surpriseWheel = { slot, startedAt: Date.now() };
+    emitGameState(room);
+    saveRooms(rooms);
+  });
+
   // Fin de la roue surprise : le joueur actif démarre le minuteur pour toute la
   // table, une fois la roue arrêtée et le bonus révélé. Idempotent et réservé au
-  // joueur actif (les spectateurs ne voient pas la roue et n'émettent rien).
+  // joueur actif — c'est lui qui donne le rythme, les autres écrans referment leur
+  // roue en voyant le minuteur démarrer.
   socket.on('start-question-timer', (data: { roomCode: string }) => {
     const room = getRoom(data.roomCode);
     if (!room || isPaused(room)) return;

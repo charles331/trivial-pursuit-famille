@@ -35,11 +35,19 @@ test('resolving an answer turns off the surprise wheel flag', () => {
   // La roue surprise ne doit pas se relancer une fois la question tranchée :
   // le drapeau tombe dès la résolution, sans attendre le tour suivant, pour que
   // la phase « evaluating » ne réaffiche jamais la roue.
-  const state = createGameState({ surpriseSpinThisTurn: true, bonusAwardedThisTurn: 'fifty_fifty' });
+  const state = createGameState({
+    surpriseSpinThisTurn: true,
+    bonusAwardedThisTurn: 'fifty_fifty',
+    surpriseWheel: { slot: 0, startedAt: 1_000 },
+  });
   resolveAnswer(state, testSettings, testBoard, 1);
 
   assert.equal(state.phase, 'evaluating');
   assert.equal(state.surpriseSpinThisTurn, false);
+  // La roue décrit *le* lancer en cours, comme la poussée du dé : le chemin qui
+  // éteint le drapeau doit l'effacer aussi, sinon un écran arrivé en retard
+  // rejouerait la roue du tour précédent.
+  assert.equal(state.surpriseWheel, null);
 });
 
 test('a wrong answer advances to the next player', () => {
@@ -58,6 +66,7 @@ test('a wrong answer advances to the next player', () => {
   assert.equal(state.phase, 'rolling');
   assert.equal(state.currentQuestion, null);
   assert.equal(state.bonusAwardedThisTurn, null);
+  assert.equal(state.surpriseWheel, null);
   assert.equal(state.activeQuestionBonus, null);
 });
 
@@ -180,6 +189,7 @@ test('removing the player whose turn it is hands the game back instead of lockin
     phase: 'question',
     surpriseSpinThisTurn: true,
     bonusAwardedThisTurn: 'fifty_fifty',
+    surpriseWheel: { slot: 3, startedAt: 1_000 },
   });
 
   removePlayerFromGame(state, 'olivia');
@@ -189,6 +199,7 @@ test('removing the player whose turn it is hands the game back instead of lockin
   assert.equal(state.lastAnswerResult, null);
   assert.equal(state.questionStartTime, null);
   assert.equal(state.surpriseSpinThisTurn, false);
+  assert.equal(state.surpriseWheel, null);
   assert.equal(state.bonusAwardedThisTurn, null);
   assert.equal(state.activeQuestionBonus, null);
   // Après la suppression, le même index désigne déjà le joueur suivant.
