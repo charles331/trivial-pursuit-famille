@@ -325,6 +325,20 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
     }
   }, [hiddenOptionKey, selectedIdx]);
 
+  // La carte occupe tout l'écran en `fixed` : si la page dessous garde son
+  // défilement, un glissé vers le bas déplace la carte sur iOS et son bandeau —
+  // donc le minuteur — sort du champ. Signalé en partie : « durant cette
+  // question, je ne voyais pas le timer ». On verrouille la page le temps de la
+  // carte, en remettant la valeur d'avant pour ne rien casser au démontage.
+  useEffect(() => {
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.scrollTo(0, 0);
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, []);
+
   return (
     <div className="fixed inset-0 z-50 flex justify-center bg-slate-950 animate-fadeIn sm:items-center sm:p-4">
       {isReaderMode && isLocalMode && !localReaderReady && !lastAnswerResult && (

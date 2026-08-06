@@ -363,7 +363,7 @@ export default function App() {
   // Render Lobby if not in active game or in lobby phase
   if (!gameState || gameState.phase === 'lobby') {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-amber-500 selection:text-slate-950">
+      <div className="min-h-dvh bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-amber-500 selection:text-slate-950">
         <Lobby
           gameState={gameState}
           currentUserId={currentUserId}
@@ -391,7 +391,7 @@ export default function App() {
   // tant que la table ne sait pas qui ouvre la partie.
   if (gameState.phase === 'first_player_roll' || showDrawResult) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+      <div className="min-h-dvh bg-slate-950 text-slate-100 flex flex-col">
         <InGameHeader
           gameState={gameState}
           onLeaveGame={handleLeaveGame}
@@ -430,7 +430,7 @@ export default function App() {
   const readAloud = isCardReadAloud(gameState.settings);
 
   const gameContent = (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between select-none">
+    <div className="min-h-dvh bg-slate-950 text-slate-100 flex flex-col justify-between select-none">
       {/* Top Header Controls */}
       <InGameHeader
         gameState={gameState}

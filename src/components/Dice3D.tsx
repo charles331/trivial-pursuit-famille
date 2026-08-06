@@ -29,6 +29,12 @@ interface Dice3DProps {
    * joueur, qui se joue dans un modal et n'a pas de plateau sous lui.
    */
   flight?: DiceFlightPx | null;
+  /**
+   * Facteur appliqué au dé une fois qu'il quitte la main pour le plateau. Le dé
+   * au repos se saisit au doigt et garde donc sa taille ; posé au milieu des
+   * pions, il doit tenir dans leur échelle. `1` laisse tout inchangé.
+   */
+  boardScale?: number;
 }
 
 // Dot positions grid layout for dice faces 1..6
@@ -171,7 +177,8 @@ export const Dice3D: React.FC<Dice3DProps> = ({
   size = 88,
   compact = false,
   hideTriggerButton = false,
-  flight = null
+  flight = null,
+  boardScale = 1
 }) => {
   // Store cumulative rotation angles so die spins forward smoothly without snapping
   const [rotation, setRotation] = useState({
@@ -215,6 +222,22 @@ export const Dice3D: React.FC<Dice3DProps> = ({
    * alors est l'intérieur du dé, dans l'ombre, jamais le plateau derrière.
    */
   const coreInset = 0.5;
+  /**
+   * Mais ce noyau doit être franchement **derrière** les faces, et un demi-pixel
+   * ne suffit pas.
+   *
+   * À un demi-pixel, le noyau et la face qui le couvre sont à la même profondeur
+   * pour le compositeur : il en choisit un, et c'était le noyau. Le dé posé
+   * montrait alors un carré beige uni — mesuré au banc, aucun point visible sur
+   * la face tournée vers la caméra, aux six valeurs, tandis qu'en masquant le
+   * noyau les points réapparaissaient. Un dé qui ne montre pas sa valeur ne sert
+   * à rien. À un pixel et demi, l'ordre n'est plus ambigu.
+   *
+   * La profondeur se règle **séparément** du retrait latéral : le noyau reste
+   * presque aussi large que les faces, sans quoi il ne comblerait plus les
+   * coutures qu'on aperçoit précisément près des arêtes.
+   */
+  const coreDepth = 1.5;
   /**
    * Les faces débordent d'une fraction de pixel.
    *
@@ -430,14 +453,21 @@ export const Dice3D: React.FC<Dice3DProps> = ({
         }}
         animate={
           voyage
-            ? { x: flight.x, y: flight.y }
+            ? { x: flight.x, y: flight.y, scale: boardScale }
             : pose
-            ? { x: chute.x, y: chute.y }
-            : { x: 0, y: 0 }
+            ? { x: chute.x, y: chute.y, scale: boardScale }
+            : { x: 0, y: 0, scale: 1 }
         }
         transition={
           voyage
-            ? { duration: flight.durationMs / 1000, times: flight.times, ease: 'linear' }
+            ? {
+                duration: flight.durationMs / 1000,
+                times: flight.times,
+                ease: 'linear',
+                // Le dé rétrécit pendant qu'il descend vers le plateau, le temps
+                // du premier arc : il quitte une main et arrive chez les pions.
+                scale: { duration: (flight.durationMs * flight.times[1]) / 1000, ease: EASE_OUT_SOFT },
+              }
             : { duration: pose ? 0 : 0.25, ease: EASE_OUT_SOFT }
         }
       >
@@ -534,7 +564,7 @@ export const Dice3D: React.FC<Dice3DProps> = ({
               className="absolute backface-hidden"
               style={{
                 inset: coreInset,
-                transform: `${rotate} translateZ(${halfSize - coreInset}px)`,
+                transform: `${rotate} translateZ(${halfSize - coreDepth}px)`,
                 backgroundColor: '#EBC98E',
               }}
             >
