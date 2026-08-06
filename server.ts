@@ -1146,6 +1146,10 @@ io.on('connection', (socket: Socket) => {
       // Re-roll tile: player gets another roll!
       room.gameState.phase = 'rolling';
       room.gameState.diceValue = null;
+      // La poussée précédente ne décrit plus rien : sans cet oubli, le dé restait
+      // affiché à son point de chute au milieu du plateau, puis le nouveau lancer
+      // le faisait repartir de son coin — il sautait d'un endroit à l'autre.
+      room.gameState.diceThrow = null;
       room.gameState.possibleMoves = [];
       room.gameState.lastTurnEventMessage = `🎲 ${activePlayer.name} a atterri sur une case Relancer le dé ! Rejouez tout de suite.`;
       emitGameState(room);

@@ -520,11 +520,24 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
 
   // Le parcours ne dépend que de la poussée et de la graine retenues par le
   // serveur : tous les écrans le recalculent à l'identique.
+  //
+  // Il ne vaut que pour le lancer en cours. Dès qu'un nouveau lancer est attendu
+  // — phase `rolling` —, le dé doit être revenu dans son coin, même si le serveur
+  // a oublié d'effacer la poussée : sinon il reste posé là où il était tombé et
+  // saute dans son coin au lancer suivant. C'est ce qui se voyait sur une case
+  // Relancer.
   const flight = useMemo(() => {
-    if (!gameState.diceThrow || boardPx <= 0) return null;
+    if (!gameState.diceThrow || boardPx <= 0 || gameState.phase === 'rolling') return null;
     const { power, angle, seed } = gameState.diceThrow;
     return flightToPixels(describeFlight(power, angle, seed), boardPx, diePx);
-  }, [gameState.diceThrow?.seed, gameState.diceThrow?.power, gameState.diceThrow?.angle, boardPx, diePx]);
+  }, [
+    gameState.diceThrow?.seed,
+    gameState.diceThrow?.power,
+    gameState.diceThrow?.angle,
+    gameState.phase,
+    boardPx,
+    diePx,
+  ]);
 
   // L'effet qui ouvre la culbute a besoin de sa durée sans dépendre du parcours :
   // la valeur et la poussée arrivent dans le même envoi du serveur.

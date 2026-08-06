@@ -165,6 +165,11 @@ Points de vigilance connus :
   (`src/server/diceThrow.ts`, ADR 0005). Le client n'envoie qu'un **geste** —
   puissance et angle —, jamais un résultat, et le serveur borne les deux : toute
   nouvelle action qui dépend d'un geste doit suivre la même règle.
+- `diceThrow` décrit **le lancer en cours**, et rien d'autre : tout chemin qui
+  ramène en phase `rolling` doit l'effacer avec `diceValue`. La case Relancer l'a
+  oublié — le dé restait posé au milieu du plateau puis sautait dans son coin au
+  lancer suivant. Le client ne s'y fie plus : en phase `rolling`, il ignore la
+  poussée et remet le dé dans son coin, quoi qu'ait envoyé le serveur.
 - Attention à `showTurnIntro` si l'on veut masquer quelque chose pendant l'écran
   « passez l'appareil » : ce drapeau ne redescend qu'au clic sur son bouton, qui
   n'existe qu'en mode local, donc il reste **vrai à jamais** en ligne. La vraie
