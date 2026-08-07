@@ -112,7 +112,7 @@ aussitôt.
 | cinema      | 41 %                      | 13 %       | trop cinéphile |
 | popculture  | 50 %                      | 15 %       | le plus hors cible |
 
-Cible raisonnable pour du Trivial Famille : **≤ 20 %**. Aujourd'hui la moyenne
+Cible raisonnable pour viser le jeu du commerce : **≤ 20 %**. Aujourd'hui la moyenne
 est à 33 %, et une carte adulte sur huit porte sur un fait qui n'apparaît
 qu'une seule fois dans tout le jeu.
 
@@ -365,7 +365,7 @@ bien la catégorie histoire.
 | 2 | Ramener le tableau périodique à ~12 cartes, réécrire ~140 cartes de sciences adultes | élevé | supprime le tirage au sort, rend la catégorie apprenante |
 | 3 | Corriger les ~15 cartes défectueuses listées en 4.1 et 4.3, fusionner les 33 doublons de 4.2, harmoniser Katmandou et Sri Jayawardenepura | faible | qualité immédiate |
 | 4 | Renforcer l'audit : interdiction du clonage ado, détection des doublons par paraphrase, détection morphologique de la fuite de réponse (adulte seulement), plafond de réutilisation d'un moule, plafond de cartes à 4 nombres nus | moyen | empêche la régression |
-| 5 | Faire descendre le plafond adulte vers ≤ 20 % de réponses inconnues du foyer, en commençant par popculture (50 %), cinema (41 %) et art (36 %) | élevé | recentre sur le Trivial Famille |
+| 5 | Faire descendre le plafond adulte vers ≤ 20 % de réponses inconnues du foyer, en commençant par popculture (50 %), cinema (41 %) et art (36 %) | élevé | recentre sur le niveau du jeu du commerce |
 | 6 | Relever l'ancrage francophone du niveau adulte au niveau de l'ado : gastronomie 13 → 35 %, cinema 12 → 25 %, popculture 17 → 30 %, histoire 23 → 35 %, geographie 24 → 35 % | moyen | correspond au public visé |
 | 7 | Dédoublonner cinema / popculture / art enfant et y injecter la culture enfantine francophone | moyen | rend le niveau enfant apprenant |
 | 8 | Rééquilibrer la composition interne de la catégorie art (voir 3.3) | moyen | rend la catégorie lisible |

@@ -107,8 +107,12 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({
             🎯
           </div>
           <div>
-            <h1 className="font-extrabold text-xs sm:text-sm leading-tight text-slate-100">
-              TRIVIAL PURSUIT FAMILLE
+            {/* En capitales par la feuille de style, et non dans le texte : le nom
+                reste celui de la constante, et une recherche du nom le trouve. Écrit
+                « TRIVIAL PURSUIT FAMILLE » en dur, il a survécu au renommage — la
+                recherche était sensible à la casse. */}
+            <h1 className="font-extrabold text-xs sm:text-sm leading-tight text-slate-100 uppercase">
+              {GAME_NAME}
             </h1>
             <div className="flex items-center gap-1.5 text-[11px]">
               <span className="text-slate-400 font-medium">Salon:</span>
