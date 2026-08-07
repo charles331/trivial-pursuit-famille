@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BoardType, CategoryId, GameSettings } from '../types';
 import { CATEGORIES } from '../data/categories';
-import { BOARD_PRESETS } from '../data/boards';
+import { BOARD_CATEGORY_COUNT, BOARD_PRESETS } from '../data/boards';
 import { isCardReadAloud } from '../server/turnRoles';
 import { activeThemeKeys } from '../server/questionSelection';
 import { LayoutGrid, Timer, Sparkles, Check, Wand2, RefreshCw, Gift } from 'lucide-react';
@@ -43,20 +43,29 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
   // Turning the duo on implies the card is read out loud, so the two controls
   // must not contradict each other in the lobby.
   const isReadAloud = isCardReadAloud(settings);
+  const selectedCount = settings.selectedCategories.length;
+  const selectionComplete = selectedCount === BOARD_CATEGORY_COUNT;
 
+  /**
+   * Une partie se joue avec **exactement** six catégories : la roue a six branches,
+   * le camembert six parts, et le porte-camemberts six emplacements (ADR 0007).
+   *
+   * On peut donc descendre en dessous de six le temps de composer sa sélection —
+   * le compteur passe à l'orange et le bouton « commencer » se bloque —, mais jamais
+   * monter au-delà. L'ancien code faisait autrement : dépasser six retirait en
+   * silence la dernière catégorie ajoutée (`current.pop()`), si bien qu'on cochait
+   * une catégorie et qu'une autre disparaissait sans un mot.
+   */
   const handleCategoryToggle = (catId: CategoryId) => {
-    soundManager.playClick();
     const current = [...settings.selectedCategories];
     if (current.includes(catId)) {
-      if (current.length <= 4) return; // Keep at least 4 categories
+      soundManager.playClick();
       onUpdateSettings({ selectedCategories: current.filter(c => c !== catId) });
-    } else {
-      if (current.length >= 6) {
-        // Replace last category
-        current.pop();
-      }
-      onUpdateSettings({ selectedCategories: [...current, catId] });
+      return;
     }
+    if (current.length >= BOARD_CATEGORY_COUNT) return; // il faut d'abord en retirer une
+    soundManager.playClick();
+    onUpdateSettings({ selectedCategories: [...current, catId] });
   };
 
   const handleGenerateAiPack = async (e: React.FormEvent) => {
@@ -154,10 +163,16 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
       <div>
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
-            Catégories du Plateau ({settings.selectedCategories.length}/6)
+            Catégories du Plateau ({selectedCount}/{BOARD_CATEGORY_COUNT})
           </h3>
-          <span className="text-xs text-slate-500 dark:text-slate-400">
-            {isHost ? 'Cliquez pour modifier les thèmes' : 'Sélection de l\'hôte'}
+          <span className={`text-xs font-bold ${
+            selectionComplete ? 'text-slate-500 dark:text-slate-400' : 'text-amber-600 dark:text-amber-400'
+          }`}>
+            {!isHost
+              ? 'Sélection de l’hôte'
+              : selectionComplete
+                ? 'Retirez-en une pour en changer'
+                : `Il en manque ${BOARD_CATEGORY_COUNT - selectedCount}`}
           </span>
         </div>
 
@@ -170,8 +185,11 @@ export const BoardCustomizer: React.FC<BoardCustomizerProps> = ({
               <button
                 key={catId}
                 type="button"
-                disabled={!isHost}
+                disabled={!isHost || (!isSelected && selectionComplete)}
                 onClick={() => handleCategoryToggle(catId)}
+                title={!isSelected && selectionComplete
+                  ? 'Retirez d’abord une catégorie du plateau'
+                  : undefined}
                 className={`flex items-center gap-2.5 p-2.5 rounded-xl border-2 text-left transition-all ${
                   isSelected 
                     ? 'border-transparent shadow-md' 

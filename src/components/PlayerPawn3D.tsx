@@ -7,7 +7,15 @@ import { resolveTilePath } from '../data/boards';
 import { soundManager } from '../utils/sound';
 import { EASE_OUT_SOFT, EASE_SPRING, PAWN_STEP_MS, shade, tint, withAlpha } from '../utils/motion';
 
-/** Wedge slots of the pie holder, clockwise from 12 o'clock. */
+/**
+ * Les six parts du porte-camemberts, dans le sens horaire depuis midi.
+ *
+ * Ce n'est plus une constante : l'ordre est celui des catégories du plateau, et il
+ * doit le suivre. Figé sur les six catégories de base, un camembert gagné en
+ * gastronomie comptait pour la victoire sans jamais se dessiner sur le pion —
+ * l'emplacement n'existait pas. La valeur ci-dessous ne sert que de repli, pour un
+ * pion rendu hors partie (aperçu du salon, tests).
+ */
 export const PAWN_WEDGE_ORDER: CategoryId[] = [
   'histoire',
   'geographie',
@@ -29,6 +37,8 @@ interface PlayerPawn3DProps {
   fanOffset: number;
   stackIndex: number;
   reducedMotion: boolean;
+  /** Les six catégories du plateau, dans l'ordre des parts du porte-camemberts. */
+  wedgeOrder?: CategoryId[];
 }
 
 /**
@@ -50,7 +60,8 @@ export const PlayerPawn3D: React.FC<PlayerPawn3DProps> = ({
   diceValue,
   fanOffset,
   stackIndex,
-  reducedMotion
+  reducedMotion,
+  wedgeOrder = PAWN_WEDGE_ORDER
 }) => {
   const [travelPath, setTravelPath] = useState<BoardTile[] | null>(null);
   const [impact, setImpact] = useState(false);
@@ -179,13 +190,13 @@ export const PlayerPawn3D: React.FC<PlayerPawn3DProps> = ({
   const emptySlot = shade(player.color, 0.68);
 
   const holderGradient = useMemo(() => {
-    const stops = PAWN_WEDGE_ORDER.map((categoryId, index) => {
+    const stops = wedgeOrder.map((categoryId, index) => {
       const owned = player.wedges.includes(categoryId);
       const color = owned ? CATEGORIES[categoryId].color : emptySlot;
       return `${color} ${index * 60}deg ${(index + 1) * 60}deg`;
     }).join(', ');
     return `conic-gradient(${stops})`;
-  }, [player.wedges, emptySlot]);
+  }, [player.wedges, emptySlot, wedgeOrder]);
 
   const rimLight = tint(player.color, 0.4);
   const rimDark = shade(player.color, 0.45);

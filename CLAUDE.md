@@ -209,6 +209,14 @@ Points de vigilance connus :
   quartier sans tourner — mesuré, 150° dès la cinquantième milliseconde. Pour une
   animation déclenchée par un changement d'état, passer par Motion (`animate`), et
   la mesurer : on n'anime pas ce qu'on n'a pas vu bouger dans deux images.
+- Le plateau est une **fonction** des réglages, pas une constante : `buildBoard`
+  (`src/data/boards.ts`) le dérive du type de plateau et des six catégories que la
+  partie a figées dans `gameState.boardCategories`, au lancement. Serveur et clients
+  en déduisent le même plateau ; `BOARD_PRESETS` ne sert plus que d'aperçu et de
+  référence de topologie. Six catégories, exactement six — la roue a six branches et
+  le camembert six parts (ADR 0007). Tout ce qui affiche les six les reçoit en
+  paramètre : cases, secteurs du fond, médaillon central, légende, porte-camemberts
+  des pions, badge de camemberts. Une seule liste laissée en dur et l'écart se voit.
 - Attention à `showTurnIntro` si l'on veut masquer quelque chose pendant l'écran
   « passez l'appareil » : ce drapeau ne redescend qu'au clic sur son bouton, qui
   n'existe qu'en mode local, donc il reste **vrai à jamais** en ligne. La vraie
