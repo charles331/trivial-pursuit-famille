@@ -318,3 +318,35 @@ Une image du vol reste plus large que le pion : un cube qui culbute présente sa
 diagonale, 48,8 px au plus fort. Elle est en l'air, elle est ce qu'on regarde, et
 la ramener sous 43 px demanderait un dé de 28 px de côté dont les points ne se
 liraient plus.
+
+## Révision — Le dé tombait trop souvent sur le 4
+
+Signalé en partie : « le dé tombe énormément sur le 4 ». C'était vrai, et pour deux
+raisons empilées — dont une qui contredisait cette ADR.
+
+**Les couloirs de visée n'étaient pas égaux.** `1 + round(p/100 × 5)` donnait vingt
+valeurs de puissance aux faces 2 à 5 et seulement dix au 1, onze au 6 : les extrêmes
+n'avaient qu'un demi-couloir. Même avec une puissance parfaitement uniforme, le 4
+sortait 20,0 % du temps contre 11,9 % pour le 1. Six couloirs égaux — un simple
+`floor` sur six intervalles — ramènent l'écart à 18,5 contre 13,2 %, ce qui reste le
+fait du noyau de pondération et non du découpage.
+
+**La puissance valait la longueur du glissé en pixels.** Or un pouce sur un téléphone
+parcourt naturellement trente à quatre-vingt-dix pixels : toute la table visait donc
+le milieu de l'échelle sans le savoir. Mesuré, un glissé « normal » donnait le 4 dans
+24,6 % des cas. Et surtout, **viser le 1 demandait un glissé entre huit et neuf
+pixels** — le seuil du geste étant à huit, cela laissait un pixel de fenêtre. Cette
+ADR promet qu'aucune face n'est jamais impossible ; au geste, le 1 l'était.
+
+La puissance se déduit désormais du glissé par une échelle : cent quatre-vingts
+pixels valent une poussée à fond. Chaque face se vise sur une trentaine de pixels,
+plage que la main distingue, et un test verrouille les deux propriétés — couloirs de
+même largeur, et chaque face atteignable sur au moins quinze pixels de glissé.
+
+**Ce qui reste, et qui n'est pas un défaut.** Un dé qui vise suit le geste : une main
+régulière donne une face régulière. Après correction, un joueur au glissé constant de
+soixante-dix pixels obtient sa face favorite 26 % du temps — c'est le noyau
+`[5, 4, 2, 1, 1, 1]` qui le veut, et l'adoucir ne descend qu'à 23 %. Le seul moyen
+d'obtenir une distribution plate serait de retirer la visée, ce que le propriétaire du
+projet a explicitement demandé de ne pas faire. Ce qui varie le résultat, c'est de
+varier le geste.

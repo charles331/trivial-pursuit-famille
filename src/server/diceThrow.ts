@@ -33,10 +33,40 @@ export const DICE_FACES = 6;
  */
 export const AIM_MIN_DRAG_PX = 8;
 
-/** La visée : un geste mou envoie sur le 1, un geste à fond sur le 6. */
+/**
+ * La visée : un geste mou envoie sur le 1, un geste à fond sur le 6.
+ *
+ * Six couloirs de puissance **égaux**. L'arrondi précédent — `1 + round(p/100 × 5)`
+ * — n'en donnait que la moitié aux deux extrêmes : le 1 tenait sur les puissances
+ * 0 à 9 et le 6 sur 90 à 100, contre vingt valeurs pour chacune des quatre autres.
+ * Même avec une puissance parfaitement uniforme, le 4 sortait alors 20 % du temps
+ * contre 11,9 % pour le 1 — signalé en partie, « le dé tombe énormément sur le 4 ».
+ */
 export function aimedFace(power: number): number {
   const clamped = Math.max(0, Math.min(100, power));
-  return 1 + Math.round((clamped / 100) * (DICE_FACES - 1));
+  return 1 + Math.min(DICE_FACES - 1, Math.floor((clamped / 100) * DICE_FACES));
+}
+
+/**
+ * Longueur du glissé, en pixels, qui vaut une poussée à fond.
+ *
+ * La puissance valait la distance parcourue **en pixels**, bornée à cent. Or un
+ * pouce sur un téléphone parcourt naturellement trente à quatre-vingt-dix pixels :
+ * toute la table visait donc, sans le savoir, le milieu de l'échelle. Mesuré, un
+ * glissé « normal » donnait le 4 dans 24,6 % des cas. Pire, viser le 1 demandait un
+ * glissé entre huit et neuf pixels — un pixel de fenêtre, le seuil du geste étant
+ * à huit : la face était inatteignable à la visée, alors que l'ADR 0005 promet que
+ * chaque face reste accessible.
+ *
+ * Cent quatre-vingts pixels, c'est un vrai geste franc de bas en haut de l'écran,
+ * et le reste de l'échelle s'étale enfin sur des longueurs que la main distingue.
+ */
+export const DRAG_FULL_POWER_PX = 180;
+
+/** La puissance d'un glissé, de 0 à 100, à partir de sa longueur en pixels. */
+export function powerFromDrag(distancePx: number): number {
+  const ratio = Math.max(0, distancePx) / DRAG_FULL_POWER_PX;
+  return Math.min(100, Math.round(ratio * 100));
 }
 
 /**

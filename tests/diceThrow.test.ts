@@ -7,6 +7,8 @@ import {
   describeFlight,
   flightToPixels,
   aimedFace,
+  powerFromDrag,
+  DRAG_FULL_POWER_PX,
   expectedFace,
   resolveThrow,
 } from '../src/server/diceThrow';
@@ -204,4 +206,52 @@ test('en pixels, le parcours commence au repos et finit posé', () => {
   // L'ombre rétrécit quand le dé monte.
   const plusHaut = enPixels.lift.indexOf(Math.min(...enPixels.lift));
   assert.ok(enPixels.shadow[plusHaut] < enPixels.shadow[0], 'l’ombre doit rétrécir en l’air');
+});
+
+test('les six faces ont des couloirs de puissance de même largeur', () => {
+  // Signalé en partie : « le dé tombe énormément sur le 4 ». L'arrondi précédent
+  // — `1 + round(p/100 × 5)` — ne donnait que la moitié d'un couloir aux deux
+  // extrêmes : dix valeurs de puissance pour le 1, vingt pour le 4. Même avec une
+  // puissance parfaitement uniforme, le 4 sortait 20 % du temps contre 11,9 %.
+  const largeurs = new Map<number, number>();
+  for (let power = 0; power <= 100; power += 1) {
+    const face = aimedFace(power);
+    largeurs.set(face, (largeurs.get(face) ?? 0) + 1);
+  }
+  assert.equal(largeurs.size, DICE_FACES, 'les six faces doivent être visables');
+  const valeurs = [...largeurs.values()];
+  assert.ok(
+    Math.max(...valeurs) - Math.min(...valeurs) <= 1,
+    `couloirs inégaux : ${[...largeurs.entries()].map(([f, n]) => `${f}:${n}`).join(' ')}`,
+  );
+});
+
+test('chaque face se vise par un geste que la main peut faire', () => {
+  // La puissance valait la longueur du glissé en pixels : viser le 1 demandait un
+  // geste entre 8 et 9 px — le seuil du geste étant à 8, cela laissait un pixel de
+  // fenêtre, et la face était en pratique inatteignable. L'ADR 0005 promet
+  // l'inverse. Chaque face doit désormais s'atteindre sur une plage franche.
+  const fenetres = new Map<number, number>();
+  for (let px = AIM_MIN_DRAG_PX; px <= DRAG_FULL_POWER_PX; px += 1) {
+    const face = aimedFace(powerFromDrag(px));
+    fenetres.set(face, (fenetres.get(face) ?? 0) + 1);
+  }
+  assert.equal(fenetres.size, DICE_FACES, 'les six faces doivent être atteignables au geste');
+  for (const [face, largeur] of fenetres) {
+    assert.ok(largeur >= 15, `la face ${face} ne se vise que sur ${largeur} px de glissé`);
+  }
+});
+
+test('la puissance se déduit du glissé, bornée aux deux bouts', () => {
+  assert.equal(powerFromDrag(0), 0);
+  assert.equal(powerFromDrag(-40), 0);
+  assert.equal(powerFromDrag(DRAG_FULL_POWER_PX), 100);
+  assert.equal(powerFromDrag(DRAG_FULL_POWER_PX * 3), 100);
+  // Et elle croît : un geste plus long ne peut pas viser plus bas.
+  let precedent = -1;
+  for (let px = 0; px <= DRAG_FULL_POWER_PX; px += 5) {
+    const power = powerFromDrag(px);
+    assert.ok(power >= precedent, `${px} px donne ${power}, moins que le glissé précédent`);
+    precedent = power;
+  }
 });

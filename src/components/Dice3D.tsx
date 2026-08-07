@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { soundManager } from '../utils/sound';
 import { Dices, Sparkles, Hand, RefreshCw } from 'lucide-react';
-import { AIM_MIN_DRAG_PX, DiceFlightPx } from '../server/diceThrow';
+import { AIM_MIN_DRAG_PX, DiceFlightPx, powerFromDrag } from '../server/diceThrow';
 import { EASE_OUT_SOFT } from '../utils/motion';
 
 interface Dice3DProps {
@@ -367,7 +367,12 @@ export const Dice3D: React.FC<Dice3DProps> = ({
     const dy = e.clientY - touchStartRef.current.y;
     // La poussée se mesure sur le geste complet, pas sur l'état de rendu : un
     // coup sec peut se relever avant que React ait repeint quoi que ce soit.
-    const power = Math.min(100, Math.round(Math.hypot(dx, dy)));
+    //
+    // Le seuil s'applique à la **distance** et la puissance s'en déduit par une
+    // échelle : la puissance valait auparavant la distance elle-même, si bien que
+    // tout glissé de pouce ordinaire visait le milieu du dé.
+    const distance = Math.hypot(dx, dy);
+    const power = powerFromDrag(distance);
     const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
 
     touchStartRef.current = null;
@@ -381,7 +386,7 @@ export const Dice3D: React.FC<Dice3DProps> = ({
     // que pendant son propre tour de lancer.
     //
     // En dessous du seuil, le geste ne vise rien : le dé part au hasard.
-    if (!disabled && !isRolling) triggerRoll(power >= AIM_MIN_DRAG_PX ? { power, angle } : null);
+    if (!disabled && !isRolling) triggerRoll(distance >= AIM_MIN_DRAG_PX ? { power, angle } : null);
   };
 
   // Helper to render pips/dots on each face
