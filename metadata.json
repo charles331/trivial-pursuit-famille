@@ -1,5 +1,5 @@
 {
-  "name": "Trivial Pursuit Famille",
+  "name": "Le Défi des Familles",
   "description": "Jeu de quiz familial multijoueur en ligne avec plateaux personnalisables, salons privés, avatars et questions de culture générale.",
   "requestFramePermissions": [
     "camera",

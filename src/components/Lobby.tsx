@@ -4,6 +4,7 @@ import { AvatarPicker } from './AvatarPicker';
 import { soundManager } from '../utils/sound';
 import { AVATARS } from '../data/avatars';
 import { BOARD_PRESETS } from '../data/boards';
+import { GAME_NAME, GAME_NAME_PARTS } from '../config/brand';
 import {
   DEFAULT_PROFILE,
   loadStoredProfile,
@@ -170,7 +171,7 @@ export const Lobby: React.FC<LobbyProps> = ({
     const url = `${window.location.origin}${window.location.pathname}?code=${gameState?.roomCode}`;
     if (navigator.share) {
       navigator.share({
-        title: 'Rejoins notre partie de Trivial Pursuit Famille !',
+        title: `Rejoins notre partie du ${GAME_NAME} !`,
         text: `Clique sur le lien pour rejoindre directement notre salon privé avec le code ${gameState?.roomCode}`,
         url
       }).catch(() => {
@@ -532,15 +533,23 @@ export const Lobby: React.FC<LobbyProps> = ({
   return (
     <div className="w-full max-w-md mx-auto p-4 sm:p-6 space-y-5 animate-fadeIn">
 
-      {/* Hero compact : le nom du jeu et sa promesse tiennent au-dessus de la ligne de flottaison */}
+      {/* Hero compact : le nom du jeu et sa promesse tiennent au-dessus de la ligne de flottaison.
+
+          Ces deux textes sont les seuls du jeu posés directement sur la page, et
+          non dans une carte. La page est sombre en toutes circonstances — aucune
+          variante claire —, donc ils n'ont pas à en prévoir une : ils portaient
+          `text-slate-900` et `text-slate-600`, choisis pour un fond blanc qui
+          n'arrive jamais. Sur un téléphone réglé en mode clair, le titre tombait
+          à 1,13:1 contre le fond, autant dire invisible, et le sous-titre à
+          2,66:1 — mesuré au banc, contre 20,16:1 et 7,66:1 en mode sombre. */}
       <div className="text-center space-y-2">
         <div className="w-16 h-16 mx-auto rounded-3xl bg-gradient-to-tr from-amber-400 via-orange-500 to-pink-500 flex items-center justify-center text-3xl shadow-xl ring-4 ring-amber-300/40">
           🎯
         </div>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-          Trivial Pursuit <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-500">Famille</span>
+        <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+          {GAME_NAME_PARTS.lead} <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-500">{GAME_NAME_PARTS.accent}</span>
         </h1>
-        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
+        <p className="text-xs sm:text-sm text-slate-400 font-medium">
           Le quiz de culture générale à jouer en famille, sur un ou plusieurs appareils.
         </p>
       </div>
@@ -598,8 +607,11 @@ export const Lobby: React.FC<LobbyProps> = ({
             maxLength={18}
             className="w-full px-4 py-3 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-amber-500 text-base"
           />
-          {/* Mention discrète : le profil ne quitte pas l'appareil, et on peut l'oublier. */}
-          <p className="mt-1 flex items-center justify-between gap-2 px-1 text-[10px] leading-tight text-slate-400 dark:text-slate-500">
+          {/* Mention discrète : le profil ne quitte pas l'appareil, et on peut l'oublier.
+              Discrète, pas illisible : les deux teintes étaient inversées — la plus
+              sombre servait au fond sombre — et la mention tombait à 2,63:1 sur la
+              carte blanche. Un texte de dix pixels demande 4,5:1. */}
+          <p className="mt-1 flex items-center justify-between gap-2 px-1 text-[10px] leading-tight text-slate-500 dark:text-slate-400">
             <span>🔒 Gardé sur cet appareil, rien n’est envoyé en ligne.</span>
             {hasSavedProfile && (
               <button

@@ -3,8 +3,8 @@
  *
  * Contrairement à `audit-questions.ts`, ce script ne fait jamais échouer la
  * commande : il mesure. Il sert à piloter le rééquilibrage du niveau des
- * cartes (référence visée : Trivial Pursuit Famille, culture générale grand
- * public, avec un ancrage francophone assumé).
+ * cartes (étalon visé : l'édition Famille du Trivial Pursuit du commerce,
+ * culture générale grand public, avec un ancrage francophone assumé).
  *
  * Usage : npm run analyze:difficulty
  */

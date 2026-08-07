@@ -10,7 +10,7 @@ Date : juillet 2026 — corpus analysé : 5 360 cartes
 > décrivent l'état initial : ils sont conservés tels quels pour garder la
 > trace du diagnostic.
 
-Référence visée : **Trivial Pursuit Famille**, c'est-à-dire de la culture
+Étalon visé : l'**édition Famille du Trivial Pursuit du commerce**, c'est-à-dire de la culture
 générale grand public où un adulte informé répond correctement à peu près
 une fois sur deux, où l'on apprend quelque chose en perdant, et où un ado
 peut battre ses parents sur une carte de temps en temps.

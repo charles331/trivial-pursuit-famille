@@ -3,6 +3,7 @@ import { GameState } from '../types';
 import { soundManager } from '../utils/sound';
 import { AVATARS } from '../data/avatars';
 import { normalizeSeatName } from '../server/seats';
+import { GAME_NAME } from '../config/brand';
 import { Volume2, VolumeX, Copy, Check, Users, HelpCircle, LogOut, Share2, Pause, Play } from 'lucide-react';
 
 interface InGameHeaderProps {
@@ -72,8 +73,8 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({
     
     if (navigator.share) {
       navigator.share({
-        title: 'Trivial Pursuit Famille',
-        text: `Rejoins notre partie de Trivial Pursuit Famille avec le code ${gameState.roomCode} !`,
+        title: GAME_NAME,
+        text: `Rejoins notre partie du ${GAME_NAME} avec le code ${gameState.roomCode} !`,
         url: inviteUrl
       }).catch(() => {
         navigator.clipboard.writeText(inviteUrl);
@@ -441,7 +442,7 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center overflow-y-auto p-4">
           <div className="my-auto bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full text-white space-y-4">
             <h3 className="text-lg font-black text-amber-400 flex items-center gap-2">
-              📜 Règles du Trivial Pursuit Famille
+              📜 Règles du {GAME_NAME}
             </h3>
 
             <div className="space-y-2 text-xs text-slate-300 leading-relaxed">

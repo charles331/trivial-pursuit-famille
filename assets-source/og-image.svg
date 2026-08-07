@@ -34,8 +34,8 @@
   <circle cx="300" cy="315" r="53.20" fill="#0B1220"/>
   <circle cx="300" cy="315" r="28.50" fill="#F8FAFC"/>
 
-  <text x="580" y="232" font-family="Liberation Sans, DejaVu Sans, Arial, sans-serif" font-size="76" font-weight="bold" fill="#F8FAFC">Trivial Pursuit</text>
-  <text x="580" y="318" font-family="Liberation Sans, DejaVu Sans, Arial, sans-serif" font-size="76" font-weight="bold" fill="#FBBF24">Famille</text>
+  <text x="580" y="232" font-family="Liberation Sans, DejaVu Sans, Arial, sans-serif" font-size="76" font-weight="bold" fill="#F8FAFC">Le Défi</text>
+  <text x="580" y="318" font-family="Liberation Sans, DejaVu Sans, Arial, sans-serif" font-size="76" font-weight="bold" fill="#FBBF24">des Familles</text>
   <text x="580" y="388" font-family="Liberation Sans, DejaVu Sans, Arial, sans-serif" font-size="31" fill="#CBD5E1">Quiz de culture générale en famille</text>
 
   <rect x="580" y="428" width="430" height="3" rx="1.5" fill="#8B5CF6" opacity="0.7"/>
