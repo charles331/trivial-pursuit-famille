@@ -83,6 +83,7 @@ import { applyFactDuplicateRewrites } from './questionBank/factDuplicateRewrites
 import { applyAdoVariableFormats } from './questionBank/adoVariableFormats';
 import { applyCrossLevelRewrites } from './questionBank/crossLevelRewrites';
 import { applyQuantityRewrites } from './questionBank/quantityRewrites';
+import { applyFranchisesAdoRewrites } from './questionBank/franchisesAdoRewrites';
 import { MUSIQUE_CLASSIQUE_ADULTE } from './questionBank/musiqueClassiqueAdultEditorial';
 import { POPCULTURE_FRANCOPHONE_ADULTE } from './questionBank/popcultureFrancophoneAdultEditorial';
 import { POPCULTURE_GRAND_PUBLIC_ADULTE } from './questionBank/popcultureGrandPublicAdultEditorial';
@@ -195,7 +196,8 @@ const seenIds = new Set<string>();
 // to the teen bank removed a whole step from the difficulty ladder: a teenager
 // received the child questions verbatim. Every level now reaches its target
 // only through banks written for that level.
-const COMPLETED_QUESTIONS = applyQuantityRewrites(
+const COMPLETED_QUESTIONS = applyFranchisesAdoRewrites(
+  applyQuantityRewrites(
   applyCrossLevelRewrites(
   applyAdoVariableFormats(
   applyFactDuplicateRewrites(
@@ -208,6 +210,7 @@ const COMPLETED_QUESTIONS = applyQuantityRewrites(
         ),
       ),
     ),
+  ),
   ),
   ),
   ),
