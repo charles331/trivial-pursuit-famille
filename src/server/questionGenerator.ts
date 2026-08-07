@@ -147,7 +147,7 @@ export function buildQuestionGenerationPrompt(
     ? `\n- Angle prioritaire de ce lot : ${angle}. D'autres lots couvrent les autres angles du thème en parallèle — ne t'en écarte que si le thème ne s'y prête vraiment pas.`
     : '';
 
-  return `Génère exactement ${count} questions de quiz captivantes, amusantes et FACTUELLEMENT EXACTES en français sur le thème "${themeName}", pour un jeu familial de type Trivial Pursuit.
+  return `Génère exactement ${count} questions de quiz captivantes, amusantes et FACTUELLEMENT EXACTES en français sur le thème "${themeName}", pour un jeu de quiz familial de culture générale.
 
 Structure imposée :${anglePart}
 - Répartis les questions entre les catégories du jeu (${CATEGORY_IDS.join(', ')}) en choisissant celles qui collent le mieux au thème. Chaque question doit réellement porter sur "${themeName}".
