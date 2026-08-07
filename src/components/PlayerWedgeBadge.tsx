@@ -7,14 +7,21 @@ interface PlayerWedgeBadgeProps {
   wedges: CategoryId[];
   size?: number;
   showLabels?: boolean;
+  /**
+   * Les six catégories du plateau, dans l'ordre. Comme le porte-camemberts du pion,
+   * ce badge dessinait un ordre figé : un camembert gagné dans une catégorie hors
+   * de cette liste n'avait aucune part où s'afficher.
+   */
+  categories?: CategoryId[];
 }
 
 export const PlayerWedgeBadge: React.FC<PlayerWedgeBadgeProps> = ({ 
   wedges, 
   size = 48,
-  showLabels = false 
+  showLabels = false,
+  categories
 }) => {
-  const categoryKeys: CategoryId[] = [
+  const categoryKeys: CategoryId[] = categories ?? [
     'histoire',
     'geographie',
     'cinema',
@@ -81,7 +88,7 @@ export const PlayerWedgeBadge: React.FC<PlayerWedgeBadgeProps> = ({
 
       {showLabels && (
         <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
-          {wedges.length}/6 Camemberts
+          {wedges.length}/{categoryKeys.length} Camemberts
         </span>
       )}
     </div>

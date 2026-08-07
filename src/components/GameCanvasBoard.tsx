@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GameState, BoardTile, CategoryId, BoardConfig } from '../types';
-import { BOARD_PRESETS, resolveTilePath } from '../data/boards';
+import { buildBoard, resolveBoardCategories, resolveTilePath } from '../data/boards';
 import { CATEGORIES } from '../data/categories';
 import { AVATARS } from '../data/avatars';
 import { PlayerWedgeBadge } from './PlayerWedgeBadge';
@@ -38,15 +38,12 @@ interface GameCanvasBoardProps {
   onSelectTile: (tileId: number) => void;
 }
 
-/** Order of the 6 scoring categories around the wheel and inside the pawns. */
-const MAIN_CATEGORIES: CategoryId[] = [
-  'histoire',
-  'geographie',
-  'cinema',
-  'sciences',
-  'art',
-  'sports'
-];
+/**
+ * Les six catégories du plateau ne sont plus une constante de ce fichier : elles
+ * viennent de la partie. Elles peignent trois choses qui doivent s'accorder — les
+ * secteurs colorés du fond, les parts du médaillon central et la légende — et le
+ * moindre écart entre elles et les cases se voit immédiatement.
+ */
 
 const CATEGORY_ICONS: Record<CategoryId, React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>> = {
   histoire: Landmark,
@@ -150,7 +147,7 @@ function computeCamera(
 }
 
 /** Static artwork of the board: felt, sectors, rails and central medallion. */
-const BoardBackdrop: React.FC<{ config: BoardConfig }> = ({ config }) => {
+const BoardBackdrop: React.FC<{ config: BoardConfig; categories: CategoryId[] }> = ({ config, categories }) => {
   if (config.layout === 'grid') {
     const ordered = [...config.tiles].sort((a, b) => a.id - b.id);
     return (
@@ -188,7 +185,7 @@ const BoardBackdrop: React.FC<{ config: BoardConfig }> = ({ config }) => {
       {/* Six 60° category sectors: each branch of the wheel gets its own
           coloured region, which is what makes the board readable at a glance
           once it is scaled down to a phone screen. */}
-      {MAIN_CATEGORIES.map((categoryId, index) => {
+      {categories.map((categoryId, index) => {
         const color = CATEGORIES[categoryId].color;
         const start = ((index * 60 - 30) - 90) * (Math.PI / 180);
         const end = ((index * 60 + 30) - 90) * (Math.PI / 180);
@@ -221,7 +218,7 @@ const BoardBackdrop: React.FC<{ config: BoardConfig }> = ({ config }) => {
       })}
 
       {/* Spoke tracks */}
-      {MAIN_CATEGORIES.map((_, index) => {
+      {categories.map((_, index) => {
         const rad = (index * 60 - 90) * (Math.PI / 180);
         return (
           <line
@@ -245,7 +242,7 @@ const BoardBackdrop: React.FC<{ config: BoardConfig }> = ({ config }) => {
 
       {/* Central hub: wedge ring + gold medallion */}
       <g>
-        {MAIN_CATEGORIES.map((categoryId, index) => {
+        {categories.map((categoryId, index) => {
           const outer = 104;
           const inner = 62;
           const start = (index * 60 - 90) * (Math.PI / 180);
@@ -314,7 +311,18 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
   const activePlayer = gameState.players[gameState.activePlayerIndex] || gameState.players[0];
   const isMyTurn =
     activePlayer?.id === effectiveUserId || gameState.settings.isLocalMode || gameState.players.length === 1;
-  const boardConfig = BOARD_PRESETS[gameState.settings.boardType] || BOARD_PRESETS.wheel;
+  // Le plateau se dérive des catégories que la partie a figées, exactement comme le
+  // serveur les dérive de son côté : c'est la condition pour que tous les écrans
+  // voient les mêmes cases. Il ne se lisait pas du tout dans les réglages avant —
+  // signalé en partie, « les catégories de base restent sur le plateau ».
+  const boardCategories = useMemo(
+    () => resolveBoardCategories(gameState.boardCategories),
+    [gameState.boardCategories?.join('|')],
+  );
+  const boardConfig = useMemo(
+    () => buildBoard(gameState.settings.boardType, boardCategories),
+    [gameState.settings.boardType, boardCategories],
+  );
   const tiles = boardConfig.tiles;
 
   /**
@@ -823,7 +831,7 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
               </marker>
             </defs>
 
-            <BoardBackdrop config={boardConfig} />
+            <BoardBackdrop config={boardConfig} categories={boardCategories} />
 
             {/* Glow bed of the previewed trajectory, under the tiles */}
             {previewPath && (
@@ -1004,6 +1012,7 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
                   <PlayerPawn3D
                     key={`pawn_${player.id}`}
                     player={player}
+                    wedgeOrder={boardCategories}
                     tiles={tiles}
                     boardPx={boardPx}
                     isActive={index === gameState.activePlayerIndex}
@@ -1207,7 +1216,7 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
                 </div>
               </div>
 
-              <PlayerWedgeBadge wedges={player.wedges} size={34} />
+              <PlayerWedgeBadge wedges={player.wedges} size={34} categories={boardCategories} />
             </motion.div>
           );
         })}
@@ -1215,7 +1224,7 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
 
       {/* --------------------------------------------------------------- legend */}
       <div className="no-scrollbar z-10 flex w-full items-center gap-1.5 overflow-x-auto pb-0.5 text-[11px] font-bold">
-        {MAIN_CATEGORIES.map(categoryId => {
+        {boardCategories.map(categoryId => {
           const category = CATEGORIES[categoryId];
           const Icon = CATEGORY_ICONS[categoryId];
           return (

@@ -3,7 +3,7 @@ import { GameState, GameSettings, Player, DifficultyLevel } from '../types';
 import { AvatarPicker } from './AvatarPicker';
 import { soundManager } from '../utils/sound';
 import { AVATARS } from '../data/avatars';
-import { BOARD_PRESETS } from '../data/boards';
+import { BOARD_CATEGORY_COUNT, BOARD_PRESETS } from '../data/boards';
 import { GAME_NAME, GAME_NAME_PARTS } from '../config/brand';
 import {
   DEFAULT_PROFILE,
@@ -103,6 +103,10 @@ export const Lobby: React.FC<LobbyProps> = ({
   const readyCount = connectedPlayers.filter(p => p.isReady).length;
   const everyoneReady = connectedPlayers.length > 0 && readyCount === connectedPlayers.length;
   const lobbyAvatar = AVATARS.find(a => a.id === me?.avatarId) || AVATARS[0];
+  // Le plateau se construit sur exactement six catégories : tant que la sélection
+  // n'y est pas, le serveur refuserait de lancer, autant le dire sur le bouton.
+  const categoriesReady =
+    (gameState?.settings.selectedCategories?.length ?? 0) === BOARD_CATEGORY_COUNT;
 
   const handleCreateOnline = (isLocal = false) => {
     soundManager.playClick();
@@ -458,7 +462,7 @@ export const Lobby: React.FC<LobbyProps> = ({
                     : `${readyCount}/${connectedPlayers.length} joueurs prêts`}
                 </div>
                 <button
-                  disabled={!gameState.settings.isLocalMode && !everyoneReady}
+                  disabled={(!gameState.settings.isLocalMode && !everyoneReady) || !categoriesReady}
                   onClick={() => {
                     soundManager.playClick();
                     onStartGame();
@@ -466,7 +470,11 @@ export const Lobby: React.FC<LobbyProps> = ({
                   className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-lg rounded-3xl flex items-center justify-center gap-3 shadow-2xl scale-105 active:scale-100 transition-all disabled:opacity-40 disabled:grayscale disabled:cursor-not-allowed"
                 >
                   <Play className="w-6 h-6 fill-slate-950 stroke-none" />
-                  {!gameState.settings.isLocalMode && !everyoneReady ? 'EN ATTENTE DES JOUEURS' : 'DÉMARRER LA PARTIE'}
+                  {!categoriesReady
+                    ? `CHOISISSEZ ${BOARD_CATEGORY_COUNT} CATÉGORIES`
+                    : !gameState.settings.isLocalMode && !everyoneReady
+                      ? 'EN ATTENTE DES JOUEURS'
+                      : 'DÉMARRER LA PARTIE'}
                 </button>
                 {gameState.players.length > 1 && (
                   <p className="text-center text-[11px] font-medium text-slate-500 dark:text-slate-400">

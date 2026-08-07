@@ -176,6 +176,16 @@ export interface FirstPlayerDraw {
 }
 
 export interface GameState {
+  /**
+   * Les six catégories du plateau, figées au lancement de la partie.
+   *
+   * Le plateau se dérive d'elles, sur le serveur comme sur chaque écran. Elles
+   * vivent dans l'état de la partie et non dans les réglages, parce qu'un réglage
+   * se modifie encore dans le salon : une partie en cours ne doit pas voir ses
+   * cases changer de couleur sous elle. Absentes, on retombe sur les six par
+   * défaut (`resolveBoardCategories`).
+   */
+  boardCategories?: CategoryId[];
   roomCode: string;
   phase: GamePhase;
   settings: GameSettings;

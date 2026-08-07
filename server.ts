@@ -6,7 +6,7 @@ import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { createServer as createViteServer } from 'vite';
 import { QUESTIONS_DATABASE } from './src/data/questions.js';
-import { BOARD_PRESETS } from './src/data/boards.js';
+import { BOARD_CATEGORY_COUNT, buildBoard, resolveBoardCategories } from './src/data/boards.js';
 import { normalizeCategoryId } from './src/data/categories.js';
 import {
   normalize as normalizeText,
@@ -920,6 +920,17 @@ io.on('connection', (socket: Socket) => {
       }
     }
 
+    // Exactement six catégories, ni plus ni moins : la roue a six branches et le
+    // camembert six parts (ADR 0007). Le refus se fait ici et pas seulement dans
+    // l'interface, parce que c'est le serveur qui construit le plateau — et parce
+    // qu'un salon repris du disque peut porter une sélection d'une version d'avant.
+    if (room.settings.selectedCategories?.length !== BOARD_CATEGORY_COUNT) {
+      return socket.emit(
+        'error-msg',
+        `Choisissez exactement ${BOARD_CATEGORY_COUNT} catégories pour le plateau.`,
+      );
+    }
+
     // Ensure all players have a non-empty name when game starts
     room.gameState.players.forEach((player, idx) => {
       if (!player.name || !player.name.trim()) {
@@ -931,6 +942,12 @@ io.on('connection', (socket: Socket) => {
     // Sans cela, « Rejouer » après une victoire redonnait la main au vainqueur
     // avec tous ses camemberts déjà en poche.
     resetGameForNewRound(room.gameState);
+
+    // Les catégories du plateau se figent ici, au lancement, et plus jamais après :
+    // l'hôte peut encore toucher aux réglages du salon, mais une partie en cours ne
+    // doit pas voir ses cases changer de catégorie sous elle. Après la remise à zéro,
+    // pour qu'un futur nettoyage de manche ne les efface pas.
+    room.gameState.boardCategories = resolveBoardCategories(room.settings.selectedCategories);
 
     // Collect all custom questions from custom packs added to the room
     const customQuestions: Question[] = [];
@@ -1105,7 +1122,7 @@ io.on('connection', (socket: Socket) => {
     room.gameState.activeQuestionBonus = null;
 
     const activePlayer = room.gameState.players[room.gameState.activePlayerIndex];
-    const board = BOARD_PRESETS[room.settings.boardType];
+    const board = buildBoard(room.settings.boardType, room.gameState.boardCategories);
 
     // Calculate possible movement destination tile IDs
     const currentTile = board.tiles.find(t => t.id === activePlayer.currentTileId) || board.tiles[0];
@@ -1138,7 +1155,7 @@ io.on('connection', (socket: Socket) => {
     activePlayer.currentTileId = data.destinationTileId;
     room.gameState.selectedTileId = data.destinationTileId;
 
-    const board = BOARD_PRESETS[room.settings.boardType];
+    const board = buildBoard(room.settings.boardType, room.gameState.boardCategories);
     const tile = board.tiles.find(t => t.id === data.destinationTileId);
 
     if (!tile) return;
@@ -1259,7 +1276,7 @@ io.on('connection', (socket: Socket) => {
     if (!Number.isInteger(data.optionIndex) || data.optionIndex < -1 || data.optionIndex > 3) return;
     if (room.gameState.activeQuestionBonus?.hiddenOptionIndexes.includes(data.optionIndex)) return;
 
-    const board = BOARD_PRESETS[room.settings.boardType];
+    const board = buildBoard(room.settings.boardType, room.gameState.boardCategories);
     resolveAnswer(room.gameState, room.settings, board, data.optionIndex);
     emitGameState(room);
   });

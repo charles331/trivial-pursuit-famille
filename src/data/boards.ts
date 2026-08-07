@@ -9,7 +9,18 @@ function circlePoint(cx: number, cy: number, r: number, angleDeg: number) {
   };
 }
 
-const CATEGORIES_LIST: CategoryId[] = [
+/**
+ * Les six catégories d'un plateau, dans l'ordre où elles se posent sur ses cases
+ * et dans le porte-camemberts des pions.
+ *
+ * Six, et exactement six : la roue a six branches et le camembert six parts.
+ * C'est aussi le nombre de cases camembert et de places dans la légende des
+ * couleurs — décision du propriétaire du projet, ADR 0007.
+ */
+export const BOARD_CATEGORY_COUNT = 6;
+
+/** La sélection par défaut, celle des salons qui n'en ont pas choisi. */
+export const DEFAULT_BOARD_CATEGORIES: CategoryId[] = [
   'histoire',
   'geographie',
   'cinema',
@@ -18,7 +29,32 @@ const CATEGORIES_LIST: CategoryId[] = [
   'sports'
 ];
 
-function generateWheelBoard(additionalSpokeTile = true): BoardTile[] {
+/**
+ * Ramène une sélection quelconque à six catégories utilisables.
+ *
+ * Le plateau se construit à partir d'elle sur le serveur **et** sur chaque écran :
+ * une sélection incomplète — salon repris du disque, réglage d'une version
+ * antérieure, client malveillant — ne doit pas produire deux plateaux différents,
+ * ni un plateau à trous. On complète donc dans l'ordre par défaut, et on tronque.
+ */
+export function resolveBoardCategories(
+  selection: readonly CategoryId[] | undefined | null,
+): CategoryId[] {
+  const retenues: CategoryId[] = [];
+  for (const categoryId of selection ?? []) {
+    if (!retenues.includes(categoryId)) retenues.push(categoryId);
+  }
+  for (const secours of DEFAULT_BOARD_CATEGORIES) {
+    if (retenues.length >= BOARD_CATEGORY_COUNT) break;
+    if (!retenues.includes(secours)) retenues.push(secours);
+  }
+  return retenues.slice(0, BOARD_CATEGORY_COUNT);
+}
+
+function generateWheelBoard(
+  CATEGORIES_LIST: CategoryId[],
+  additionalSpokeTile = true,
+): BoardTile[] {
   const tiles: BoardTile[] = [];
   const cx = 500;
   const cy = 500;
@@ -198,11 +234,29 @@ function generateWheelBoard(additionalSpokeTile = true): BoardTile[] {
   return tiles;
 }
 
-function generateSnakeBoard(): BoardTile[] {
+function generateSnakeBoard(CATEGORIES_LIST: CategoryId[]): BoardTile[] {
   const tiles: BoardTile[] = [];
   const rows = 5;
   const cols = 6;
   let id = 0;
+  const lastId = rows * cols - 1;
+
+  /**
+   * Une case camembert par catégorie, ni plus ni moins.
+   *
+   * L'ancienne règle en posait une toutes les cinq cases, soit cinq en tout pour
+   * six catégories : il en manquait toujours une, et une partie en six camemberts
+   * était donc **ingagnable** sur ce plateau — à moins de décrocher un joker sur la
+   * bonne case. Le défaut ne se voyait pas, la catégorie orpheline étant la
+   * première de la liste, celle qu'on gagne d'ordinaire ailleurs.
+   *
+   * On répartit donc exactement six cases sur le trajet, en évitant le départ et
+   * la case centrale, et chacune reçoit la catégorie de son rang.
+   */
+  const camembertIds = Array.from(
+    { length: CATEGORIES_LIST.length },
+    (_, rank) => Math.round(((rank + 1) * (lastId - 1)) / CATEGORIES_LIST.length),
+  );
 
   for (let r = 0; r < rows; r++) {
     const isEven = (r % 2 === 0);
@@ -212,9 +266,14 @@ function generateSnakeBoard(): BoardTile[] {
       // room above the first row for the 3D pawns standing on their tile.
       const x = Math.round(150 + colIndex * 140);
       const y = Math.round(215 + r * 145);
-      const catId = CATEGORIES_LIST[(id) % CATEGORIES_LIST.length];
-      const isCamembert = (id > 0 && id % 5 === 0);
-      const isHub = (id === rows * cols - 1);
+      const camembertRank = camembertIds.indexOf(id);
+      const isHub = (id === lastId);
+      const isCamembert = camembertRank >= 0 && !isHub;
+      // Une case camembert porte la catégorie de son rang : c'est ce qui garantit
+      // que les six soient toutes gagnables. Les autres suivent le défilé habituel.
+      const catId = isCamembert
+        ? CATEGORIES_LIST[camembertRank % CATEGORIES_LIST.length]
+        : CATEGORIES_LIST[id % CATEGORIES_LIST.length];
 
       tiles.push({
         id: id,
@@ -223,7 +282,7 @@ function generateSnakeBoard(): BoardTile[] {
         label: isHub ? 'VICTOIRE' : isCamembert ? 'CAMEMBERT' : catId.toUpperCase(),
         x,
         y,
-        nextTileIds: id < rows * cols - 1 ? [id + 1] : [0],
+        nextTileIds: id < lastId ? [id + 1] : [0],
         isCamembert
       });
       id++;
@@ -252,7 +311,7 @@ export const BOARD_PRESETS: Record<BoardType, BoardConfig> = {
     description: 'Le plateau de jeu emblématique avec un centre, 6 branches et 6 cases camemberts.',
     suggestedDuration: '45-60 min',
     layout: 'radial',
-    tiles: generateWheelBoard()
+    tiles: generateWheelBoard(DEFAULT_BOARD_CATEGORIES)
   },
   snake: {
     id: 'snake',
@@ -260,7 +319,7 @@ export const BOARD_PRESETS: Record<BoardType, BoardConfig> = {
     description: 'Un serpentin dynamique idéal pour les parties rapides sur tablette ou mobile.',
     suggestedDuration: '25-35 min',
     layout: 'grid',
-    tiles: generateSnakeBoard()
+    tiles: generateSnakeBoard(DEFAULT_BOARD_CATEGORIES)
   },
   star: {
     id: 'star',
@@ -268,9 +327,35 @@ export const BOARD_PRESETS: Record<BoardType, BoardConfig> = {
     description: 'Un plateau à 4 branches courtes concentré sur la rapidité et la stratégie.',
     suggestedDuration: '20-30 min',
     layout: 'radial',
-    tiles: generateWheelBoard(false) // keep the shorter four-position branches
+    tiles: generateWheelBoard(DEFAULT_BOARD_CATEGORIES, false) // keep the shorter four-position branches
   }
 };
+
+/**
+ * Le plateau d'un salon : sa forme vient du type choisi, ses catégories de la
+ * sélection de l'hôte.
+ *
+ * `BOARD_PRESETS` reste la forme par défaut — celle que l'aperçu du salon montre,
+ * et celle des tests de topologie —, mais une partie ne s'y réfère plus : le
+ * plateau doit dépendre du salon, et il ne pouvait pas le faire tant qu'il était un
+ * objet statique construit au chargement du module. Signalé en partie : « je peux
+ * sélectionner ce que je veux, les catégories de base restent sur le plateau ».
+ *
+ * La fonction est **pure** : le serveur et tous les écrans en dérivent le même
+ * plateau à partir de la même liste, comme le parcours du dé se dérive de sa
+ * poussée. Rien n'est tiré au sort ici, sans quoi les plateaux divergeraient.
+ */
+export function buildBoard(
+  boardType: BoardType,
+  selection: readonly CategoryId[] | undefined | null,
+): BoardConfig {
+  const preset = BOARD_PRESETS[boardType] ?? BOARD_PRESETS.wheel;
+  const categories = resolveBoardCategories(selection);
+  const tiles = preset.id === 'snake'
+    ? generateSnakeBoard(categories)
+    : generateWheelBoard(categories, preset.id !== 'star');
+  return { ...preset, tiles };
+}
 
 /**
  * Reconstructs the tiles a pawn walks through to go from `fromId` to `toId`.
