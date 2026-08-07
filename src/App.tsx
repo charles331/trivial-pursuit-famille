@@ -325,6 +325,13 @@ export default function App() {
     }
   };
 
+  /** Le geste, pas le résultat : le serveur retient l'instant du lancer pour tous. */
+  const handleSpinSurpriseWheel = () => {
+    if (socket && gameState) {
+      socket.emit('spin-surprise-wheel', { roomCode: gameState.roomCode });
+    }
+  };
+
   const handleTogglePause = () => {
     if (socket && gameState) {
       socket.emit('toggle-pause', { roomCode: gameState.roomCode });
@@ -363,7 +370,7 @@ export default function App() {
   // Render Lobby if not in active game or in lobby phase
   if (!gameState || gameState.phase === 'lobby') {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-amber-500 selection:text-slate-950">
+      <div className="min-h-dvh bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-amber-500 selection:text-slate-950">
         <Lobby
           gameState={gameState}
           currentUserId={currentUserId}
@@ -391,7 +398,7 @@ export default function App() {
   // tant que la table ne sait pas qui ouvre la partie.
   if (gameState.phase === 'first_player_roll' || showDrawResult) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+      <div className="min-h-dvh bg-slate-950 text-slate-100 flex flex-col">
         <InGameHeader
           gameState={gameState}
           onLeaveGame={handleLeaveGame}
@@ -430,7 +437,7 @@ export default function App() {
   const readAloud = isCardReadAloud(gameState.settings);
 
   const gameContent = (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between select-none">
+    <div className="min-h-dvh bg-slate-950 text-slate-100 flex flex-col justify-between select-none">
       {/* Top Header Controls */}
       <InGameHeader
         gameState={gameState}
@@ -492,10 +499,12 @@ export default function App() {
             onUseBonus={handleUseBonus}
             onNextTurn={handleNextTurn}
             onSurpriseWheelDone={handleSurpriseWheelDone}
+            onSpinSurpriseWheel={handleSpinSurpriseWheel}
             wedgesToWin={gameState.settings.wedgesToWin}
             bonusesEnabled={gameState.settings.enableBonuses === true}
             bonusAwardedThisTurn={gameState.bonusAwardedThisTurn}
             surpriseSpinThisTurn={gameState.surpriseSpinThisTurn}
+            surpriseWheel={gameState.surpriseWheel}
             activeQuestionBonus={gameState.activeQuestionBonus}
           />
         </React.Suspense>
@@ -519,10 +528,12 @@ export default function App() {
             onUseBonus={handleUseBonus}
             onNextTurn={handleNextTurn}
             onSurpriseWheelDone={handleSurpriseWheelDone}
+            onSpinSurpriseWheel={handleSpinSurpriseWheel}
             wedgesToWin={gameState.settings.wedgesToWin}
             bonusesEnabled={gameState.settings.enableBonuses === true}
             bonusAwardedThisTurn={gameState.bonusAwardedThisTurn}
             surpriseSpinThisTurn={gameState.surpriseSpinThisTurn}
+            surpriseWheel={gameState.surpriseWheel}
             activeQuestionBonus={gameState.activeQuestionBonus}
           />
         </React.Suspense>

@@ -67,6 +67,13 @@ comme « question impossible et vraiment pas fun ».
   propres : « Quel dieu grec règne sur les mers, armé de son trident ? ». La
   description *est* le chemin. Ne pas « corriger » ces cartes.
 - Jamais quatre millésimes voisins. L'année a sa place dans l'énoncé.
+- Une carte de quantité ne porte pas son nombre dans l'énoncé. « Combien de joueurs
+  compte une équipe de rugby à sept ? » se recopie — signalé en partie, « la réponse
+  est dans la question ». Le nombre se cache sous trois formes, toutes vues :
+  en lettres (« à sept »), en chiffres romains (« à XV ») et en chiffres dans un nom
+  propre (« relais 4 x 100 », « Puissance 4 »). `promptGivesAwayQuantity` les refuse.
+  Une quantité **déduite** de l'énoncé reste bonne, elle : « combien de temps dure un
+  match de rugby à sept ? » → deux périodes de sept minutes, donc 14.
 - Ancrer en Belgique et en francophonie quand le sujet est interchangeable, et
   préférer le proche dans le temps. Une carte anglo-saxonne et lointaine cumule
   les deux reproches les plus fréquents.
@@ -150,7 +157,9 @@ Points de vigilance connus :
   expliquerait le geste par du texte est à proscrire — le dé se lit à son parcours.
 - Ses arêtes sont **vives**, et cela n'est pas négociable : six faces arrondies ne
   forment pas une surface fermée, et le dé se voit au travers dès qu'il se présente
-  dans le plan d'une arête (ADR 0005). Le dé se mesure sur fond magenta, en comptant
+  dans le plan d'une arête (ADR 0005). Son biais de repos ne porte que sur **un**
+  axe : sur deux, le cube ne touche le plateau que par un sommet, et cela se voit —
+  la ligne la plus basse de sa silhouette tombait à 1 % de sa largeur. Le dé se mesure sur fond magenta, en comptant
   les pixels de fond enfermés dans sa silhouette — et **à la taille du jeu** : un
   rembourrage fixe comprimait le cube à 39 px sans que rien ne se voie à 200 px.
 - Il s'affiche sur tous les écrans : celui qui ne lance pas voit le même vol. La
@@ -163,6 +172,24 @@ Points de vigilance connus :
   (`src/server/diceThrow.ts`, ADR 0005). Le client n'envoie qu'un **geste** —
   puissance et angle —, jamais un résultat, et le serveur borne les deux : toute
   nouvelle action qui dépend d'un geste doit suivre la même règle.
+- `diceThrow` décrit **le lancer en cours**, et rien d'autre : tout chemin qui
+  ramène en phase `rolling` doit l'effacer avec `diceValue`. La case Relancer l'a
+  oublié — le dé restait posé au milieu du plateau puis sautait dans son coin au
+  lancer suivant. Le client ne s'y fie plus : en phase `rolling`, il ignore la
+  poussée et remet le dé dans son coin, quoi qu'ait envoyé le serveur.
+- La roue surprise suit la même grammaire que le dé : le serveur retient le
+  **quartier** (`surpriseWheel.slot`, décidé sur la case Surprise) et l'**instant**
+  du lancer (`startedAt`, posé sur le geste du joueur). Le client ne tire rien —
+  il le faisait, et deux quartiers portant le même 50/50, la roue s'arrêtait
+  ailleurs selon l'écran. Elle s'affiche partout, seul le joueur actif tient les
+  boutons, et tout le monde referme quand le minuteur démarre. Comme `diceThrow`,
+  elle décrit *le* lancer en cours : tout chemin qui éteint `surpriseSpinThisTurn`
+  doit l'effacer.
+- Une transition CSS ne démarre que si sa durée existait **avant** le changement de
+  valeur. React posant les deux dans le même rendu, la roue surprise sautait sur son
+  quartier sans tourner — mesuré, 150° dès la cinquantième milliseconde. Pour une
+  animation déclenchée par un changement d'état, passer par Motion (`animate`), et
+  la mesurer : on n'anime pas ce qu'on n'a pas vu bouger dans deux images.
 - Attention à `showTurnIntro` si l'on veut masquer quelque chose pendant l'écran
   « passez l'appareil » : ce drapeau ne redescend qu'au clic sur son bouton, qui
   n'existe qu'en mode local, donc il reste **vrai à jamais** en ligne. La vraie

@@ -59,6 +59,24 @@ export function fiftyFiftyCount(player: Player): number {
 }
 
 /**
+ * Sur quel quartier la roue doit s'arrêter pour annoncer ce résultat.
+ *
+ * Deux quartiers portent le même 50/50 et deux sont vides : le choix appartient
+ * donc au serveur, une fois pour toute la table. Chaque client le tirait de son
+ * côté, et la roue s'arrêtait ailleurs selon l'écran — un joueur voyait le 🎯 du
+ * premier quartier, son voisin celui du troisième, pour le même bonus.
+ */
+export function wheelSlotFor(
+  outcome: BonusType | null,
+  random: () => number = Math.random,
+): number {
+  const quarters = SURPRISE_WHEEL
+    .map((slot, index) => (slot === outcome ? index : -1))
+    .filter((index) => index >= 0);
+  return quarters[Math.floor(random() * quarters.length)] ?? 0;
+}
+
+/**
  * Une case Surprise fait tourner la roue. Elle tombe au hasard sur l'un des six
  * quartiers : un bonus est alors crédité, ou rien du tout si le quartier est
  * vide. Renvoie le résultat (le bonus, ou `null` pour une case vide) ; renvoie
@@ -90,6 +108,7 @@ export function awardSurpriseBonus(
   }
   state.bonusAwardedThisTurn = outcome;
   state.surpriseSpinThisTurn = true;
+  state.surpriseWheel = { slot: wheelSlotFor(outcome, random), startedAt: null };
   return outcome;
 }
 

@@ -1,6 +1,31 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------
+   La page elle-même
+   Le fond sombre du jeu vivait sur un div React : tout ce qui dépassait
+   ce div montrait donc le blanc du navigateur. Signalé en partie — « je
+   suis capable de scroller vers le bas très fort et j'ai toute une page
+   blanche en dessous ». Le fond appartient à la page, pas au composant,
+   et `color-scheme` prévient le navigateur pour que ses propres surfaces
+   (barres de défilement, rebond élastique iOS) s'accordent.
+   ------------------------------------------------------------------ */
+html {
+  background-color: #020617; /* slate-950, le fond du jeu */
+  color-scheme: dark;
+}
+
+body {
+  background-color: #020617;
+}
+
+/* On ne coupe **pas** le rebond élastique de la page (`overscroll-behavior`) :
+   il ne montre plus rien de blanc maintenant que la page a un fond, et sur
+   Android le supprimer emporte avec lui le « tirer pour rafraîchir » — le seul
+   geste qui permette à la famille de récupérer une nouvelle version du jeu. Le
+   confinement du défilement se joue là où il compte, à l'intérieur de la carte
+   de question (`overscroll-contain`). */
+
+/* ------------------------------------------------------------------
    Motion design tokens
    A single shared vocabulary of durations & easings so every
    animation of the game (board, pawns, dock, modals) reads as one

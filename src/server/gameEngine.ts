@@ -74,6 +74,7 @@ export function resolveAnswer(
   // remonte un nouveau modal (état local réinitialisé) qui, voyant encore
   // `surpriseSpinThisTurn` vrai, relançait la roue une seconde fois.
   state.surpriseSpinThisTurn = false;
+  state.surpriseWheel = null;
 
   state.lastAnswerResult = {
     playerId: activePlayer.id,
@@ -108,6 +109,7 @@ export function advanceTurn(state: GameState): void {
   state.lastAnswerResult = null;
   state.bonusAwardedThisTurn = null;
   state.surpriseSpinThisTurn = false;
+  state.surpriseWheel = null;
   state.activeQuestionBonus = null;
 }
 
@@ -137,6 +139,7 @@ export function resetGameForNewRound(state: GameState): void {
   state.usedQuestionIds = [];
   state.bonusAwardedThisTurn = null;
   state.surpriseSpinThisTurn = false;
+  state.surpriseWheel = null;
   state.activeQuestionBonus = null;
   state.firstPlayerDraw = null;
   state.lastQuestionRecap = null;
@@ -196,6 +199,7 @@ export function removePlayerFromGame(state: GameState, playerId: string): boolea
     state.lastAnswerResult = null;
     state.bonusAwardedThisTurn = null;
     state.surpriseSpinThisTurn = false;
+    state.surpriseWheel = null;
     state.activeQuestionBonus = null;
   }
 

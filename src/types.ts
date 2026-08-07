@@ -214,6 +214,15 @@ export interface GameState {
    * dans `bonusAwardedThisTurn`, `null` valant « rien gagné »).
    */
   surpriseSpinThisTurn?: boolean;
+  /**
+   * La roue surprise du tour, telle que tous les écrans doivent la voir tourner.
+   *
+   * Le quartier d'arrivée et l'instant du lancer sont retenus par le serveur,
+   * exactement comme la poussée du dé : sans cela chaque client tirait son propre
+   * quartier au hasard, et la roue ne s'arrêtait pas au même endroit d'un écran à
+   * l'autre. `startedAt` à `null` veut dire qu'elle attend son lancement.
+   */
+  surpriseWheel?: { slot: number; startedAt: number | null } | null;
   /** Effet déjà appliqué à la question en cours. */
   activeQuestionBonus?: ActiveQuestionBonus | null;
   /**

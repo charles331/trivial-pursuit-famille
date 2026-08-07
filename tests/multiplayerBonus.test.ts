@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { advanceTurn, resolveAnswer } from '../src/server/gameEngine';
-import { awardSurpriseBonus, bonusCount } from '../src/server/bonuses';
+import { SURPRISE_WHEEL, awardSurpriseBonus, bonusCount } from '../src/server/bonuses';
 import { createGameStateView } from '../src/server/gameStateView';
 import { createGameState, createPlayer, testBoard, testSettings } from './fixtures';
 
@@ -55,4 +55,39 @@ test('le bonus gagné apparaît dans l\'état diffusé à la joueuse', () => {
   const fille = view.players.find(p => p.id === 'fille');
   assert.ok(fille, 'la joueuse est absente de l\'état diffusé');
   assert.equal(bonusCount(fille!, 'camembert_joker'), 1);
+});
+
+test('la roue surprise part identique vers tous les écrans', () => {
+  // Signalé par le propriétaire du projet : « quand l'utilisateur lance sa roue
+  // tout le monde devrait le voir, et pas uniquement l'utilisateur ». Pour cela
+  // il ne suffit pas d'afficher la roue partout : il faut que tous les écrans
+  // reçoivent le même quartier, sinon chacun tire le sien et la roue s'arrête
+  // ailleurs d'un téléphone à l'autre — deux quartiers portent le même 50/50.
+  const state = twoPlayerGame();
+  awardSurpriseBonus(state, () => 0.55); // le Joker, quartier 3
+
+  const vuePapa = createGameStateView(state, 'papa', 'papa');
+  const vueFille = createGameStateView(state, 'fille', 'papa');
+
+  assert.deepEqual(vuePapa.surpriseWheel, vueFille.surpriseWheel);
+  assert.equal(SURPRISE_WHEEL[vueFille.surpriseWheel!.slot], 'camembert_joker');
+  // Tant que personne n'a lancé, la roue attend : aucun écran ne la fait tourner.
+  assert.equal(vuePapa.surpriseWheel!.startedAt, null);
+  assert.equal(vuePapa.surpriseSpinThisTurn, true);
+});
+
+test('l’instant du lancer est commun, c’est lui qui synchronise l’animation', () => {
+  const state = twoPlayerGame();
+  awardSurpriseBonus(state, () => 0);
+
+  // Ce que fait le serveur en recevant le geste du joueur actif : il n'ajoute que
+  // l'instant. Le quartier, lui, ne bouge plus.
+  const slotAvant = state.surpriseWheel!.slot;
+  state.surpriseWheel = { ...state.surpriseWheel!, startedAt: 1_700_000_000_000 };
+
+  for (const id of ['papa', 'fille']) {
+    const vue = createGameStateView(state, id, 'papa');
+    assert.equal(vue.surpriseWheel!.startedAt, 1_700_000_000_000, id);
+    assert.equal(vue.surpriseWheel!.slot, slotAvant, id);
+  }
 });

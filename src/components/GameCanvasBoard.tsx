@@ -517,14 +517,40 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
   // ne voie aucune différence de traitement entre le dé et eux.
   const diePx = Math.max(30, Math.min(68, boardPx * 0.1));
   const dieBoxPx = diePx * 1.6;
+  // Mais un cube de la taille d'un pion écrase le plateau une fois posé au
+  // milieu d'eux : « quand il descend sur le plateau, j'aimerais qu'il soit plus
+  // petit et qu'il soit au maximum la même taille que le pion d'un joueur ».
+  // Au repos on garde la taille du doigt — c'est là qu'on le saisit.
+  //
+  // La borne se mesure, elle ne se devine pas : la perspective grossit les faces
+  // proches et `faceBleed` déborde de quelques dixièmes, si bien qu'un cube de
+  // 43 px de côté occupe 47,4 × 52,5 px à l'écran — plus large que le disque d'un
+  // pion (`discD = size * 0.9`, soit 38,7 px), ce qui est exactement le reproche.
+  // Les deux rapports sont stables à toute échelle : 1,106 et 1,221 fois le côté.
+  // Le dé posé doit tenir dans l'empreinte d'un pion, donc 0,9 / 1,221 ≈ 0,74 —
+  // vérifié au banc, 35,1 × 38,9 px de dé posé contre 43 × 57,6 px de pion.
+  const DIE_BOARD_SCALE = 0.74;
 
   // Le parcours ne dépend que de la poussée et de la graine retenues par le
   // serveur : tous les écrans le recalculent à l'identique.
+  //
+  // Il ne vaut que pour le lancer en cours. Dès qu'un nouveau lancer est attendu
+  // — phase `rolling` —, le dé doit être revenu dans son coin, même si le serveur
+  // a oublié d'effacer la poussée : sinon il reste posé là où il était tombé et
+  // saute dans son coin au lancer suivant. C'est ce qui se voyait sur une case
+  // Relancer.
   const flight = useMemo(() => {
-    if (!gameState.diceThrow || boardPx <= 0) return null;
+    if (!gameState.diceThrow || boardPx <= 0 || gameState.phase === 'rolling') return null;
     const { power, angle, seed } = gameState.diceThrow;
     return flightToPixels(describeFlight(power, angle, seed), boardPx, diePx);
-  }, [gameState.diceThrow?.seed, gameState.diceThrow?.power, gameState.diceThrow?.angle, boardPx, diePx]);
+  }, [
+    gameState.diceThrow?.seed,
+    gameState.diceThrow?.power,
+    gameState.diceThrow?.angle,
+    gameState.phase,
+    boardPx,
+    diePx,
+  ]);
 
   // L'effet qui ouvre la culbute a besoin de sa durée sans dépendre du parcours :
   // la valeur et la poussée arrivent dans le même envoi du serveur.
@@ -1021,6 +1047,7 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
                 compact
                 hideTriggerButton
                 flight={flight}
+                boardScale={DIE_BOARD_SCALE}
               />
               {/* Une ligne de texte, sans cadre : elle dit comment on lance, et
                   s'effface dès que le dé part. La face du dé et le flash au
