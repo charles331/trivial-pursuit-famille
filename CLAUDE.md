@@ -24,14 +24,33 @@ npm run check      # lint (tsc) + tests + audit des questions + build
 
 ## La banque de questions a un contrat, et il est exécutable
 
-5 400 cartes réparties en 8 catégories × 3 niveaux (`enfant`, `ado`, `adulte`).
-`scripts/audit-questions.ts` **est** la spécification : volumes, unicité,
+Près de 5 500 cartes réparties en 8 catégories × 3 niveaux (`enfant`, `ado`,
+`adulte`). `scripts/audit-questions.ts` **est** la spécification : volumes, unicité,
 non-divulgation de la réponse, non-répétition des faits, plafonds de longueur,
 budgets de formes interdites. Les détecteurs vivent dans `src/data/questionRules.ts`
 et sont couverts par `tests/questionRules.test.ts`.
 
-Voir `docs/adr/0001` (architecture éditoriale) et `docs/adr/0004` (niveau ado et
-note de fun) pour le *pourquoi* de chaque règle.
+Voir `docs/adr/0001` (architecture éditoriale), `docs/adr/0004` (niveau ado et note
+de fun) et `docs/adr/0006` (socle des niveaux jeunes) pour le *pourquoi* de chaque
+règle.
+
+### Ajouter des cartes, plutôt qu'en remplacer
+
+Les niveaux enfant et ado ont un **plancher** de 135 cartes par catégorie, pas un
+plafond : on peut donc enrichir un niveau sans sacrifier une carte saine pour chaque
+carte demandée. L'audit affiche le surplus par catégorie, pour qu'un ajout reste un
+geste visible. Le niveau adulte, lui, garde son compte exact de 400 QCM relus.
+
+Un lot ajouté mélange les trois formats — QCM, Vrai/Faux, ouverte —, l'alternance
+étant elle-même un critère de la note de fun. Voir
+`cinemaAdoDescendantsVampire.ts` pour le modèle : un type par format, et une
+fonction qui répartit la position des bonnes réponses.
+
+Attention en revanche : une carte demandée par un joueur reste soumise au contrat.
+Les vingt-sept cartes Descendants et Vampire Diaries ont demandé une vérification en
+ligne de chaque fait, franchise récente comprise — c'est le seul défaut que l'audit
+ne sait pas attraper — et un fait par carte, sans quoi le contrôle des formats variés
+les refuse.
 
 ### Règle de conduite : ne jamais faire taire l'audit
 

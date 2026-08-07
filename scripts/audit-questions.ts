@@ -39,6 +39,18 @@ const CATEGORIES: CategoryId[] = [
 const DIFFICULTIES: DifficultyLevel[] = ['enfant', 'ado', 'adulte'];
 const ADULT_EDITORIAL_TARGET_PER_CATEGORY = 400;
 /**
+ * Socle de cartes enfant et ado par catégorie.
+ *
+ * C'était un compte exact, et il a longtemps eu raison de l'être : il garantissait
+ * qu'aucune catégorie ne soit plus maigre qu'une autre, et qu'aucun niveau ne soit
+ * complété en recopiant celui du dessous. Mais il interdisait aussi d'enrichir un
+ * niveau sans en retirer autant — ce qui revenait à sacrifier une carte saine pour
+ * chaque carte demandée. Décision du propriétaire du projet, ADR 0006 : c'est
+ * désormais un plancher, et tout surplus est affiché par l'audit pour qu'un ajout
+ * reste un geste visible et non une dérive.
+ */
+const YOUTH_FLOOR_PER_CATEGORY = 135;
+/**
  * Budget de cartes d'attribution au niveau ado, par catégorie.
  *
  * L'attribution nue — « Qui a composé La Flûte enchantée ? » entre Beethoven,
@@ -377,6 +389,7 @@ for (const categoryId of CATEGORIES) {
 // séparé, hors quota, résumé sous le tableau.
 let variableFormatBoolean = 0;
 let variableFormatOpen = 0;
+const youthSurplus: string[] = [];
 console.log('Catégorie       Enfant  Ado  Adulte  Total');
 console.log('--------------------------------------------');
 for (const categoryId of CATEGORIES) {
@@ -410,10 +423,26 @@ for (const categoryId of CATEGORIES) {
         + ` (${answerPositions.join('/')})`,
     );
   }
-  if (counts[0] !== 135 || counts[1] !== 135) {
-    errors.push(`${categoryId} doit contenir 135 questions enfant et 135 questions ado`);
+  if (counts[0] < YOUTH_FLOOR_PER_CATEGORY || counts[1] < YOUTH_FLOOR_PER_CATEGORY) {
+    errors.push(
+      `${categoryId} doit contenir au moins ${YOUTH_FLOOR_PER_CATEGORY} questions enfant`
+        + ` et ${YOUTH_FLOOR_PER_CATEGORY} questions ado`
+        + ` (actuellement ${counts[0]} et ${counts[1]})`,
+    );
   }
+  const surplus = [
+    counts[0] > YOUTH_FLOOR_PER_CATEGORY ? `${counts[0] - YOUTH_FLOOR_PER_CATEGORY} enfant` : null,
+    counts[1] > YOUTH_FLOOR_PER_CATEGORY ? `${counts[1] - YOUTH_FLOOR_PER_CATEGORY} ado` : null,
+  ].filter(Boolean);
+  if (surplus.length > 0) youthSurplus.push(`${categoryId} : +${surplus.join(', +')}`);
 }
+if (youthSurplus.length > 0) {
+  console.log(
+    `\nAu-dessus du socle de ${YOUTH_FLOOR_PER_CATEGORY} cartes (ajouts délibérés) : `
+      + youthSurplus.join(' · '),
+  );
+}
+
 if (variableFormatBoolean > 0 || variableFormatOpen > 0) {
   console.log(
     `\nFormats variés (pool séparé) : ${variableFormatBoolean} vrai/faux,`
