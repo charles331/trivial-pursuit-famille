@@ -83,7 +83,6 @@ import { applyFactDuplicateRewrites } from './questionBank/factDuplicateRewrites
 import { applyAdoVariableFormats } from './questionBank/adoVariableFormats';
 import { applyCrossLevelRewrites } from './questionBank/crossLevelRewrites';
 import { applyQuantityRewrites } from './questionBank/quantityRewrites';
-import { applyFranchisesAdoRewrites } from './questionBank/franchisesAdoRewrites';
 import { MUSIQUE_CLASSIQUE_ADULTE } from './questionBank/musiqueClassiqueAdultEditorial';
 import { POPCULTURE_FRANCOPHONE_ADULTE } from './questionBank/popcultureFrancophoneAdultEditorial';
 import { POPCULTURE_GRAND_PUBLIC_ADULTE } from './questionBank/popcultureGrandPublicAdultEditorial';
@@ -94,6 +93,7 @@ import { ART_BD_LITTERATURE_ADULTE } from './questionBank/artBdLitteratureAdultE
 import { ART_GRAND_PUBLIC_ADULTE } from './questionBank/artGrandPublicAdultEditorial';
 import { ART_GRAND_PUBLIC_ADULTE_02 } from './questionBank/artGrandPublicAdultEditorial02';
 import { SCIENCES_ADO_EDITORIAL } from './questionBank/sciencesAdoEditorial';
+import { CINEMA_ADO_DESCENDANTS_VAMPIRE } from './questionBank/cinemaAdoDescendantsVampire';
 import { SCIENCES_GRAND_PUBLIC_ADULTE } from './questionBank/sciencesGrandPublicAdultEditorial';
 import {
   POPCULTURE_ADO_EDITORIAL,
@@ -134,6 +134,7 @@ const CURATED_QUESTIONS: Question[] = [
   ...CINEMA_ADULTE_EDITORIAL_FINAL,
   ...SCIENCES_QUESTIONS,
   ...SCIENCES_ADO_EDITORIAL,
+  ...CINEMA_ADO_DESCENDANTS_VAMPIRE,
   ...SCIENCES_GRAND_PUBLIC_ADULTE,
   ...ADULT_QUALITY_SCIENCE,
   ...SCIENCES_ADULTE_EDITORIAL_02,
@@ -196,8 +197,7 @@ const seenIds = new Set<string>();
 // to the teen bank removed a whole step from the difficulty ladder: a teenager
 // received the child questions verbatim. Every level now reaches its target
 // only through banks written for that level.
-const COMPLETED_QUESTIONS = applyFranchisesAdoRewrites(
-  applyQuantityRewrites(
+const COMPLETED_QUESTIONS = applyQuantityRewrites(
   applyCrossLevelRewrites(
   applyAdoVariableFormats(
   applyFactDuplicateRewrites(
@@ -210,7 +210,6 @@ const COMPLETED_QUESTIONS = applyFranchisesAdoRewrites(
         ),
       ),
     ),
-  ),
   ),
   ),
   ),
