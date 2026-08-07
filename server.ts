@@ -7,7 +7,8 @@ import { Server, Socket } from 'socket.io';
 import { createServer as createViteServer } from 'vite';
 import { QUESTIONS_DATABASE } from './src/data/questions.js';
 import { BOARD_CATEGORY_COUNT, buildBoard, resolveBoardCategories } from './src/data/boards.js';
-import { normalizeCategoryId } from './src/data/categories.js';
+import { CATEGORIES, normalizeCategoryId } from './src/data/categories.js';
+import { QUESTION_TIMER_OPTIONS } from './src/utils/questionTimer.js';
 import {
   normalize as normalizeText,
 } from './src/data/questionRules.js';
@@ -314,6 +315,61 @@ const PAUSED_ROOM_TTL_MS = positiveDuration(process.env.ROOM_PAUSED_TTL_MS, 4 * 
 const ROOM_IDLE_TTL_MS = positiveDuration(process.env.ROOM_IDLE_TTL_MS, 4 * 60 * 60 * 1000);
 const ROOM_MAX_AGE_MS = positiveDuration(process.env.ROOM_MAX_AGE_MS, 12 * 60 * 60 * 1000);
 const ROOM_SWEEP_INTERVAL_MS = positiveDuration(process.env.ROOM_SWEEP_INTERVAL_MS, 30 * 1000);
+
+/**
+ * Ne retient d'un envoi de réglages que ce qui est jouable.
+ *
+ * `update-settings` fusionnait le message du client tel quel dans les réglages du
+ * salon. C'était l'entrée la plus permissive du serveur, et rien n'y était borné :
+ * un nombre de camemberts au-delà des catégories du plateau rendait la partie
+ * ingagnable, une durée de chrono négative cassait le décompte, et une catégorie
+ * inconnue traversait jusqu'au plateau où le rendu la refusait. Aucune de ces
+ * valeurs n'est atteignable depuis l'interface — c'est bien pour cela qu'un client
+ * obsolète ou un salon repris du disque pouvait les produire sans qu'on le voie.
+ *
+ * Une clé absente reste absente : on ne réécrit jamais un réglage que l'hôte n'a
+ * pas touché.
+ */
+function sanitizeSettings(patch: Partial<GameSettings>): Partial<GameSettings> {
+  const clean: Partial<GameSettings> = {};
+  const bool = (value: unknown): boolean | undefined =>
+    typeof value === 'boolean' ? value : undefined;
+
+  if (patch.boardType !== undefined && ['wheel', 'snake', 'star'].includes(patch.boardType)) {
+    clean.boardType = patch.boardType;
+  }
+  if (Array.isArray(patch.selectedCategories)) {
+    // Les identifiants inconnus tombent, les doublons aussi, et l'on ne garde
+    // jamais plus que les six places du plateau.
+    const vues: CategoryId[] = [];
+    for (const categoryId of patch.selectedCategories) {
+      if (!(categoryId in CATEGORIES) || vues.includes(categoryId)) continue;
+      if (vues.length >= BOARD_CATEGORY_COUNT) break;
+      vues.push(categoryId);
+    }
+    clean.selectedCategories = vues;
+  }
+  if (typeof patch.timerSeconds === 'number'
+    && (QUESTION_TIMER_OPTIONS as readonly number[]).includes(patch.timerSeconds)) {
+    clean.timerSeconds = patch.timerSeconds;
+  }
+  if (typeof patch.wedgesToWin === 'number'
+    && Number.isInteger(patch.wedgesToWin)
+    && patch.wedgesToWin >= 1
+    && patch.wedgesToWin <= BOARD_CATEGORY_COUNT) {
+    clean.wedgesToWin = patch.wedgesToWin;
+  }
+  if (Array.isArray(patch.customThemePackNames)) {
+    clean.customThemePackNames = patch.customThemePackNames
+      .filter((name): name is string => typeof name === 'string' && name.trim().length > 0)
+      .slice(0, 12);
+  }
+  for (const key of ['isLocalMode', 'isReaderMode', 'enableLiveCamera', 'enableBonuses'] as const) {
+    const value = bool(patch[key]);
+    if (value !== undefined) clean[key] = value;
+  }
+  return clean;
+}
 
 function getRoom(code: string): Room | undefined {
   const room = rooms.get(code);
@@ -803,7 +859,18 @@ io.on('connection', (socket: Socket) => {
     const room = getRoom(data.roomCode);
     if (!room || room.hostSocketId !== socket.id) return;
 
-    room.settings = { ...room.settings, ...data.settings };
+    // Les réglages ne se modifient que dans le salon. Sans ce garde, un client
+    // resté sur un vieil écran pouvait changer le nombre de camemberts ou la durée
+    // du chrono au milieu d'une partie déjà commencée.
+    if (room.gameState.phase !== 'lobby') return;
+
+    // Et ils se valident, au lieu d'être fusionnés tels quels. C'était l'entrée la
+    // plus permissive du serveur : un `wedgesToWin` de 99 rendait la partie
+    // ingagnable, un `timerSeconds` négatif cassait le décompte, et une catégorie
+    // inconnue faisait planter le rendu du plateau. Rien de tout cela n'est
+    // atteignable depuis l'interface — c'est précisément pourquoi personne ne s'en
+    // apercevrait.
+    room.settings = { ...room.settings, ...sanitizeSettings(data.settings) };
     room.gameState.settings = room.settings;
 
     emitGameState(room);

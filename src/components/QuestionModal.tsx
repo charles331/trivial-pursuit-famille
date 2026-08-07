@@ -125,8 +125,17 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
     )
   );
 
-  // Enforce card masking: active player's question is ALWAYS hidden in Reader Mode until answered (NO reveal button)
-  const isCardMasked = Boolean(isReaderMode && isIActivePlayer && !lastAnswerResult);
+  // La carte du joueur actif est masquée en mode lecteur jusqu'à la réponse, et
+  // sans bouton pour la révéler : c'est tout l'intérêt du mode.
+  //
+  // Mais elle ne se masque que s'il y a quelqu'un pour la lire. Sans lecteur —
+  // partie solo, ou tous les autres joueurs déconnectés —, le joueur actif restait
+  // devant « Option A / Option B / Option C / Option D » sans que personne ne
+  // puisse lui lire l'énoncé : sans minuteur, le tour ne pouvait plus avancer que
+  // par un choix à l'aveugle. Les cartes ouvertes avaient déjà leur filet (« passer
+  // la question »), les QCM et les Vrai/Faux n'en avaient aucun. Faute de lecteur,
+  // la carte s'affiche donc normalement, comme hors mode lecteur.
+  const isCardMasked = Boolean(isReaderMode && isIActivePlayer && !lastAnswerResult && readerId !== null);
   const isAnswered = lastAnswerResult !== null;
   // Case Surprise : tant que la roue n'est pas terminée, le serveur laisse
   // `questionStartTime` à null. Le minuteur reste alors gelé sur toute la table
@@ -136,8 +145,11 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   const canAnswer = isMyTurn || isIReader;
   // L'écran « passez l'appareil » du mode local : rien ne doit s'afficher par
   // dessus, sans quoi le joueur interrogé verrait ce qui ne lui est pas destiné.
+  // Sans lecteur possible, l'écran demandait de passer l'appareil au joueur actif
+  // lui-même : une partie solo en mode lecteur s'ouvrait sur « Passez l'appareil à
+  // Papa » alors que Papa le tenait déjà.
   const showLocalReaderGate = Boolean(
-    isReaderMode && isLocalMode && !localReaderReady && !lastAnswerResult,
+    isReaderMode && isLocalMode && !localReaderReady && !lastAnswerResult && readerId !== null,
   );
   // Dépenser un bonus n'est pas répondre : le lecteur peut trancher une réponse
   // orale, mais l'inventaire appartient au joueur actif seul. En pass & play, un

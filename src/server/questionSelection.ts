@@ -10,6 +10,7 @@
  */
 
 import { normalizeCategoryId } from '../data/categories';
+import { resolveReaderId } from './turnRoles';
 import { CategoryId, DifficultyLevel, GameSettings, GameState, Question } from '../types';
 
 /** Part moyenne visée pour les thèmes actifs : une carte sur trois. */
@@ -131,7 +132,14 @@ export function pickQuestionForPlayer(
   // Les questions ouvertes n'apparaissent qu'en mode lecteur : hors de ce mode,
   // la solution est masquée au joueur actif et personne ne pourrait juger sa
   // réponse orale. Le garde-fou vaut pour les packs IA comme pour la banque.
-  const readerMode = state.settings.isReaderMode === true;
+  //
+  // Le mode ne suffit pas : il faut un lecteur **réel**. Une partie solo, ou une
+  // partie dont tous les autres joueurs se sont déconnectés, servait des cartes
+  // ouvertes que personne ne détenait — le joueur actif n'avait plus qu'à cliquer
+  // sur « passer la question », comptée manquée. On ne les sert donc que si
+  // quelqu'un peut les lire.
+  const readerMode = state.settings.isReaderMode === true
+    && resolveReaderId(state.players, state.activePlayerIndex) !== null;
   const servableFormat = (question: Question): boolean =>
     !((question.format ?? 'mcq') === 'open' && !readerMode);
 
