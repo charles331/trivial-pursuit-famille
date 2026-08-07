@@ -1,4 +1,5 @@
 import { BoardConfig, BoardTile, CategoryId, BoardType } from '../types';
+import { CATEGORIES } from './categories';
 
 // Helper to generate coordinates on a circle
 function circlePoint(cx: number, cy: number, r: number, angleDeg: number) {
@@ -42,6 +43,12 @@ export function resolveBoardCategories(
 ): CategoryId[] {
   const retenues: CategoryId[] = [];
   for (const categoryId of selection ?? []) {
+    // Une catégorie inconnue est écartée, et pas seulement par principe : le
+    // réglage arrive du client sans validation, et une case dont la catégorie
+    // n'existe pas dans `CATEGORIES` fait planter le rendu du plateau — mesuré,
+    // « Cannot read properties of undefined (reading 'color') ». Un salon repris
+    // du disque après le retrait d'une catégorie suffirait à l'obtenir.
+    if (!(categoryId in CATEGORIES)) continue;
     if (!retenues.includes(categoryId)) retenues.push(categoryId);
   }
   for (const secours of DEFAULT_BOARD_CATEGORIES) {
