@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { soundManager } from '../utils/sound';
 import { Dices, Sparkles, Hand, RefreshCw } from 'lucide-react';
-import { AIM_MIN_DRAG_PX, DiceFlightPx, powerFromDrag } from '../server/diceThrow';
+import { THROW_MIN_DRAG_PX, DiceFlightPx, powerFromDrag } from '../server/diceThrow';
 import { EASE_OUT_SOFT } from '../utils/motion';
 
 interface Dice3DProps {
@@ -370,7 +370,8 @@ export const Dice3D: React.FC<Dice3DProps> = ({
     //
     // Le seuil s'applique à la **distance** et la puissance s'en déduit par une
     // échelle : la puissance valait auparavant la distance elle-même, si bien que
-    // tout glissé de pouce ordinaire visait le milieu du dé.
+    // tout glissé de pouce ordinaire n'employait que la moitié basse de l'échelle,
+    // donc que les vols les plus courts.
     const distance = Math.hypot(dx, dy);
     const power = powerFromDrag(distance);
     const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
@@ -385,8 +386,9 @@ export const Dice3D: React.FC<Dice3DProps> = ({
     // n'y a rien à protéger contre un appui involontaire : la cible ne s'affiche
     // que pendant son propre tour de lancer.
     //
-    // En dessous du seuil, le geste ne vise rien : le dé part au hasard.
-    if (!disabled && !isRolling) triggerRoll(distance >= AIM_MIN_DRAG_PX ? { power, angle } : null);
+    // En dessous du seuil, il n'y a pas de geste : le dé part quand même, mais
+    // sans poussée, donc au plus court. La face, elle, ne dépend d'aucun des deux.
+    if (!disabled && !isRolling) triggerRoll(distance >= THROW_MIN_DRAG_PX ? { power, angle } : null);
   };
 
   // Helper to render pips/dots on each face

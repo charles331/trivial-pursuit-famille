@@ -23,7 +23,7 @@ import {
   skipFirstPlayerDraw,
   transferFirstPlayerRoll,
 } from './src/server/firstPlayerDraw.js';
-import { resolveThrow } from './src/server/diceThrow.js';
+import { rollDie } from './src/server/diceThrow.js';
 import { createGameStateView } from './src/server/gameStateView.js';
 import { describeRecoveredSeat, findAbandonedSeat, mergeSeatInto } from './src/server/seats.js';
 import { isCardReadAloud, resolveOnAirIds, resolveReaderId } from './src/server/turnRoles.js';
@@ -1161,10 +1161,10 @@ io.on('connection', (socket: Socket) => {
       return;
     }
 
-    // La force du geste vise, le serveur tranche : le client n'envoie qu'un
-    // geste, jamais une face. Un appui simple n'envoie rien et reste un lancer
-    // au hasard.
-    const dice = resolveThrow(data?.power);
+    // Le serveur tire la face, et lui seul : le client n'envoie qu'un geste,
+    // jamais une face. Le geste ne pèse pas sur le résultat — il dessine le vol,
+    // juste en dessous.
+    const dice = rollDie();
     room.gameState.diceValue = dice;
 
     // Le parcours du dé sur le plateau se déduit de la poussée et d'une graine
