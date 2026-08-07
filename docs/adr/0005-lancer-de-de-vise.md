@@ -1,8 +1,14 @@
-# ADR 0005 — Le lancer de dé vise, mais ne commande pas
+# ADR 0005 — Le lancer de dé : le geste fait le vol, le hasard fait la face
+
+*Cette ADR s'est d'abord intitulée « Le lancer de dé vise, mais ne commande pas ».
+La visée a été retirée le 2026-08-07 ; le titre suit la décision en vigueur, le corps
+garde le chemin qui y a mené.*
 
 - Statut : accepté
 - Date : 2026-08-06
 - Portée : mécanique du lancer de dé (client et serveur)
+- Révisé le 2026-08-07 : **la visée est retirée**, la face redevient un sixième
+  chacune, et le geste garde le vol (voir la dernière révision).
 - Révisé le 2026-08-06 : la jauge de visée est retirée, et la poussée gouverne
   aussi le parcours du dé sur le plateau (voir « Le geste se lit sur le plateau »).
 
@@ -318,3 +324,101 @@ Une image du vol reste plus large que le pion : un cube qui culbute présente sa
 diagonale, 48,8 px au plus fort. Elle est en l'air, elle est ce qu'on regarde, et
 la ramener sous 43 px demanderait un dé de 28 px de côté dont les points ne se
 liraient plus.
+
+## Révision — Le dé tombait trop souvent sur le 4
+
+Signalé en partie : « le dé tombe énormément sur le 4 ». C'était vrai, et pour deux
+raisons empilées — dont une qui contredisait cette ADR.
+
+**Les couloirs de visée n'étaient pas égaux.** `1 + round(p/100 × 5)` donnait vingt
+valeurs de puissance aux faces 2 à 5 et seulement dix au 1, onze au 6 : les extrêmes
+n'avaient qu'un demi-couloir. Même avec une puissance parfaitement uniforme, le 4
+sortait 20,0 % du temps contre 11,9 % pour le 1. Six couloirs égaux — un simple
+`floor` sur six intervalles — ramènent l'écart à 18,5 contre 13,2 %, ce qui reste le
+fait du noyau de pondération et non du découpage.
+
+**La puissance valait la longueur du glissé en pixels.** Or un pouce sur un téléphone
+parcourt naturellement trente à quatre-vingt-dix pixels : toute la table visait donc
+le milieu de l'échelle sans le savoir. Mesuré, un glissé « normal » donnait le 4 dans
+24,6 % des cas. Et surtout, **viser le 1 demandait un glissé entre huit et neuf
+pixels** — le seuil du geste étant à huit, cela laissait un pixel de fenêtre. Cette
+ADR promet qu'aucune face n'est jamais impossible ; au geste, le 1 l'était.
+
+La puissance se déduit désormais du glissé par une échelle : cent quatre-vingts
+pixels valent une poussée à fond. Chaque face se vise sur une trentaine de pixels,
+plage que la main distingue, et un test verrouille les deux propriétés — couloirs de
+même largeur, et chaque face atteignable sur au moins quinze pixels de glissé.
+
+**Ce qui reste, et qui n'est pas un défaut.** Un dé qui vise suit le geste : une main
+régulière donne une face régulière. Après correction, un joueur au glissé constant de
+soixante-dix pixels obtient sa face favorite 26 % du temps — c'est le noyau
+`[5, 4, 2, 1, 1, 1]` qui le veut, et l'adoucir ne descend qu'à 23 %. Le seul moyen
+d'obtenir une distribution plate serait de retirer la visée, ce que le propriétaire du
+projet a explicitement demandé de ne pas faire. Ce qui varie le résultat, c'est de
+varier le geste.
+
+## Révision — La visée est retirée : le geste garde le vol, le dé reprend son hasard
+
+*2026-08-07. Cette révision renverse la décision d'origine. Elle est conservée en
+entier au-dessus parce que le chemin compte : la visée a été une bonne réponse à un
+vrai défaut, et ce qui la rend inutile aujourd'hui n'existait pas quand elle a été
+écrite.*
+
+Demandé par le propriétaire du projet, le lendemain de la correction des couloirs :
+« est-ce que tu sais faire en sorte qu'il y ait plus de hasard dans le lancer du dé
+mais en gardant le mouvement de l'utilisateur ? »
+
+La révision précédente disait déjà où le bât blessait, sans en tirer la conclusion :
+un joueur au glissé constant de soixante-dix pixels obtenait sa face favorite 26 % du
+temps, et adoucir le noyau de pondération ne descendait qu'à 23 %. La mesure complète,
+sur un pouce de famille — deux cents mille lancers, glissés distribués autour de
+soixante-dix pixels — la donne en entier :
+
+| face | 1 | 2 | 3 | 4 | 5 | 6 |
+| --- | --- | --- | --- | --- | --- | --- |
+| avant | 13,8 % | 23,0 % | 26,2 % | 20,0 % | 10,8 % | 6,2 % |
+| après | 16,6 % | 16,6 % | 16,7 % | 16,6 % | 16,8 % | 16,8 % |
+
+Soixante-neuf pour cent des lancers tombaient sur 2, 3 ou 4, et le 6 ne sortait
+qu'une fois sur seize. Ce n'était pas un défaut de réglage : **c'est la visée
+elle-même qui concentre**, puisqu'un geste humain est reproductible. Un dé de plateau
+dont une face sort quatre fois plus souvent qu'une autre change le jeu — les cases
+lointaines deviennent inatteignables, et les camemberts avec elles.
+
+### Ce qui change
+
+`resolveThrow(power, random)` devient `rollDie(random)`, et ne prend plus le geste du
+tout. `aimedFace`, `weightsForAim`, `WEIGHT_BY_DISTANCE` et `expectedFace` sont
+retirés. `AIM_MIN_DRAG_PX` devient `THROW_MIN_DRAG_PX` : le seuil ne dit plus « en
+dessous, on ne vise rien » mais « en dessous, il n'y a pas de poussée ».
+
+### Ce qui ne change pas : le geste
+
+C'est le point de la demande, et ce qui rend ce renversement possible aujourd'hui
+alors qu'il ne l'était pas hier. Quand la visée a été décidée, le dé **sautait sur
+place dans un cadre** : sans elle, le geste ne pouvait littéralement rien faire, d'où
+le reproche de décoration. Depuis, le dé vole sur le plateau, et son vol tient
+entièrement au glissé — `describeFlight(power, angle, seed)` n'a jamais pris la face
+en paramètre. Mesuré, à angle et graine constants :
+
+| glissé | 8 px | 40 px | 70 px | 100 px | 140 px | 180 px |
+| --- | --- | --- | --- | --- | --- | --- |
+| distance parcourue | 330 | 473 | 684 | 815 | 971 | 1 250 |
+| rebonds | 2 | 2 | 3 | 3 | 4 | 4 |
+| durée du vol | 690 ms | 690 ms | 855 ms | 855 ms | 975 ms | 975 ms |
+
+Un facteur presque quatre sur la distance, sur un plateau qui fait 810 unités de
+large : la poussée se voit, du premier au dernier pixel de l'échelle. Un test
+verrouille cette monotonie, précisément pour que la jauge ne puisse pas redevenir
+décorative en silence.
+
+**La séparation est maintenant nette, et c'est elle qu'il faut retenir : le geste
+décide de ce qu'on voit, le serveur de ce qu'on compte.** Elle a un bénéfice de
+sûreté au passage — la face ne dépendant plus d'aucune valeur venue du réseau, il n'y
+a plus rien à borner de ce côté, et un client bricolé n'a plus de puissance à mentir.
+
+### Ce qui reste réversible
+
+Si la table regrette la visée, elle se remet en pondérant le tirage autour de
+`aimedFace` : la fonction est courte et son histoire est dans ce document. Mais la
+mesure ci-dessus est le prix à payer, et il est connu maintenant.

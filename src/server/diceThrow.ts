@@ -1,22 +1,29 @@
 /**
- * Du geste de lancer à la face obtenue.
+ * Du geste de lancer au parcours du dé — et du hasard à la face obtenue.
  *
- * Le glissé du doigt affichait une jauge de puissance qui ne servait à rien :
- * la face tombait d'un `Math.random()` côté serveur, quelle que soit la force
- * du geste. Signalé par le propriétaire du projet — « la puissance du glissé ne
- * peut pas être décorative ».
+ * Deux choses sortent d'un lancer, et elles sont **séparées** : la face, que le
+ * serveur tire, et le parcours du dé sur le plateau, que le geste dessine.
+ * Cette séparation est ce qui permet à un dé d'être à la fois juste et vivant.
  *
- * Elle vise donc, mais elle ne décide pas. Un geste appuyé envoie le dé loin,
- * vers les grands nombres ; il rebondit quand même. La face visée ne sort qu'un
- * peu moins d'une fois sur trois, et l'écart d'un cran est plus fréquent
- * qu'elle. Un dé entièrement pilotable retirerait au jeu son hasard — sur un
- * plateau où l'on choisit déjà entre deux destinations, viser sa case à coup sûr
- * aurait vidé le lancer de tout enjeu, et la table l'aurait vu au deuxième tour.
+ * La face a d'abord visé. La puissance du glissé désignait un couloir — geste
+ * mou vers le 1, geste à fond vers le 6 — et pondérait le tirage autour. C'était
+ * la réponse à un défaut réel : la jauge de puissance ne servait alors à rien du
+ * tout, le dé sautait sur place et la face tombait d'un `Math.random()`. « La
+ * puissance du glissé ne peut pas être décorative », demandait le propriétaire
+ * du projet.
  *
- * Rien de tout cela ne s'écrit à l'écran. Une jauge annonçait la face visée
- * pendant le geste ; retirée à la demande du propriétaire du projet — « je vois
- * pas pourquoi ça doit être écrit ». La poussée se sent au parcours du dé, pas
- * dans une étiquette : c'est le seul retour dont un dé ait besoin.
+ * Elle ne l'est plus, mais autrement : le dé **vole** désormais, et son vol tient
+ * entièrement au geste — la distance parcourue, la direction, le nombre de
+ * rebonds, la durée de la culbute. La visée, elle, est retirée sur demande du
+ * propriétaire du projet — « plus de hasard dans le lancer du dé, mais en
+ * gardant le mouvement de l'utilisateur ». Mesuré, elle ne laissait pas grand
+ * hasard : un pouce de famille glisse autour de soixante-dix pixels, ce qui
+ * concentrait 69 % des lancers sur les faces 2, 3 et 4 et ne sortait un 6 qu'une
+ * fois sur seize. Et adoucir la pondération n'y changeait que deux points —
+ * c'est la visée elle-même qui concentrait, pas sa dureté.
+ *
+ * La face est donc un sixième chacune, comme un dé de bois. Le geste garde tout
+ * ce qui se voit ; il ne décide plus de ce qui se compte.
  *
  * Ce module est partagé : le serveur tranche, le client rejoue le parcours. Le
  * serveur reste seul juge — il ne reçoit qu'un geste, jamais un résultat.
@@ -27,86 +34,45 @@ export const DICE_FACES = 6;
 
 /**
  * En deçà de ce glissé, il n'y a pas de geste : c'est un appui. Le lancer part
- * quand même, mais au hasard — un simple contact ne peut pas vouloir dire
- * « je vise le 1 ». La puissance est justement mesurée en pixels de glissé,
- * d'où le même seuil pour les deux.
+ * quand même — la face ne dépend de rien —, mais le dé ne reçoit aucune poussée
+ * et se contente du plus court des vols. La puissance étant mesurée en pixels de
+ * glissé, les deux partagent le même seuil.
  */
-export const AIM_MIN_DRAG_PX = 8;
+export const THROW_MIN_DRAG_PX = 8;
 
-/** La visée : un geste mou envoie sur le 1, un geste à fond sur le 6. */
-export function aimedFace(power: number): number {
-  const clamped = Math.max(0, Math.min(100, power));
-  return 1 + Math.round((clamped / 100) * (DICE_FACES - 1));
+/**
+ * Longueur du glissé, en pixels, qui vaut une poussée à fond.
+ *
+ * La puissance valait la distance parcourue **en pixels**, bornée à cent. Or un
+ * pouce sur un téléphone parcourt naturellement trente à quatre-vingt-dix pixels :
+ * toute la table poussait donc, sans le savoir, à mi-échelle, et la moitié haute
+ * de la jauge ne servait jamais. L'échelle compte encore, même sans visée : c'est
+ * elle qui décide de la distance du vol, du nombre de rebonds et de la durée de la
+ * culbute. Cent quatre-vingts pixels, c'est un vrai geste franc de bas en haut de
+ * l'écran, et le reste s'étale enfin sur des longueurs que la main distingue.
+ */
+export const DRAG_FULL_POWER_PX = 180;
+
+/** La puissance d'un glissé, de 0 à 100, à partir de sa longueur en pixels. */
+export function powerFromDrag(distancePx: number): number {
+  const ratio = Math.max(0, distancePx) / DRAG_FULL_POWER_PX;
+  return Math.min(100, Math.round(ratio * 100));
 }
 
 /**
- * Le poids d'une face selon son écart, en crans, avec la face visée.
+ * La face obtenue : un sixième chacune, quoi qu'ait fait le doigt.
  *
- * C'est le réglage de la mécanique, et le seul. Plus de poids sur le premier
- * cran rend le dé docile ; une queue plus lourde le rend sourd au geste.
+ * La fonction ne prend **pas** le geste, et c'est le point : rien de ce qui
+ * arrive du réseau ne peut infléchir la face. Un client bricolé n'a plus de
+ * puissance à mentir puisque plus aucune puissance ne compte ici.
  *
- * Tel quel : la face visée sort 28 à 36 % du temps selon la visée, ses voisines
- * immédiates presque autant, et **aucune face n'est jamais impossible** — un
- * geste à fond peut encore donner un 1, comme un dé qui rebondit sur le bord de
- * la table. Espérance de 2,4 pour un geste au ras du seuil contre 4,6 pour un
- * geste à fond : le geste se sent, il ne commande pas.
- *
- * On pondère toutes les faces plutôt que de décaler la visée, parce qu'un écart
- * qui sortirait du dé doit être redistribué et non replié : replié, une poussée
- * molle donnait un 2 plus souvent qu'un 1 — la face la plus probable n'était
- * plus celle visée ; tronqué, une poussée franche donnait le 6 deux fois sur
- * trois.
+ * Le geste n'est pas perdu pour autant, il est ailleurs — dans `describeFlight`,
+ * qui décrit un vol dont la longueur, la direction, les rebonds et la culbute
+ * viennent tous du glissé. C'est ce qu'on voit ; la face, elle, est ce qu'on
+ * compte, et un dé juste ne se pilote pas.
  */
-const WEIGHT_BY_DISTANCE: readonly number[] = [5, 4, 2, 1, 1, 1];
-
-/** Les poids des six faces pour une face visée donnée. */
-function weightsForAim(target: number): number[] {
-  return Array.from(
-    { length: DICE_FACES },
-    (_, index) => WEIGHT_BY_DISTANCE[Math.abs(index + 1 - target)]
-  );
-}
-
-/**
- * La face obtenue pour une puissance de geste donnée.
- *
- * `power` absente, nulle, non numérique ou en dessous du seuil de geste : le
- * lancer reste un tirage au sort. C'est le cas de l'appui simple et celui d'un
- * client qui ne dit rien — la puissance arrive du réseau, donc on ne lui fait
- * pas confiance, on la borne.
- */
-export function resolveThrow(
-  power: number | null | undefined,
-  random: () => number = Math.random
-): number {
-  if (typeof power !== 'number' || !Number.isFinite(power) || power < AIM_MIN_DRAG_PX) {
-    return 1 + Math.floor(random() * DICE_FACES);
-  }
-
-  const weights = weightsForAim(aimedFace(power));
-  const total = weights.reduce((sum, weight) => sum + weight, 0);
-  let ticket = random() * total;
-
-  for (let face = 1; face <= DICE_FACES; face++) {
-    ticket -= weights[face - 1];
-    if (ticket < 0) return face;
-  }
-
-  return DICE_FACES;
-}
-
-/**
- * L'espérance du lancer pour une puissance donnée, utile aux tests et à qui
- * voudra régler `WEIGHT_BY_DISTANCE` sans lancer dix mille dés.
- */
-export function expectedFace(power: number): number {
-  // Sous le seuil, `resolveThrow` tire au hasard : l'espérance doit dire la même
-  // chose que le lancer, sinon elle ne sert à rien pour régler la mécanique.
-  if (power < AIM_MIN_DRAG_PX) return (1 + DICE_FACES) / 2;
-
-  const weights = weightsForAim(aimedFace(power));
-  const total = weights.reduce((sum, weight) => sum + weight, 0);
-  return weights.reduce((sum, weight, index) => sum + weight * (index + 1), 0) / total;
+export function rollDie(random: () => number = Math.random): number {
+  return 1 + Math.floor(random() * DICE_FACES);
 }
 
 /* ==========================================================================

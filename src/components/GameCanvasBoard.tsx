@@ -56,6 +56,26 @@ const CATEGORY_ICONS: Record<CategoryId, React.ComponentType<{ size?: number; co
   gastronomie: Utensils
 };
 
+/**
+ * Les couches du plateau, dans l'ordre où elles se recouvrent.
+ *
+ * Un pion calcule son `zIndex` d'après sa position sur le plateau — de 20 à 180
+ * quand il se déplace — pour que celui du bas passe devant celui du haut. Tout ce
+ * qui doit couvrir les pions doit donc dépasser 180, et **un `z-index` absent ne
+ * suffit pas** : dans un même contexte d'empilement, un élément sans `z-index`
+ * perd contre un élément qui en a un, quel que soit l'ordre du DOM. C'est ce qui
+ * laissait un pion passer par-dessus l'écran « passez l'appareil » — signalé en
+ * partie, capture à l'appui — et par-dessus l'assombrissement du lancer.
+ */
+const BOARD_LAYER = {
+  /** Le dé passe devant les pions : c'est lui qu'on suit quand il roule. */
+  dice: 200,
+  /** Assombrissements et annonces, au-dessus de tout le plateau. */
+  overlay: 300,
+  /** Les écrans qui prennent la main sur le tour. */
+  gate: 400,
+} as const;
+
 const SPECIAL_TILES = {
   reroll: { color: '#06B6D4', label: 'Re-lance', icon: RefreshCw },
   surprise: { color: '#EC4899', label: 'Surprise', icon: Gift },
@@ -1043,7 +1063,7 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
                 left: (DICE_REST.x / 1000) * boardPx - dieBoxPx / 2,
                 top: (DICE_REST.y / 1000) * boardPx - (dieBoxPx + 16) / 2,
                 width: dieBoxPx,
-                zIndex: 70,
+                zIndex: BOARD_LAYER.dice,
               }}
             >
               <Dice3D
@@ -1083,6 +1103,7 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
               className="pointer-events-none absolute inset-0 bg-slate-950/45 backdrop-blur-[1px]"
+              style={{ zIndex: BOARD_LAYER.overlay }}
             />
           )}
         </AnimatePresence>
@@ -1095,6 +1116,7 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 1.25, opacity: 0 }}
               transition={{ duration: 0.4, ease: EASE_OUT_SOFT }}
+              style={{ zIndex: BOARD_LAYER.overlay }}
               className="pointer-events-none absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-center"
             >
               <div className="flex items-center gap-3 rounded-3xl border border-amber-400/70 bg-slate-950/85 px-5 py-3 shadow-2xl backdrop-blur-md">
@@ -1119,7 +1141,8 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, transition: { duration: 0.15 } }}
               transition={{ duration: 0.22, ease: EASE_OUT_SOFT }}
-              className="pointer-events-none absolute inset-x-0 top-1.5 z-20 flex justify-center px-2"
+              style={{ zIndex: BOARD_LAYER.overlay }}
+              className="pointer-events-none absolute inset-x-0 top-1.5 flex justify-center px-2"
             >
               <div className="rounded-xl border border-amber-500/60 bg-amber-950/90 px-3 py-1.5 text-center text-xs font-black text-amber-300 shadow-lg backdrop-blur-sm">
                 {gameState.lastTurnEventMessage}
@@ -1136,7 +1159,8 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="absolute inset-0 z-40 flex items-center justify-center bg-slate-950/95 p-5"
+              style={{ zIndex: BOARD_LAYER.gate }}
+              className="absolute inset-0 flex items-center justify-center bg-slate-950/95 p-5"
             >
               <motion.div
                 initial={{ scale: 0.9, y: 16, opacity: 0 }}

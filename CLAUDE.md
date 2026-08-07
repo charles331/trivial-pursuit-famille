@@ -187,8 +187,13 @@ Points de vigilance connus :
   réservé au lanceur. Le **parcours** l'est aussi parce qu'il ne dépend que de
   `diceThrow` (poussée + graine) retenu par le serveur : ne jamais le tirer côté
   client, les écrans divergeraient.
-- La poussée du glissé vise une face **et** donne le parcours
-  (`src/server/diceThrow.ts`, ADR 0005). Le client n'envoie qu'un **geste** —
+- **Le geste décide de ce qu'on voit, le serveur de ce qu'on compte** — c'est la
+  ligne de partage du lancer (`src/server/diceThrow.ts`, ADR 0005). La poussée du
+  glissé donne le parcours du dé, et lui seul : distance, direction, rebonds,
+  durée de la culbute. La face est un sixième chacune (`rollDie`), et ne prend plus
+  le geste en paramètre du tout. Elle a visé pendant un temps ; mesuré sur un pouce
+  de famille, cela concentrait 69 % des lancers sur les faces 2, 3 et 4 — retiré à
+  la demande du propriétaire du projet. Le client n'envoie qu'un **geste** —
   puissance et angle —, jamais un résultat, et le serveur borne les deux : toute
   nouvelle action qui dépend d'un geste doit suivre la même règle.
 - `diceThrow` décrit **le lancer en cours**, et rien d'autre : tout chemin qui

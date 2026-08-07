@@ -260,9 +260,10 @@ export default function App() {
     }
   }, [socket, gameState?.roomCode]);
 
-  // La poussée du geste part avec le lancer : sa puissance vise la face, son
-  // angle donne la direction du dé sur le plateau. `null` pour un appui simple —
-  // le serveur retombe alors sur un tirage au sort et un départ vers le plateau.
+  // La poussée du geste part avec le lancer : elle dessine le vol du dé — sa
+  // puissance la distance et les rebonds, son angle la direction sur le plateau.
+  // Elle ne touche pas à la face, que le serveur tire seul. `null` pour un appui
+  // simple : le dé part quand même, sans poussée.
   const handleRollDice = React.useCallback((push: { power: number; angle: number } | null) => {
     if (socket && gameState) {
       socket.emit('roll-dice', {
