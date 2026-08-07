@@ -1495,7 +1495,7 @@ async function startServer() {
   startRoomPersistence(rooms);
 
   httpServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`🎮 Serveur Trivial Pursuit Famille en ligne sur http://0.0.0.0:${PORT}`);
+    console.log(`🎮 Serveur Le Défi des Familles en ligne sur http://0.0.0.0:${PORT}`);
     console.log(`💾 Parties sauvegardées dans ${ROOM_STORE_PATH}`);
   });
 }

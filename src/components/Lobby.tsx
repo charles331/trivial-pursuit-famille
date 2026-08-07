@@ -4,6 +4,7 @@ import { AvatarPicker } from './AvatarPicker';
 import { soundManager } from '../utils/sound';
 import { AVATARS } from '../data/avatars';
 import { BOARD_PRESETS } from '../data/boards';
+import { GAME_NAME, GAME_NAME_PARTS } from '../config/brand';
 import {
   DEFAULT_PROFILE,
   loadStoredProfile,
@@ -170,7 +171,7 @@ export const Lobby: React.FC<LobbyProps> = ({
     const url = `${window.location.origin}${window.location.pathname}?code=${gameState?.roomCode}`;
     if (navigator.share) {
       navigator.share({
-        title: 'Rejoins notre partie de Trivial Pursuit Famille !',
+        title: `Rejoins notre partie du ${GAME_NAME} !`,
         text: `Clique sur le lien pour rejoindre directement notre salon privé avec le code ${gameState?.roomCode}`,
         url
       }).catch(() => {
@@ -546,7 +547,7 @@ export const Lobby: React.FC<LobbyProps> = ({
           🎯
         </div>
         <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-          Trivial Pursuit <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-500">Famille</span>
+          {GAME_NAME_PARTS.lead} <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-500">{GAME_NAME_PARTS.accent}</span>
         </h1>
         <p className="text-xs sm:text-sm text-slate-400 font-medium">
           Le quiz de culture générale à jouer en famille, sur un ou plusieurs appareils.

@@ -2,7 +2,7 @@
 
 - Statut : accepté
 - Date : 2026-07-27
-- Portée : banque de questions du Trivial Pursuit familial
+- Portée : banque de questions du Défi des Familles
 
 ## Contexte
 

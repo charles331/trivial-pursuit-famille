@@ -1,4 +1,4 @@
-# Trivial Pursuit Famille — notes pour les sessions agentiques
+# Le Défi des Familles — notes pour les sessions agentiques
 
 Jeu de quiz familial multijoueur, joué en Belgique francophone. React + TypeScript +
 Vite + Tailwind v4 côté client, Express + socket.io côté serveur (`server.ts`),
@@ -216,6 +216,24 @@ Points de vigilance connus :
   oublié laisse un joueur visible à l'écran mais que le serveur n'autorise plus à
   agir. Le jeton de session vit dans le `localStorage` : il ne survit pas au
   changement de navigateur, d'où la reprise par prénom (`src/server/seats.ts`).
+
+## Le nom du jeu vit dans une constante
+
+Le jeu s'appelait « Trivial Pursuit Famille », ce qui reprenait une marque déposée
+alors que le plateau et les camemberts en reprenaient déjà l'habillage. Il s'appelle
+**Le Défi des Familles**, et son nom n'est plus recopié : `src/config/brand.ts` en est
+la source (`GAME_NAME`, et `GAME_NAME_PARTS` pour l'affichage en deux teintes).
+
+Quatre fichiers ne peuvent pas l'importer et le portent en clair — `index.html`,
+`metadata.json`, `assets-source/*.svg` et `public/favicon.svg`. Le test de
+`previewMeta` vérifie que la page servie s'accorde avec la constante, et
+`npm run assets:brand` régénère les PNG après toute retouche des SVG.
+
+En revanche, **citer le vrai Trivial Pursuit reste légitime** et ne doit pas être
+« corrigé » : une carte qui demande ce qu'on réunit pour gagner au Trivial Pursuit
+classique est une question de culture des jeux, et l'analyse de difficulté prend
+l'édition Famille du commerce pour étalon. Ce qu'on a retiré, c'est le nom **de
+notre produit**, pas les références à un jeu célèbre.
 
 ## Conventions
 

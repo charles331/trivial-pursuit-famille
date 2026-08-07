@@ -23,7 +23,7 @@ test('les images d’aperçu passent en adresse absolue', () => {
 test('les autres balises et les icônes ne sont pas touchées', () => {
   const rendered = withAbsolutePreviewImages(indexHtml, 'https://jeu.example.com');
 
-  assert.match(rendered, /<title>Trivial Pursuit Famille<\/title>/);
+  assert.match(rendered, /<title>Le Défi des Familles<\/title>/);
   assert.match(rendered, /<link rel="icon" type="image\/svg\+xml" href="\/favicon\.svg" \/>/);
   assert.match(rendered, /<link rel="apple-touch-icon" sizes="180x180" href="\/apple-touch-icon\.png" \/>/);
   assert.match(rendered, /<meta property="og:image:width" content="1200" \/>/);
