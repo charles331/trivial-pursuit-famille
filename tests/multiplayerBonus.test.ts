@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { advanceTurn, resolveAnswer } from '../src/server/gameEngine';
-import { SURPRISE_WHEEL, awardSurpriseBonus, bonusCount } from '../src/server/bonuses';
+import { advanceTurn, calculateMoves, resolveAnswer } from '../src/server/gameEngine';
+import { SURPRISE_WHEEL, awardSurpriseBonus, bonusCount, useLeapBonus } from '../src/server/bonuses';
+import { DEFAULT_BOARD_CATEGORIES, buildBoard } from '../src/data/boards';
 import { createGameStateView } from '../src/server/gameStateView';
 import { createGameState, createPlayer, testBoard, testSettings } from './fixtures';
 
@@ -90,4 +91,32 @@ test('l’instant du lancer est commun, c’est lui qui synchronise l’animatio
     assert.equal(vue.surpriseWheel!.startedAt, 1_700_000_000_000, id);
     assert.equal(vue.surpriseWheel!.slot, slotAvant, id);
   }
+});
+
+test('le Grand saut se voit sur tous les écrans, mais ne se dépense que par son propriétaire', () => {
+  // Le bonus s'utilise en phase `moving`, que toute la table regarde : sans les
+  // deux données ci-dessous dans l'état diffusé, les autres verraient le pion
+  // partir deux fois plus loin sans rien comprendre, et surtout deux écrans
+  // proposeraient des destinations différentes.
+  const board = buildBoard('wheel', DEFAULT_BOARD_CATEGORIES);
+  const state = twoPlayerGame();
+  state.phase = 'moving';
+  state.diceValue = 2;
+  state.players[1].currentTileId = board.tiles[0].id;
+  state.players[1].bonuses = { big_leap: 1 };
+  state.possibleMoves = calculateMoves(board.tiles[0].id, 2, board);
+
+  assert.equal(useLeapBonus(state, board), true);
+
+  const vuePapa = createGameStateView(state, 'papa', 'papa');
+  const vueFille = createGameStateView(state, 'fille', 'papa');
+  assert.deepEqual(vuePapa.possibleMoves, vueFille.possibleMoves);
+  assert.equal(vuePapa.bigLeapThisTurn, 4);
+  assert.equal(vueFille.bigLeapThisTurn, 4);
+
+  // Et le jeton est bien prélevé sur la joueuse active, pas sur son voisin —
+  // c'est le défaut signalé pour le 50/50 : « j'avais la possibilité d'activer
+  // son bonus à sa place ».
+  assert.equal(bonusCount(vuePapa.players.find(p => p.id === 'fille')!, 'big_leap'), 0);
+  assert.equal(bonusCount(vuePapa.players.find(p => p.id === 'papa')!, 'big_leap'), 0);
 });

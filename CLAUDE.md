@@ -201,6 +201,22 @@ Points de vigilance connus :
   oublié — le dé restait posé au milieu du plateau puis sautait dans son coin au
   lancer suivant. Le client ne s'y fie plus : en phase `rolling`, il ignore la
   poussée et remet le dé dans son coin, quoi qu'ait envoyé le serveur.
+- Les bonus ne se dépensent pas tous au même endroit. 50/50 et Joker camembert
+  s'arment sur la carte (`useBonus`, phase `question`) ; le **Grand saut** se joue
+  sur le plateau (`useLeapBonus`, phase `moving`, ADR 0008) et double le dé sans
+  changer sa face. `bigLeapThisTurn` décrit *ce* déplacement, exactement comme
+  `diceThrow` décrit *ce* lancer : tout chemin qui ramène en phase `rolling` doit
+  l'effacer, la case Relancer comprise. Le doublement est calculé par le serveur —
+  deux écrans qui le calculeraient chacun proposeraient des destinations
+  différentes. L'habillage (emoji, nom, couleur du quartier) vit dans `BONUS_LOOK` :
+  il était recopié en ternaires à quatre endroits, et un oubli donnait un quartier
+  blanc indiscernable d'une case vide.
+- Un état local qui ne se remet à zéro que sur un **événement** rate les
+  changements qui ne passent pas par cet événement. L'aperçu de la destination
+  s'effaçait au changement de phase et de tour ; le Grand saut renouvelle le choix
+  sans toucher ni à l'un ni à l'autre, et la caméra serait restée braquée sur une
+  case devenue inatteignable. Quand c'est possible, **dériver plutôt qu'effacer** :
+  un aperçu validé contre `possibleMoves` ne peut pas être en retard sur l'état.
 - La roue surprise suit la même grammaire que le dé : le serveur retient le
   **quartier** (`surpriseWheel.slot`, décidé sur la case Surprise) et l'**instant**
   du lancer (`startedAt`, posé sur le geste du joueur). Le client ne tire rien —

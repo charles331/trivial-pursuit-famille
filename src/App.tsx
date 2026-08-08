@@ -468,6 +468,7 @@ export default function App() {
               currentUserId={currentUserId}
               onRollDice={handleRollDice}
               onSelectTile={handleSelectTile}
+              onUseBonus={handleUseBonus}
             />
           </React.Suspense>
         )}

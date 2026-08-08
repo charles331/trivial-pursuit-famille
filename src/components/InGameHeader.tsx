@@ -40,7 +40,8 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({
     : gameState.players.find(player => player.id === currentUserId);
   const myFiftyFifty = bonusHolder?.bonuses?.fifty_fifty ?? 0;
   const myJoker = bonusHolder?.bonuses?.camembert_joker ?? 0;
-  const showBonusChip = bonusesEnabled && (myFiftyFifty > 0 || myJoker > 0);
+  const myLeap = bonusHolder?.bonuses?.big_leap ?? 0;
+  const showBonusChip = bonusesEnabled && (myFiftyFifty > 0 || myJoker > 0 || myLeap > 0);
   const [isMuted, setIsMuted] = useState(soundManager.getMuted());
   const [copied, setCopied] = useState(false);
   const [showPlayersDrawer, setShowPlayersDrawer] = useState(false);
@@ -139,6 +140,7 @@ export const InGameHeader: React.FC<InGameHeaderProps> = ({
             >
               {myFiftyFifty > 0 && <span>🎯 {myFiftyFifty}</span>}
               {myJoker > 0 && <span>🧀 {myJoker}</span>}
+              {myLeap > 0 && <span>🦘 {myLeap}</span>}
             </div>
           )}
 

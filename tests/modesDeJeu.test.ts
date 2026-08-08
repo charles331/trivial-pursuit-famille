@@ -3,6 +3,7 @@ import test from 'node:test';
 import { buildBoard, resolveBoardCategories } from '../src/data/boards';
 import { CATEGORIES } from '../src/data/categories';
 import { pickQuestionForPlayer } from '../src/server/questionSelection';
+import { resolveReaderId } from '../src/server/turnRoles';
 import { QUESTIONS_DATABASE } from '../src/data/questions';
 import { CategoryId, DifficultyLevel, GameState, Player } from '../src/types';
 
@@ -100,4 +101,23 @@ test('le niveau et la catégorie demandés sont toujours respectés', () => {
       assert.equal(q.categoryId, categoryId, `${categoryId} / ${niveau}`);
     }
   }
+});
+
+test('sans lecteur possible, plus rien n’annonce un lecteur', () => {
+  // Vu en partie solo, capture à l'appui : le bandeau annonçait « Papa vous lit
+  // la carte à voix haute » à Papa lui-même. `resolveReaderId` rend bien `null`,
+  // mais le repli d'affichage retombe sur le joueur actif — c'est donc la
+  // condition d'affichage qui manquait, et elle est la même que celle du
+  // masquage. Les trois conditions du modal se déduisent d'ici : elles doivent
+  // toutes exiger un lecteur résolu, pas seulement le réglage.
+  const solo = etat([joueur('a')], { isReaderMode: true });
+  assert.equal(resolveReaderId(solo.players, 0), null, 'un joueur seul n’a pas de lecteur');
+
+  // Deux joueurs dont l'autre a quitté : même situation, autre cause.
+  const abandonne = etat([joueur('a'), joueur('b', false)], { isReaderMode: true });
+  assert.equal(resolveReaderId(abandonne.players, 0), null);
+
+  // Dès qu'un second joueur est connecté, le lecteur existe et le bandeau a un sens.
+  const table = etat([joueur('a'), joueur('b')], { isReaderMode: true });
+  assert.equal(resolveReaderId(table.players, 0), 'b');
 });
