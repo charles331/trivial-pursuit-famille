@@ -463,8 +463,13 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
           </div>
         )}
 
-        {/* Reader Banner Notification */}
-        {isReaderMode && !isAnswered && (
+        {/* Bandeau du mode lecteur.
+            Conditionné à l'existence d'un lecteur, et pas seulement au réglage :
+            `readerPlayer` retombe sur le joueur actif quand personne ne peut lire,
+            et le bandeau annonçait alors « Papa vous lit la carte à voix haute » à
+            Papa lui-même — vu en partie solo. Le masquage de la carte prenait déjà
+            cette précaution (`isCardMasked`), le bandeau l'avait oubliée. */}
+        {isReaderMode && readerId !== null && !isAnswered && (
           <div className="flex shrink-0 items-center gap-1.5 border-b border-amber-500/30 bg-amber-500/15 px-3 py-1.5 text-[11px] font-bold leading-snug text-amber-900 dark:text-amber-200">
             <BookOpen className="h-3.5 w-3.5 shrink-0 text-amber-500" />
             {isIActivePlayer ? (
