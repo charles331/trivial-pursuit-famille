@@ -111,6 +111,7 @@ export function advanceTurn(state: GameState): void {
   state.surpriseSpinThisTurn = false;
   state.surpriseWheel = null;
   state.activeQuestionBonus = null;
+  state.bigLeapThisTurn = null;
 }
 
 /**
@@ -141,6 +142,7 @@ export function resetGameForNewRound(state: GameState): void {
   state.surpriseSpinThisTurn = false;
   state.surpriseWheel = null;
   state.activeQuestionBonus = null;
+  state.bigLeapThisTurn = null;
   state.firstPlayerDraw = null;
   state.lastQuestionRecap = null;
   state.isPaused = false;
@@ -191,7 +193,7 @@ export function removePlayerFromGame(state: GameState, playerId: string): boolea
   if (wasActive && state.phase !== 'lobby' && state.phase !== 'game_over') {
     state.phase = 'rolling';
     state.diceValue = null;
-  state.diceThrow = null;
+    state.diceThrow = null;
     state.possibleMoves = [];
     state.selectedTileId = null;
     state.currentQuestion = null;
@@ -201,6 +203,7 @@ export function removePlayerFromGame(state: GameState, playerId: string): boolea
     state.surpriseSpinThisTurn = false;
     state.surpriseWheel = null;
     state.activeQuestionBonus = null;
+    state.bigLeapThisTurn = null;
   }
 
   return true;

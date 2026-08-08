@@ -26,8 +26,12 @@ export type QuestionFormat = 'mcq' | 'boolean' | 'open';
  * - `fifty_fifty` : élimine deux mauvaises réponses (QCM uniquement).
  * - `camembert_joker` : une bonne réponse rapporte un camembert de la catégorie
  *   de la case, même hors d'une case camembert.
+ * - `big_leap` : double le dé qui vient de tomber, et rouvre le choix de la
+ *   destination. C'est le seul qui s'utilise **sur le plateau** et non sur la
+ *   carte : les deux autres jouent sur ce qu'on répond, celui-ci sur là où l'on
+ *   va — typiquement, atteindre la case camembert qu'on vise depuis trois tours.
  */
-export type BonusType = 'fifty_fifty' | 'camembert_joker';
+export type BonusType = 'fifty_fifty' | 'camembert_joker' | 'big_leap';
 
 export type PlayerBonuses = Partial<Record<BonusType, number>>;
 
@@ -224,6 +228,15 @@ export interface GameState {
    * dans `bonusAwardedThisTurn`, `null` valant « rien gagné »).
    */
   surpriseSpinThisTurn?: boolean;
+  /**
+   * Nombre de cases ouvertes par le Grand saut à ce tour, ou `null`/absent s'il
+   * n'a pas été utilisé. C'est le double du dé, et c'est aussi ce que le plateau
+   * annonce : le dé garde sa face, seul le nombre de pas change.
+   *
+   * État serveur, et non local : le bonus s'utilise en phase `moving`, que tous
+   * les écrans regardent, et le choix des destinations doit être le même partout.
+   */
+  bigLeapThisTurn?: number | null;
   /**
    * La roue surprise du tour, telle que tous les écrans doivent la voir tourner.
    *

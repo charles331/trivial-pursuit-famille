@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { GameState, BoardTile, CategoryId, BoardConfig } from '../types';
+import { GameState, BoardTile, BonusType, CategoryId, BoardConfig } from '../types';
 import { buildBoard, resolveBoardCategories, resolveTilePath } from '../data/boards';
 import { CATEGORIES } from '../data/categories';
 import { AVATARS } from '../data/avatars';
@@ -36,6 +36,8 @@ interface GameCanvasBoardProps {
   /** Reçoit la poussée du geste, ou `null` pour un lancer au hasard. */
   onRollDice: (push: { power: number; angle: number } | null) => void;
   onSelectTile: (tileId: number) => void;
+  /** Dépense un bonus jouable depuis le plateau — aujourd'hui le Grand saut. */
+  onUseBonus: (bonusType: BonusType) => void;
 }
 
 /**
@@ -295,7 +297,8 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
   gameState,
   currentUserId,
   onRollDice,
-  onSelectTile
+  onSelectTile,
+  onUseBonus
 }) => {
   const [isRollingLocally, setIsRollingLocally] = useState(false);
   const [showingResultPause, setShowingResultPause] = useState<number | null>(null);
@@ -362,6 +365,20 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
   const possibleDestinationTiles = gameState.possibleMoves
     .map(tileId => tiles.find(tile => tile.id === tileId))
     .filter((tile): tile is BoardTile => Boolean(tile));
+
+  // Le Grand saut : le seul bonus qui se dépense sur le plateau. Il ne s'offre
+  // qu'une fois le dé posé — proposé pendant la culbute, il annoncerait le
+  // résultat avant le dé (`isChoosing` porte déjà cette garde). Le compte de pas
+  // vient du serveur, jamais d'un doublement calculé ici : les écrans doivent
+  // proposer exactement les mêmes destinations.
+  const leapSteps = gameState.bigLeapThisTurn ?? null;
+  const canOfferLeap = Boolean(
+    isChoosing
+    && isMyTurn
+    && gameState.settings.enableBonuses
+    && leapSteps === null
+    && (activePlayer?.bonuses?.big_leap ?? 0) > 0,
+  );
 
   const originTile = tiles.find(tile => tile.id === activePlayer?.currentTileId) || tiles[0];
 
@@ -511,23 +528,31 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
   };
 
   // --------------------------------------------------------------- move preview
+  //
+  // La case survolée se vérifie contre les destinations du moment plutôt que de
+  // s'effacer sur événement : le Grand saut renouvelle le choix **sans** changer
+  // ni de phase ni de joueur, les deux seuls signaux qui remettaient l'aperçu à
+  // zéro. La caméra serait restée braquée sur une case qu'on ne peut plus
+  // atteindre. Dérivé, l'aperçu ne peut pas être en retard sur l'état.
+  const validPreviewId =
+    previewTileId !== null && gameState.possibleMoves.includes(previewTileId) ? previewTileId : null;
   const previewTargetId =
-    previewTileId ?? (possibleDestinationTiles.length === 1 ? possibleDestinationTiles[0].id : null);
+    validPreviewId ?? (possibleDestinationTiles.length === 1 ? possibleDestinationTiles[0].id : null);
 
   // ------------------------------------------------------------------- camera
   const focusPoints = useMemo(() => {
     if (!originTile) return [];
     // Highlighting one destination zooms onto that single trip, which is what
     // makes "where would I land?" readable on a phone.
-    if (isChoosing && previewTileId !== null) {
-      const target = tiles.find(tile => tile.id === previewTileId);
+    if (isChoosing && validPreviewId !== null) {
+      const target = tiles.find(tile => tile.id === validPreviewId);
       if (target) return [originTile, target];
     }
     if (isChoosing && possibleDestinationTiles.length > 0) {
       return [originTile, ...possibleDestinationTiles];
     }
     return [originTile];
-  }, [originTile, isChoosing, previewTileId, gameState.possibleMoves.join(','), gameState.phase]);
+  }, [originTile, isChoosing, validPreviewId, gameState.possibleMoves.join(','), gameState.phase]);
 
   // Pendant toute la phase de lancer, la caméra lâche prise. Zoomée à 1,45 sur le
   // pion, elle sortait du cadre le coin où le dé attend — impossible de le
@@ -732,6 +757,30 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
                   </span>
                 )}
               </p>
+
+              {/* Le Grand saut. Le bouton n'appartient qu'au joueur actif, mais
+                  son résultat s'affiche sur tous les écrans : sans cela, les
+                  autres verraient le pion partir deux fois plus loin sans
+                  comprendre pourquoi. */}
+              {canOfferLeap && (
+                <button
+                  type="button"
+                  onClick={() => { soundManager.playClick(); onUseBonus('big_leap'); }}
+                  className="tap-target flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-sky-400/70 bg-sky-950/70 px-3 py-2 text-xs font-black text-sky-200 transition-all active:scale-[0.98]"
+                >
+                  <span aria-hidden="true">🦘</span>
+                  Le grand saut : avancez de {(gameState.diceValue ?? 0) * 2} cases
+                  <span className="rounded-full bg-sky-400/20 px-1.5 py-0.5 text-[10px] text-sky-100">
+                    × {activePlayer?.bonuses?.big_leap}
+                  </span>
+                </button>
+              )}
+
+              {leapSteps !== null && (
+                <p className="text-center text-xs font-black text-sky-300">
+                  🦘 Le grand saut ! {isMyTurn ? 'Vous avancez' : `${activePlayer?.name} avance`} de {leapSteps} cases.
+                </p>
+              )}
 
               <div className="no-scrollbar stagger-children flex snap-x snap-mandatory gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-2 sm:overflow-visible">
                 {possibleDestinationTiles.map((tile, index) => {
@@ -1234,6 +1283,11 @@ const GameCanvasBoardComponent: React.FC<GameCanvasBoardProps> = ({
                     {gameState.settings.enableBonuses && (player.bonuses?.camembert_joker ?? 0) > 0 && (
                       <span className="ml-1.5 font-bold text-amber-400">
                         · 🧀 Joker × {player.bonuses?.camembert_joker}
+                      </span>
+                    )}
+                    {gameState.settings.enableBonuses && (player.bonuses?.big_leap ?? 0) > 0 && (
+                      <span className="ml-1.5 font-bold text-sky-400">
+                        · 🦘 Saut × {player.bonuses?.big_leap}
                       </span>
                     )}
                   </div>

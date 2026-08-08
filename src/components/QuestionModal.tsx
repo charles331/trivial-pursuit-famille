@@ -5,7 +5,7 @@ import { CATEGORIES } from '../data/categories';
 import { PlayerWedgeBadge } from './PlayerWedgeBadge';
 import { LiveSpotlight } from './LiveSpotlight';
 import { resolveReaderId } from '../server/turnRoles';
-import { SURPRISE_WHEEL, jokerCanEarnWedge } from '../server/bonuses';
+import { BONUS_LOOK, EMPTY_SLOT_COLOR, SURPRISE_WHEEL, jokerCanEarnWedge } from '../server/bonuses';
 import { soundManager } from '../utils/sound';
 import { resolveQuestionTimerSeconds } from '../utils/questionTimer';
 import { Timer, CheckCircle2, XCircle, Sparkles, HelpCircle, ArrowRight, Eye, EyeOff, BookOpen, Gift } from 'lucide-react';
@@ -350,7 +350,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
 
   const wheelBackground = `conic-gradient(${SURPRISE_WHEEL
     .map((slot, i) => {
-      const color = slot === 'fifty_fifty' ? '#ec4899' : slot === 'camembert_joker' ? '#f59e0b' : '#e2e8f0';
+      const color = slot ? BONUS_LOOK[slot].color : EMPTY_SLOT_COLOR;
       return `${color} ${i * 60}deg ${(i + 1) * 60}deg`;
     })
     .join(', ')})`;
@@ -873,7 +873,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
                       className="absolute left-1/2 top-1/2 text-xl"
                       style={{ transform: `translate(-50%, -50%) rotate(${i * 60 + 30}deg) translateY(-58px) rotate(-${i * 60 + 30}deg)` }}
                     >
-                      {slot === 'fifty_fifty' ? '🎯' : slot === 'camembert_joker' ? '🧀' : ''}
+                      {slot ? BONUS_LOOK[slot].emoji : ''}
                     </span>
                   ))}
                 </motion.div>
@@ -882,11 +882,9 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
               {wheelSettled ? (
                 <>
                   <p className="text-center text-base font-black text-slate-900 dark:text-white">
-                    {bonusAwardedThisTurn === 'camembert_joker'
-                      ? '🎉 Joker camembert gagné !'
-                      : bonusAwardedThisTurn === 'fifty_fifty'
-                        ? '🎉 50/50 gagné !'
-                        : '😅 Case vide — pas de bonus cette fois.'}
+                    {bonusAwardedThisTurn
+                      ? `🎉 ${BONUS_LOOK[bonusAwardedThisTurn].label} gagné !`
+                      : '😅 Case vide — pas de bonus cette fois.'}
                   </p>
                   {isMyTurn ? (
                     <button

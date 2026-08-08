@@ -37,7 +37,14 @@ import { activeThemeKeys, pickQuestionForPlayer } from './src/server/questionSel
 import { previewOrigin, withAbsolutePreviewImages } from './src/server/previewMeta.js';
 import { createQuestionGenerator } from './src/server/questionGenerator.js';
 import { DEFAULT_GENERATED_PACK_COUNT } from './src/config/generatedPack.js';
-import { BONUS_ROSTER, awardSurpriseBonus, useBonus, wheelSlotFor } from './src/server/bonuses.js';
+import {
+  BIG_LEAP_BONUS,
+  BONUS_ROSTER,
+  awardSurpriseBonus,
+  useBonus,
+  useLeapBonus,
+  wheelSlotFor,
+} from './src/server/bonuses.js';
 import {
   DEFAULT_BONUS_MODE,
   DEFAULT_QUESTION_TIMER_SECONDS,
@@ -1187,6 +1194,7 @@ io.on('connection', (socket: Socket) => {
     room.gameState.surpriseSpinThisTurn = false;
     room.gameState.surpriseWheel = null;
     room.gameState.activeQuestionBonus = null;
+    room.gameState.bigLeapThisTurn = null;
 
     const activePlayer = room.gameState.players[room.gameState.activePlayerIndex];
     const board = buildBoard(room.settings.boardType, room.gameState.boardCategories);
@@ -1236,6 +1244,9 @@ io.on('connection', (socket: Socket) => {
       // le faisait repartir de son coin — il sautait d'un endroit à l'autre.
       room.gameState.diceThrow = null;
       room.gameState.possibleMoves = [];
+      // Le Grand saut décrivait le déplacement qu'on vient d'annuler : la case
+      // Relancer renvoie au lancer, donc le compte de pas ne veut plus rien dire.
+      room.gameState.bigLeapThisTurn = null;
       room.gameState.lastTurnEventMessage = `🎲 ${activePlayer.name} a atterri sur une case Relancer le dé ! Rejouez tout de suite.`;
       emitGameState(room);
       return;
@@ -1328,7 +1339,18 @@ io.on('connection', (socket: Socket) => {
     // d'activer son bonus à sa place ». Un bonus est un choix tactique, il
     // n'appartient qu'à celui dont c'est le tour.
     if (!isPlayerAllowedToAct(room, socket.id)) return;
-    if (!useBonus(room.gameState, data.bonusType as BonusType)) return;
+
+    // Le Grand saut est le seul bonus qui agit sur le plateau et non sur la
+    // carte : il lui faut le plateau de la partie, et sa propre phase.
+    if (data.bonusType === BIG_LEAP_BONUS) {
+      const board = buildBoard(room.settings.boardType, room.gameState.boardCategories);
+      // Le saut s'annonce dans le sélecteur de destination, qui est déjà à
+      // l'écran de tout le monde en phase `moving` : pas de message de tour, qui
+      // ne s'affiche qu'en phase de lancer et arriverait donc trop tard.
+      if (!useLeapBonus(room.gameState, board)) return;
+    } else if (!useBonus(room.gameState, data.bonusType as BonusType)) {
+      return;
+    }
 
     emitGameState(room);
     saveRooms(rooms);

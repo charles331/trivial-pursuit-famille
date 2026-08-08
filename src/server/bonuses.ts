@@ -1,25 +1,54 @@
-import { BonusType, CategoryId, GameState, Player } from '../types';
+import { BoardConfig, BonusType, CategoryId, GameState, Player } from '../types';
+import { calculateMoves } from './gameEngine';
 
 export const FIFTY_FIFTY_BONUS = 'fifty_fifty' as const;
 export const CAMEMBERT_JOKER_BONUS = 'camembert_joker' as const;
+export const BIG_LEAP_BONUS = 'big_leap' as const;
 
 /** Bonus qu'un joueur peut détenir et utiliser. */
-export const BONUS_ROSTER: BonusType[] = [FIFTY_FIFTY_BONUS, CAMEMBERT_JOKER_BONUS];
+export const BONUS_ROSTER: BonusType[] = [
+  FIFTY_FIFTY_BONUS,
+  CAMEMBERT_JOKER_BONUS,
+  BIG_LEAP_BONUS,
+];
 
 /**
  * Les six quartiers de la roue surprise, dans l'ordre. On ne gagne pas à tous
- * les coups : deux quartiers sont vides (`null`). Cette disposition est la
- * source de vérité partagée par le serveur (qui tire le résultat) et par le
- * client (qui dessine la roue et l'arrête sur le bon quartier).
+ * les coups : un quartier reste vide (`null`). Cette disposition est la source
+ * de vérité partagée par le serveur (qui tire le résultat) et par le client (qui
+ * dessine la roue et l'arrête sur le bon quartier).
+ *
+ * Le Grand saut prend l'un des deux quartiers vides d'origine. Il n'en prend pas
+ * un aux trois 50/50 : la roue promet un lot deux fois sur trois, et retirer un
+ * 50/50 aurait rendu le lot le plus utile — le seul qui serve sur toutes les
+ * cartes — aussi rare que les deux autres.
  */
 export const SURPRISE_WHEEL: (BonusType | null)[] = [
   FIFTY_FIFTY_BONUS,
-  null,
+  BIG_LEAP_BONUS,
   FIFTY_FIFTY_BONUS,
   CAMEMBERT_JOKER_BONUS,
   FIFTY_FIFTY_BONUS,
   null,
 ];
+
+/**
+ * L'habillage de chaque bonus : emoji, nom court, couleur de son quartier.
+ *
+ * Une seule liste, parce qu'ils s'affichent à quatre endroits — la roue, son
+ * annonce de résultat, la pastille de l'en-tête et la liste des joueurs. Les
+ * deux premiers bonus vivaient en ternaires recopiés dans chacun ; en ajouter un
+ * troisième demandait de retrouver les quatre, et un oubli aurait donné un
+ * quartier blanc sans emoji, indiscernable d'une case vide.
+ */
+export const BONUS_LOOK: Record<BonusType, { emoji: string; label: string; color: string }> = {
+  [FIFTY_FIFTY_BONUS]: { emoji: '🎯', label: '50/50', color: '#ec4899' },
+  [CAMEMBERT_JOKER_BONUS]: { emoji: '🧀', label: 'Joker camembert', color: '#f59e0b' },
+  [BIG_LEAP_BONUS]: { emoji: '🦘', label: 'Grand saut', color: '#38bdf8' },
+};
+
+/** La couleur d'un quartier de la roue, case vide comprise. */
+export const EMPTY_SLOT_COLOR = '#e2e8f0';
 
 /**
  * Le Joker camembert peut-il encore rapporter quelque chose à ce joueur ?
@@ -165,6 +194,52 @@ export function useBonus(
     [type]: bonusCount(player, type) - 1,
   };
   state.activeQuestionBonus = { type, playerId: player.id, hiddenOptionIndexes };
+  return true;
+}
+
+/**
+ * Le Grand saut : le dé qui vient de tomber compte double, et le joueur choisit
+ * à nouveau sa destination.
+ *
+ * Seul bonus à s'utiliser en phase `moving` plutôt que sur une carte, d'où sa
+ * fonction séparée : `useBonus` exige une question en cours, et exiger les deux
+ * dans une même fonction aurait rendu ses gardes illisibles.
+ *
+ * Le dé garde sa face. On aurait pu afficher 8 sur un dé à six faces, ou le
+ * faire rouler une seconde fois ; l'un ment sur l'objet, l'autre rejouerait le
+ * hasard qu'on vient de retirer du geste (ADR 0005). Le nombre de pas est
+ * annoncé à part, dans `bigLeapThisTurn`, que le plateau affiche.
+ *
+ * Le bonus n'est pas consommé si le doublement n'ouvre rien de neuf — la même
+ * règle que le Joker camembert qui ne s'arme pas quand il ne peut rien
+ * rapporter. C'est un filet et non un cas courant : mesuré sur les trois
+ * plateaux, à chaque case de départ et pour chacune des six faces, le saut ouvre
+ * une destination neuve **cent fois sur cent**. Il protège d'un plateau futur
+ * plus court, où le pion tournerait en rond.
+ */
+export function useLeapBonus(state: GameState, board: BoardConfig): boolean {
+  if (state.settings.enableBonuses !== true || state.phase !== 'moving') return false;
+  // Un seul saut par tour : sinon deux jetons quadruplent le dé, et le pion
+  // traverse le plateau d'un bout à l'autre.
+  if (typeof state.bigLeapThisTurn === 'number') return false;
+
+  const dice = state.diceValue;
+  if (!Number.isInteger(dice) || (dice ?? 0) < 1) return false;
+
+  const player = state.players[state.activePlayerIndex];
+  if (!player || bonusCount(player, BIG_LEAP_BONUS) < 1) return false;
+
+  const steps = (dice as number) * 2;
+  const destinations = calculateMoves(player.currentTileId, steps, board);
+  const opensSomething = destinations.some(id => !state.possibleMoves.includes(id));
+  if (!opensSomething) return false;
+
+  player.bonuses = {
+    ...player.bonuses,
+    [BIG_LEAP_BONUS]: bonusCount(player, BIG_LEAP_BONUS) - 1,
+  };
+  state.possibleMoves = destinations;
+  state.bigLeapThisTurn = steps;
   return true;
 }
 
